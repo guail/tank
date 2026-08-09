@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "flowix-desktop",
-    "flowix-mobile",
-    "flowix-core",
-    "flowix-sync",
-    "flowix-cli",
+    "tank-desktop",
+    "tank-mobile",
+    "tank-core",
+    "tank-sync",
+    "tank-cli",
 ]
 
 # 锁定共用依赖到同一版本 ── 避免 backend / cli 走不一致版本。
@@ -15,8 +15,8 @@ edition = "2021"
 
 # 锁定共用依赖到同一版本 ── 避免 backend / cli 走不一致版本。
 [workspace.dependencies]
-flowix-core = { path = "flowix-core" }
-flowix-sync = { path = "flowix-sync" }
+tank-core = { path = "tank-core" }
+tank-sync = { path = "tank-sync" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
@@ -38,7 +38,7 @@ sha2 = "0.10"
 clap = { version = "4.5", features = ["std"] }
 clap_complete = "4.5"
 shell-words = "1.1"
-# Windows console codepage 切 UTF-8 用 ── 仅 flowix-cli 直接依赖。
+# Windows console codepage 切 UTF-8 用 ── 仅 tank-cli 直接依赖。
 # Win32_Foundation 必须开: SetConsoleCP/SetConsoleOutputCP 返回 BOOL, 被该 feature 门控。
 windows-sys = { version = "0.59", features = ["Win32_System_Console", "Win32_Foundation"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
