@@ -14,6 +14,7 @@ use crate::memo_file::{
     MemoVersionMeta, MemoVersionSource, NotebookConfig,
 };
 use crate::search::{self, NotebookSearchResults};
+use crate::embed::{EmbeddingProvider, SearchMode};
 
 const MAX_SEARCH_LIMIT: usize = 200;
 
@@ -526,6 +527,57 @@ impl<'a> MemoService<'a> {
             query,
             limit.min(MAX_SEARCH_LIMIT),
         ))
+    }
+
+    /// 语义 / 混合检索. 校验逻辑同 [`MemoService::search_memos`], 区别在于
+    /// 把检索交给 [`embed::search_notebooks_hybrid`], 需要注入一个
+    /// [`EmbeddingProvider`] (默认 Ollama 实现在 flowix-cli). 当 `mode` 为
+    /// [`SearchMode::Lexical`] 时调用方应改用 [`MemoService::search_memos`]
+    /// 以免无谓地构造 provider.
+    ///
+    /// embedding 失败 (Ollama 未运行 / 模型未拉取) 会映射成 [`FlowixError::Internal`],
+    /// 由上层转成 CLI `Other` 错误, 提示用户检查本地 embedding 服务.
+    pub fn search_memos_hybrid(
+        &mut self,
+        query: &str,
+        notebook_filter: Option<&str>,
+        limit: usize,
+        mode: SearchMode,
+        provider: &dyn EmbeddingProvider,
+    ) -> Result<NotebookSearchResults, FlowixError> {
+        if query.trim().is_empty() {
+            return Err(FlowixError::InvalidInput(
+                "search query cannot be empty".into(),
+            ));
+        }
+        if limit == 0 {
+            return Err(FlowixError::InvalidInput(
+                "search limit must be greater than 0".into(),
+            ));
+        }
+        let configs = self.list_notebooks()?;
+        if let Some(filter) = notebook_filter {
+            if !configs
+                .iter()
+                .any(|config| config.id == filter || config.name == filter)
+            {
+                return Err(FlowixError::NotFound(format!(
+                    "no notebooks matched filter `{filter}`"
+                )));
+            }
+        } else if configs.is_empty() {
+            return Err(FlowixError::NotFound("no notebooks configured".into()));
+        }
+        crate::embed::search_notebooks_hybrid(
+            self.memo_file,
+            &configs,
+            notebook_filter,
+            query,
+            limit.min(MAX_SEARCH_LIMIT),
+            mode,
+            provider,
+        )
+        .map_err(FlowixError::Internal)
     }
 
     pub fn resolve_notebook(&mut self, key: &str) -> Result<NotebookConfig, FlowixError> {

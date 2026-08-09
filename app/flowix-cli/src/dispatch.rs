@@ -43,8 +43,9 @@ pub fn run_cli(args: &[String]) -> Result<(), CliError> {
             query,
             notebook,
             limit,
+            mode,
             json,
-        } => store::cmd_search(&query, notebook.as_deref(), limit, json),
+        } => store::cmd_search(&query, notebook.as_deref(), limit, mode, json),
         cli::Cli::Edit {
             id,
             old,

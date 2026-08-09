@@ -10,7 +10,7 @@ members = [
 
 # 锁定共用依赖到同一版本 ── 避免 backend / cli 走不一致版本。
 [workspace.package]
-version = "1.1.14"
+version = "1.1.13"
 edition = "2021"
 
 # 锁定共用依赖到同一版本 ── 避免 backend / cli 走不一致版本。
@@ -42,5 +42,5 @@ shell-words = "1.1"
 # Win32_Foundation 必须开: SetConsoleCP/SetConsoleOutputCP 返回 BOOL, 被该 feature 门控。
 windows-sys = { version = "0.59", features = ["Win32_System_Console", "Win32_Foundation"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", features = ["json", "blocking"] }
 tokio = { version = "1", features = ["sync", "time"] }

@@ -17,7 +17,7 @@ const SUPPORTED_PROTOCOL_VERSIONS: &[&str] = &[
     LATEST_PROTOCOL_VERSION,
 ];
 
-pub const TOOL_DESCRIPTION: &str = "Manage Flowix notebooks and Markdown notes using restricted Flowix CLI syntax. Do not include the leading `flowix`. Supported commands: `notebooks`; `list <notebook>`; `show <id>`; `search <query> [--notebook <name|id>] [--limit <1..200>]`; `create <notebook>` with the complete non-empty Markdown body in `stdin`; `edit <id> --old <exact-text> (--new <text> | --new-stdin)` where `--old` must occur exactly once and `stdin` supplies the replacement when `--new-stdin` is used; `edit` also supports `--dry-run`; `write <id>` with the complete replacement Markdown body in `stdin`; and `delete <id>`. Obtain memo IDs from list or search before reading or modifying a memo. Notebook may be a registered notebook name or ID. Quoted arguments are supported. Shell syntax and arbitrary programs are forbidden, including pipes, redirects, semicolons, `&&`, command substitution, and environment expansion. `delete` is destructive. Results are always returned as structured data, so `--json` is unnecessary.";
+pub const TOOL_DESCRIPTION: &str = "Manage Flowix notebooks and Markdown notes using restricted Flowix CLI syntax. Do not include the leading `flowix`. Supported commands: `notebooks`; `list <notebook>`; `show <id>`; `search <query> [--notebook <name|id>] [--limit <1..200>]` (add `--semantic` for vector-only or `--hybrid` for lexical+semantic fusion — both require a local Ollama embedding backend such as `nomic-embed-text`); `create <notebook>` with the complete non-empty Markdown body in `stdin`; `edit <id> --old <exact-text> (--new <text> | --new-stdin)` where `--old` must occur exactly once and `stdin` supplies the replacement when `--new-stdin` is used; `edit` also supports `--dry-run`; `write <id>` with the complete replacement Markdown body in `stdin`; and `delete <id>`. Obtain memo IDs from list or search before reading or modifying a memo. Notebook may be a registered notebook name or ID. Quoted arguments are supported. Shell syntax and arbitrary programs are forbidden, including pipes, redirects, semicolons, `&&`, command substitution, and environment expansion. `delete` is destructive. Results are always returned as structured data, so `--json` is unnecessary.";
 
 /// Run the MCP line-delimited JSON-RPC loop until stdin reaches EOF.
 pub fn run_mcp<R: BufRead, W: Write>(reader: R, mut writer: W) -> Result<(), CliError> {
@@ -90,7 +90,7 @@ fn tool_definition() -> Value {
             "properties": {
                 "command": {
                     "type": "string",
-                    "description": "A supported Flowix command without the leading `flowix`, for example `search \"product plan\" --notebook work --limit 10`."
+                    "description": "A supported Flowix command without the leading `flowix`, for example `search \"product plan\" --notebook work --limit 10` (or add `--semantic`/`--hybrid` for semantic search, which needs a local Ollama embedding backend)."
                 },
                 "stdin": {
                     "type": "string",
@@ -217,10 +217,11 @@ fn execute_command(command: &str, stdin: Option<&str>) -> Result<Value, CliError
             query,
             notebook,
             limit,
+            mode,
             ..
         } => {
             reject_stdin(stdin)?;
-            let results = store::search_hits(&query, notebook.as_deref(), limit)?;
+            let results = store::search_hits(&query, notebook.as_deref(), limit, mode)?;
             output::to_json_value(&store::search_results_to_value(&query, &results))
         }
         cli::Cli::Edit {

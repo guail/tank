@@ -139,6 +139,8 @@ pub enum MatchField {
     Title,
     Tag,
     Body,
+    /// 仅语义 (向量) 召回, lexical 词面未命中.
+    Semantic,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -206,6 +208,11 @@ impl MemoIndex {
 
     pub fn current_notebook(&self) -> Option<&str> {
         self.notebook_id.as_deref()
+    }
+
+    /// 按 id 取索引条目 (filename / 正文 / 时间戳), 供语义检索造 snippet 用.
+    pub fn get_entry(&self, id: &str) -> Option<&SearchIndexEntry> {
+        self.entries.get(id)
     }
 
     /// 清空 entries/postings/notebook_id 并把 `loaded` 置 false. 通常在 `rebuild`
@@ -495,7 +502,7 @@ pub fn search_notebooks(
     }
 }
 
-fn make_snippet(entry: &SearchIndexEntry, query_lower: &str, field: &MatchField) -> String {
+pub(crate) fn make_snippet(entry: &SearchIndexEntry, query_lower: &str, field: &MatchField) -> String {
     const SNIPPET_RADIUS: usize = 40;
     const MARK_START: char = '\x01';
     const MARK_END: char = '\x02';
@@ -503,7 +510,7 @@ fn make_snippet(entry: &SearchIndexEntry, query_lower: &str, field: &MatchField)
 
     let source = match field {
         MatchField::Title | MatchField::Tag => entry.preview.as_str(),
-        MatchField::Body => entry.body_lower.as_str(),
+        MatchField::Body | MatchField::Semantic => entry.body_lower.as_str(),
     };
     if source.is_empty() {
         return String::new();

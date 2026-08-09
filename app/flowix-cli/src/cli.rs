@@ -5,6 +5,7 @@
 use clap::{Arg, ArgAction, Command};
 
 use crate::errors::CliError;
+use flowix_core::embed::SearchMode;
 
 pub(crate) const DISPLAY_BIN: &str = "flowix";
 
@@ -35,6 +36,9 @@ pub enum Cli {
         query: String,
         notebook: Option<String>,
         limit: usize,
+        /// 检索模式: 默认 Lexical (原纯 bigram 词面). `--semantic` 走向量语义,
+        /// `--hybrid` 词面 + 语义经 RRF 融合. 需本地 Ollama embedding 后端.
+        mode: SearchMode,
         json: bool,
     },
     Edit {
@@ -130,10 +134,18 @@ pub(crate) fn parse(args: &[String]) -> Result<Option<Cli>, CliError> {
                     "search: --limit/-l requires a positive integer".into(),
                 ));
             }
+            let mode = if sub.get_flag("semantic") {
+                SearchMode::Semantic
+            } else if sub.get_flag("hybrid") {
+                SearchMode::Hybrid
+            } else {
+                SearchMode::Lexical
+            };
             Ok(Some(Cli::Search {
                 query: required_string(sub, "query")?,
                 notebook: sub.get_one::<String>("notebook").cloned(),
                 limit,
+                mode,
                 json,
             }))
         }
@@ -206,6 +218,18 @@ pub(crate) fn cli_command() -> Command {
                         .short('l')
                         .value_parser(clap::value_parser!(usize))
                         .num_args(1),
+                )
+                .arg(
+                    Arg::new("semantic")
+                        .long("semantic")
+                        .action(ArgAction::SetTrue)
+                        .help("向量语义检索 (需本地 Ollama embedding 后端)"),
+                )
+                .arg(
+                    Arg::new("hybrid")
+                        .long("hybrid")
+                        .action(ArgAction::SetTrue)
+                        .help("词面 + 语义经 RRF 融合 (需本地 Ollama embedding 后端)"),
                 ),
         )
         .subcommand(Command::new("completion").arg(required_arg("shell")))
@@ -294,11 +318,20 @@ fn preflight_usage_errors(args: &[String]) -> Result<(), CliError> {
             invalid_limit_value(args)?;
             unknown_flags(
                 args,
-                &["--json", "-j", "--notebook", "-b", "--limit", "-l"],
+                &[
+                    "--json",
+                    "-j",
+                    "--notebook",
+                    "-b",
+                    "--limit",
+                    "-l",
+                    "--semantic",
+                    "--hybrid",
+                ],
                 |flag| {
                     format!(
                         "search: unknown arg `{flag}`\n\
-                         usage: {DISPLAY_BIN} search <query> [--notebook|-b <nb>] [--limit|-l <n>]"
+                         usage: {DISPLAY_BIN} search <query> [--notebook|-b <nb>] [--limit|-l <n>] [--semantic|--hybrid]"
                     )
                 },
             )?;
@@ -546,6 +579,7 @@ COMMANDS:
                        non-interactive; auto-rename on title change
     search <query>     Full-text search                      [alias: q]
                        [--notebook|-b <nb>] [--limit|-l <n>]
+                       [--semantic | --hybrid]  (需要本地 Ollama embedding)
     completion <sh>    Print shell completion (bash|zsh|fish)
     mcp               MCP over stdio (external Agent integration)
 
@@ -573,6 +607,7 @@ EXAMPLES:
     printf \"# new title\\nbody\\n\" | flowix write a1b2c3
     flowix edit a1b2c3 --old \"old text\" --new \"new text\"
     flowix search TODO --limit 20
+    flowix search \"编译器命令找不到\" --hybrid
     FLOWIX_HOME=/tmp/fx-test flowix notebooks
 ";
     print!("{usage}");

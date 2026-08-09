@@ -5,6 +5,7 @@
 //! M3: `cmd_create` (面向 AI, body 从 stdin 读)
 
 use crate::{
+    embed::OllamaEmbeddingProvider,
     errors::CliError,
     fmt,
     output::{
@@ -13,6 +14,7 @@ use crate::{
     },
     paths,
 };
+use flowix_core::embed::SearchMode;
 use flowix_core::memo_file::{MemoFile, NotebookConfig};
 use flowix_core::MemoService;
 use std::{collections::HashMap, path::PathBuf};
@@ -310,14 +312,15 @@ pub(crate) fn delete_note(
     })
 }
 
-/// `flowix-cli search <query> [--notebook <name|id>]` ── 跨 notebook 全文搜索。
+/// `flowix-cli search <query> [--notebook <name|id>] [--semantic|--hybrid]` ── 跨 notebook 全文搜索。
 pub fn cmd_search(
     query: &str,
     notebook_filter: Option<&str>,
     limit: usize,
+    mode: SearchMode,
     json: bool,
 ) -> Result<(), CliError> {
-    let results = search_hits(query, notebook_filter, limit)?;
+    let results = search_hits(query, notebook_filter, limit, mode)?;
 
     if json {
         let payload = search_results_to_value(query, &results);
@@ -334,16 +337,37 @@ pub fn cmd_search(
     Ok(())
 }
 
+/// 构造语义检索用的 Ollama provider, 端点 / 模型走环境变量覆盖.
+fn build_embed_provider() -> OllamaEmbeddingProvider {
+    let url = std::env::var("FLOWIX_OLLAMA_URL")
+        .unwrap_or_else(|_| "http://localhost:11434".to_string());
+    let model = std::env::var("FLOWIX_EMBED_MODEL")
+        .unwrap_or_else(|_| "nomic-embed-text".to_string());
+    OllamaEmbeddingProvider::new(&url, &model)
+}
+
 /// memo 搜索的数据源，供 CLI 和 MCP 命令层复用。
+///
+/// `mode` 为 [`SearchMode::Lexical`] (默认) 时走原纯词面检索; 否则注入 Ollama
+/// embedding provider, 走 hybrid / semantic 检索. embedding 失败 (Ollama 未运行 /
+/// 模型未拉取) 会向上抛成 `CliError::Other`, 提示用户检查本地 embedding 服务.
 pub(crate) fn search_hits(
     query: &str,
     notebook_filter: Option<&str>,
     limit: usize,
+    mode: SearchMode,
 ) -> Result<flowix_core::search::NotebookSearchResults, CliError> {
     let mut mf = open()?;
-    MemoService::new(&mut mf)
-        .search_memos(query, notebook_filter, limit)
-        .map_err(Into::into)
+    if mode == SearchMode::Lexical {
+        MemoService::new(&mut mf)
+            .search_memos(query, notebook_filter, limit)
+            .map_err(Into::into)
+    } else {
+        let provider = build_embed_provider();
+        MemoService::new(&mut mf)
+            .search_memos_hybrid(query, notebook_filter, limit, mode, &provider)
+            .map_err(Into::into)
+    }
 }
 
 /// 把 `NotebookSearchResults` 拍平成跟 CLI `--json` 输出一致的 `Value`。
