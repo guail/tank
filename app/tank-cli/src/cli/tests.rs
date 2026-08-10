@@ -377,6 +377,7 @@ fn search_basic() {
             query,
             notebook: None,
             limit: 20,
+            mode,
             json: false,
         })) if query == "TODO"
     ));

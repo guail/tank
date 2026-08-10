@@ -378,4 +378,31 @@ mod tests {
         assert!(reject_stdin(Some("unexpected")).is_err());
         assert_eq!(require_stdin(Some("# note"), "create").unwrap(), "# note");
     }
+
+    #[test]
+    fn tool_result_wraps_top_level_array_in_data_object() {
+        // MCP spec requires `structuredContent` to be a JSON object. Commands like
+        // `notebooks`/`list` return a top-level array; it must be wrapped so the
+        // client's schema validation accepts the result.
+        let result = tool_result(json!([1, 2, 3]), false);
+        let sc = &result["structuredContent"];
+        assert!(sc.is_object(), "structuredContent must be an object");
+        assert_eq!(sc["data"], json!([1, 2, 3]));
+        assert_eq!(result["isError"], false);
+        assert!(result["content"][0]["text"].as_str().unwrap().contains("1"));
+    }
+
+    #[test]
+    fn tool_result_passes_object_through_unchanged() {
+        let obj = json!({ "ok": true, "count": 2 });
+        let result = tool_result(obj.clone(), false);
+        assert_eq!(result["structuredContent"], obj);
+    }
+
+    #[test]
+    fn tool_result_wraps_scalar_in_data_object() {
+        let result = tool_result(json!("plain string"), false);
+        assert!(result["structuredContent"].is_object());
+        assert_eq!(result["structuredContent"]["data"], json!("plain string"));
+    }
 }
