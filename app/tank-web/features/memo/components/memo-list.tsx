@@ -1033,13 +1033,13 @@ export function MemoList() {
         {memos.length > 0 ? (
           activeFilter === 'recent' ? (
             // 最近编辑: 按 updatedAt 倒序取前 N 条 (见上方 recentGridMemos),
-            // 网格卡片预览 ── 响应式 2/3/4/5 列, 与 list 视图共用 MemoCard (compact 变体)。
+            // 网格卡片预览 ── 响应式 2/3/4/5 列, 卡片使用 grid 变体(图标+标题垂直居中)。
             <div className="grid grid-cols-2 gap-3 px-3 py-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {recentGridMemos.map((memo) => (
                 <div key={memo.id}>
                   <MemoCard
                     memo={memo}
-                    variant="compact"
+                    variant="grid"
                     tagMap={tagMap}
                     isSelected={selectedMemo?.id === memo.id}
                     isDropdownOpen={openDropdown === memo.id}

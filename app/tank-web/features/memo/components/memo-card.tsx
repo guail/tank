@@ -2,7 +2,7 @@
 
 import { memo, useEffect, useState, type ReactNode } from 'react';
 import { displayTitleFromFilename } from '@/lib/utils';
-import { ListTodo, MoreHorizontal } from 'lucide-react';
+import { FileText, ListTodo, MoreHorizontal } from 'lucide-react';
 import { PushPin } from '@phosphor-icons/react';
 import { MEMO_COLOR_HEX, type MemoColor, type MemoItem } from '@features/memo';
 import { cn } from '@/lib/utils';
@@ -291,6 +291,29 @@ function CompactMemoCardBody({
   );
 }
 
+function GridMemoCardBody({
+  title,
+  timeLabel,
+}: Pick<MemoCardBodyProps, 'title' | 'timeLabel'>) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-1 py-4">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--muted)] text-[var(--muted-foreground)]">
+        <FileText className="h-7 w-7" />
+      </div>
+      <div className="w-full text-center">
+        <h3 className="line-clamp-2 break-words text-sm font-medium leading-snug text-[var(--foreground)]">
+          {title}
+        </h3>
+        {timeLabel && (
+          <p className="mt-1 truncate text-xs text-[var(--muted-foreground)]">
+            {timeLabel}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DetailedMemoCardBody({
   memo,
   tagMap,
@@ -430,6 +453,8 @@ export function MemoCardImpl({
     >
       {variant === 'compact' ? (
         <CompactMemoCardBody {...bodyProps} />
+      ) : variant === 'grid' ? (
+        <GridMemoCardBody title={title} timeLabel={timeLabel} />
       ) : (
         <DetailedMemoCardBody {...bodyProps} />
       )}

@@ -85,7 +85,7 @@ export interface PropertiesConfig {
   fields: PropertyFieldConfig[];
 }
 
-export type MemoCardVariant = 'detailed' | 'compact';
+export type MemoCardVariant = 'detailed' | 'compact' | 'grid';
 
 export interface QuickPhrase {
   /** 稳定 id，由前端 crypto.randomUUID() 生成；用作 React key 与 patch 引用。 */
