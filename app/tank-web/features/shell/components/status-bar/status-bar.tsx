@@ -6,7 +6,6 @@ import { Tooltip } from '@shared/ui/tooltip';
 import type { Notebook } from '@features/memo';
 import { NotebookSwitcher } from '@features/shell/components/status-bar/notebook-switcher';
 import { AgentRuntimeStatusMenu } from '@features/shell/components/status-bar/agent-runtime-status-menu';
-import { ProductUpdatePill } from '@features/shell/components/status-bar/product-update-pill';
 import { useI18n } from '@/lib/i18n';
 import { useDocumentMetricsStore } from '@features/document';
 import { useMemoStore } from '@features/memo';
@@ -91,7 +90,6 @@ export function StatusBar({
         </button>
         {charCount > 0 && <span className="text-[var(--muted-foreground)]">{t('status.characters')} {charCount}</span>}
         <div className="flex-1" />
-        <ProductUpdatePill />
         <Tooltip content={t('shell.statusBar.noteNavTooltip')}>
           <button
             type="button"

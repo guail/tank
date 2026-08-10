@@ -9,7 +9,7 @@ import {
 } from '@shared/ui/dropdown-menu';
 import { Tooltip } from '@shared/ui/tooltip';
 import { useI18n } from '@/lib/i18n';
-import productLogo from '@/assets/product-logo.svg';
+import productLogo from '@/assets/product-logo.png';
 
 interface MemoListTitlebarWinProps {
   onCollapseSidebar: () => void;
@@ -40,7 +40,7 @@ export function MemoListTitlebarWin({
               src={productLogo}
               alt=""
               aria-hidden="true"
-              className="h-[12.6px] w-[12.6px] shrink-0 rounded [[data-theme='dark']_&]:brightness-0 [[data-theme='dark']_&]:invert [[data-theme='dark']_&]:opacity-75"
+              className="h-[12.6px] w-auto shrink-0 rounded [[data-theme='dark']_&]:brightness-0 [[data-theme='dark']_&]:invert [[data-theme='dark']_&]:opacity-75"
             />
             <span className="leading-none translate-y-[1px] text-[13px] font-semibold tracking-tight text-[color-mix(in_oklch,var(--foreground)_86%,transparent)]">
               TANK的英雄笔记
