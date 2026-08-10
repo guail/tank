@@ -74,7 +74,7 @@ impl AgentManager {
                     RunInfo::active(
                         run.started_at,
                         None,
-                        Some("flowix"),
+                        Some("tank-cli"),
                         Some(run.run_id.clone()),
                         Some(tid.clone()),
                         None,

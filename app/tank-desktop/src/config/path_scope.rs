@@ -34,7 +34,7 @@ mod tests {
     #[test]
     fn inside_returns_true_for_subpath() {
         let tmp =
-            std::env::temp_dir().join(format!("flowix-path-scope-test-{}", std::process::id()));
+            std::env::temp_dir().join(format!("tank-path-scope-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&tmp);
         let sub = tmp.join("child");
         std::fs::create_dir_all(&sub).unwrap();
@@ -46,8 +46,8 @@ mod tests {
     #[test]
     fn inside_returns_false_for_sibling() {
         let tmp = std::env::temp_dir();
-        let a = tmp.join(format!("flowix-ps-a-{}", std::process::id()));
-        let b = tmp.join(format!("flowix-ps-b-{}", std::process::id()));
+        let a = tmp.join(format!("tank-ps-a-{}", std::process::id()));
+        let b = tmp.join(format!("tank-ps-b-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&a);
         let _ = std::fs::remove_dir_all(&b);
         std::fs::create_dir_all(&a).unwrap();
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn inside_works_for_nonexistent_target() {
         let tmp =
-            std::env::temp_dir().join(format!("flowix-path-scope-future-{}", std::process::id()));
+            std::env::temp_dir().join(format!("tank-path-scope-future-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&tmp);
         std::fs::create_dir_all(&tmp).unwrap();
         let future = tmp.join("not-yet-created.md");

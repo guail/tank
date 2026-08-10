@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use serde_json::{json, Value};
 
-use crate::agent_flowix::AgentChunk;
+use crate::agent_tank::AgentChunk;
 
 pub const PROTOCOL_VERSION: u64 = 1;
 pub const INITIALIZE_ID: u64 = 1;
@@ -26,7 +26,7 @@ pub fn initialize_request() -> Value {
                 "terminal": false
             },
             "clientInfo": {
-                "name": "Flowix",
+                "name": "TANK的英雄笔记",
                 "version": env!("CARGO_PKG_VERSION")
             }
         }
@@ -153,7 +153,7 @@ pub fn unsupported_request_response(request: &Value) -> Option<Value> {
         "id": id,
         "error": {
             "code": -32601,
-            "message": format!("Flowix ACP client does not implement {method}")
+            "message": format!("TANK的英雄笔记 ACP client does not implement {method}")
         }
     }))
 }

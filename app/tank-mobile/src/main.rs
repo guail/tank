@@ -1,3 +1,3 @@
 fn main() {
-    flowix_mobile::run()
+    tank_mobile::run()
 }

@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::Path};
 use tauri::State;
 
 use crate::agent_external::runtime_registry::ExternalCliRuntime;
-use crate::agent_flowix::{AgentChatResponse, AgentUserMessage, RunInfo};
+use crate::agent_tank::{AgentChatResponse, AgentUserMessage, RunInfo};
 use crate::agent_session::AgentExternalEvent;
 use crate::app::state::AppState;
 
@@ -43,7 +43,7 @@ pub async fn chat_with_agent_stream(
         validated_image_paths.push(path.to_string_lossy().into_owned());
     }
     message.image_paths = validated_image_paths;
-    if !message.image_paths.is_empty() && matches!(runtime, AgentRuntime::Flowix) {
+    if !message.image_paths.is_empty() && matches!(runtime, AgentRuntime::TANK的英雄笔记) {
         let mut llm_content = message
             .llm_content
             .clone()

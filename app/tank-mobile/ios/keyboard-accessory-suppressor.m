@@ -1,13 +1,13 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-// Flowix provides its own formatting toolbar above the keyboard. Remove the
+// TANK的英雄笔记 provides its own formatting toolbar above the keyboard. Remove the
 // system input assistant groups from WKWebView so iOS does not show a second
 // accessory bar above it.
-@interface FlowixKeyboardAccessorySuppressor : NSObject
+@interface TANK的英雄笔记KeyboardAccessorySuppressor : NSObject
 @end
 
-@implementation FlowixKeyboardAccessorySuppressor
+@implementation TANK的英雄笔记KeyboardAccessorySuppressor
 
 + (void)load {
   [[NSNotificationCenter defaultCenter]

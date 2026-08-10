@@ -8,8 +8,8 @@ use tauri::{AppHandle, State};
 use crate::lock_utils::read_lock;
 use crate::memo_events::{MemoChangeSource, MemoDerivedChanged};
 use crate::watcher::path::normalize_for_compare;
-use flowix_core::memo_file::{Memo, MemoFile, MemoTodoEntry};
-use flowix_core::MemoService;
+use tank_core::memo_file::{Memo, MemoFile, MemoTodoEntry};
+use tank_core::MemoService;
 
 use crate::app::search_index::rebuild_index_in_background;
 use crate::app::state::AppState;

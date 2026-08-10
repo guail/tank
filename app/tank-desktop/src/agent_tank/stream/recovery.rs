@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(in crate::agent_flowix) enum LlmFailureKind {
+pub(in crate::agent_tank) enum LlmFailureKind {
     RetryableTransport,
     RetryableRateLimit,
     RetryableServer,
@@ -11,7 +11,7 @@ pub(in crate::agent_flowix) enum LlmFailureKind {
     Unknown,
 }
 
-pub(in crate::agent_flowix) fn classify_llm_failure(reason: &str) -> LlmFailureKind {
+pub(in crate::agent_tank) fn classify_llm_failure(reason: &str) -> LlmFailureKind {
     let lower = reason.to_ascii_lowercase();
     if is_recoverable_args_error(&lower) {
         return LlmFailureKind::RecoverableHistory;
@@ -111,7 +111,7 @@ pub(super) fn build_recovery_instruction(reason: &str) -> String {
 /// 连同 `request_id` 之类噪音暴露给用户。这里定位 `Raw response: ` 之后
 /// 的 JSON, 解析出 `.error.message` / `.message` / `.error` / `.detail`;
 /// 解析不到则原样返回, 不丢信息。
-pub(in crate::agent_flowix) fn extract_llm_error_message(reason: &str) -> String {
+pub(in crate::agent_tank) fn extract_llm_error_message(reason: &str) -> String {
     let Some(idx) = reason.find("Raw response: ") else {
         return reason.to_string();
     };
@@ -188,7 +188,7 @@ fn pick_error_message(value: &serde_json::Value) -> Option<String> {
 /// without a Tauri `AppHandle`. The `reason` comes from the caller's
 /// `format!("Stream failed: {}", e)`; any embedded `Raw response: {json}`
 /// is collapsed to its human `message` so the UI doesn't dump raw JSON.
-pub(in crate::agent_flowix) fn format_llm_unavailable_message(reason: &str) -> String {
+pub(in crate::agent_tank) fn format_llm_unavailable_message(reason: &str) -> String {
     let display = extract_llm_error_message(reason);
     format!("(LLM 暂时不可用，原因: {})", display)
 }

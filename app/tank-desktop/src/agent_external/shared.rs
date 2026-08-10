@@ -12,7 +12,7 @@ use tokio::process::Child;
 use tokio::process::Command;
 use tokio::sync::Mutex;
 
-use crate::agent_flowix::{AgentChunk, AgentUserMessage, RunInfo};
+use crate::agent_tank::{AgentChunk, AgentUserMessage, RunInfo};
 use crate::agent_session::{ChatMessage, NewAgentExternalEvent, ThreadManager};
 use crate::events as dispatcher;
 use crate::runtime_log;
@@ -63,7 +63,7 @@ pub fn complete_chunk_metadata(
 }
 
 /// Canonicalize provider-owned transcript rows that were created outside a
-/// Flowix run. The provider message id is the stable source key; each user row
+/// TANK的英雄笔记 run. The provider message id is the stable source key; each user row
 /// starts a deterministic imported run for the following assistant/tool rows.
 pub fn canonicalize_imported_messages(
     agent_type: &str,

@@ -5,9 +5,9 @@
 use clap::{Arg, ArgAction, Command};
 
 use crate::errors::CliError;
-use flowix_core::embed::SearchMode;
+use tank_core::embed::SearchMode;
 
-pub(crate) const DISPLAY_BIN: &str = "flowix";
+pub(crate) const DISPLAY_BIN: &str = "tank-cli";
 
 /// 解析后的 CLI 命令。
 #[derive(Debug)]
@@ -62,7 +62,7 @@ pub enum Cli {
         shell: String,
     },
     /// Model Context Protocol over stdio。向外部 Agent 暴露唯一工具
-    /// `flowix_memo`，工具参数采用受限的 Flowix CLI 语法。
+    /// `tank_memo`，工具参数采用受限的 TANK的英雄笔记 CLI 语法。
     Mcp,
 }
 
@@ -557,7 +557,7 @@ fn unknown_flags(
 pub fn print_help() {
     let usage = "\
 USAGE:
-    flowix [GLOBAL FLAGS] <COMMAND> [ARGS]
+    tank-cli [GLOBAL FLAGS] <COMMAND> [ARGS]
 
 GLOBAL FLAGS:
     --version, -V      Print version and exit
@@ -584,8 +584,8 @@ COMMANDS:
     mcp               MCP over stdio (external Agent integration)
 
 ENVIRONMENT:
-    FLOWIX_HOME        Override config dir (default: ~/.flowix; contains index.db)
-    FLOWIX_DATA        Override data dir (default: <OS data dir>/flowix)
+    TANK_HOME        Override config dir (default: ~/.flowix; contains index.db)
+    TANK_DATA        Override data dir (default: <OS data dir>/tank)
 
 ENCODING:
     Notes are always written as UTF-8; stdin is read as UTF-8.
@@ -596,19 +596,19 @@ ENCODING:
     by default.
 
 EXAMPLES:
-    flowix --version
-    flowix notebooks
-    flowix notebooks --json | jq
-    flowix list work
-    flowix list work --json | jq '.[] | select(.favorited)'
-    flowix show a1b2c3
-    flowix show a1b2c3 --json | jq '.body'
-    echo \"# hello\" | flowix create work
-    printf \"# new title\\nbody\\n\" | flowix write a1b2c3
-    flowix edit a1b2c3 --old \"old text\" --new \"new text\"
-    flowix search TODO --limit 20
-    flowix search \"编译器命令找不到\" --hybrid
-    FLOWIX_HOME=/tmp/fx-test flowix notebooks
+    tank-cli --version
+    tank-cli notebooks
+    tank-cli notebooks --json | jq
+    tank-cli list work
+    tank-cli list work --json | jq '.[] | select(.favorited)'
+    tank-cli show a1b2c3
+    tank-cli show a1b2c3 --json | jq '.body'
+    echo \"# hello\" | tank-cli create work
+    printf \"# new title\\nbody\\n\" | tank-cli write a1b2c3
+    tank-cli edit a1b2c3 --old \"old text\" --new \"new text\"
+    tank-cli search TODO --limit 20
+    tank-cli search \"编译器命令找不到\" --hybrid
+    TANK_HOME=/tmp/fx-test tank-cli notebooks
 ";
     print!("{usage}");
 }

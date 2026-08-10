@@ -3,7 +3,7 @@ use std::sync::Arc;
 use rllm::ToolCall as LlmToolCall;
 use uuid::Uuid;
 
-use crate::agent_flowix::providers::OpenAICompatibleChatMessage;
+use crate::agent_tank::providers::OpenAICompatibleChatMessage;
 use crate::agent_session::{ChatMessage as ThreadChatMessage, MessageRole, ThreadManager};
 
 use super::context::build_llm_context_window;

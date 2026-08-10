@@ -2,7 +2,7 @@
 //! �?`commands::settings` 同形: 写操作成功后 emit `agent-access-changed`
 //! 事件, 其它窗口�?React 树收到后从�?盘重�?load�?前�? `set_agent_access`
 //! 走乐观更�?(改本地后�?await), 失败�?store �?`loadInitial` 回滚 ──
-//! 瑙?`app/flowix-web/lib/store/agent-access-store.ts`銆?
+//! 瑙?`app/tank-web/lib/store/agent-access-store.ts`銆?
 use std::path::Path;
 
 use crate::events as dispatcher;

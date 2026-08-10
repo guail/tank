@@ -1,9 +1,9 @@
 use super::*;
 
-/// Add the extra Flowix workspace roots to runtimes that do not expose a
+/// Add the extra TANK的英雄笔记 workspace roots to runtimes that do not expose a
 /// stable `--add-dir`-style CLI flag. The process already runs in `cwd`; this
 /// note makes every other authorized root discoverable to the agent without
-/// altering the user message persisted in Flowix history.
+/// altering the user message persisted in TANK的英雄笔记 history.
 pub fn append_workspace_context(prompt: &str, cwd: &Path, workspace_paths: &[String]) -> String {
     let cwd = cwd
         .to_string_lossy()
@@ -22,7 +22,7 @@ pub fn append_workspace_context(prompt: &str, cwd: &Path, workspace_paths: &[Str
     }
 
     format!(
-        "{prompt}\n\n[Flowix workspace context]\nThe user has attached these additional local reference directories. Read and search them when relevant to the request:\n{}",
+        "{prompt}\n\n[TANK的英雄笔记 workspace context]\nThe user has attached these additional local reference directories. Read and search them when relevant to the request:\n{}",
         additional
             .iter()
             .map(|path| format!("- {path}"))

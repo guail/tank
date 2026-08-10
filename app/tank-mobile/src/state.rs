@@ -1,20 +1,20 @@
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
-use flowix_core::memo_file::{atomic_write_bytes, MemoFile, NotebookConfig};
-use flowix_core::secret::SecretStore;
-use flowix_sync::CloudState;
+use tank_core::memo_file::{atomic_write_bytes, MemoFile, NotebookConfig};
+use tank_core::secret::SecretStore;
+use tank_sync::CloudState;
 #[cfg(target_os = "ios")]
 use tauri_plugin_keyring_store::WriteAccessibility;
 use tauri_plugin_keyring_store::{KeyringAvailability, KeyringStore};
 
-const CLOUD_REFRESH_TOKEN_KEY: &str = "flowix_cloud::refresh_token";
+const CLOUD_REFRESH_TOKEN_KEY: &str = "tank_cloud::refresh_token";
 const MOBILE_KEYRING_SERVICE: &str = "com.flowix.app.mobile.credentials";
 
 pub struct MobileState {
     pub data_dir: PathBuf,
     pub memo_file: Arc<RwLock<MemoFile>>,
-    pub cloud_sync: Arc<flowix_sync::SyncManager>,
+    pub cloud_sync: Arc<tank_sync::SyncManager>,
     credentials: KeyringStore,
     legacy_secrets: SecretStore,
     cloud_owner_path: PathBuf,
@@ -37,8 +37,8 @@ impl MobileState {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
             Err(error) => return Err(error.to_string()),
         };
-        let cloud_sync = flowix_sync::SyncManager::new(
-            flowix_sync::DEFAULT_CLOUD_API_BASE,
+        let cloud_sync = tank_sync::SyncManager::new(
+            tank_sync::DEFAULT_CLOUD_API_BASE,
             config_dir.join("sync.db"),
         )
         .map_err(|error| error.to_string())?;
@@ -217,7 +217,7 @@ pub fn read_memo_file(state: &MobileState) -> std::sync::RwLockReadGuard<'_, Mem
 
 #[cfg(test)]
 mod tests {
-    use flowix_sync::{CloudMembership, CloudState};
+    use tank_sync::{CloudMembership, CloudState};
 
     use super::{cloud_sync_allowed, MobileState};
 

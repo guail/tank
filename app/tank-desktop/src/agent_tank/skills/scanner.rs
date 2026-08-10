@@ -168,7 +168,7 @@ fn path_has_hidden_segment(path: &Path, area_root: &Path) -> bool {
 /// Resolution order:
 /// 1. `FLOWIX_BUNDLED_SKILLS` env var (escape hatch for ops).
 /// 2. `CARGO_MANIFEST_DIR` + `resources/skills` (dev: `cargo test` /
-///    `cargo run` from `app/flowix-desktop/`).
+///    `cargo run` from `app/tank-desktop/`).
 /// 3. `<exe_parent>/resources/skills` (production bundle).
 pub fn resolve_bundled_root() -> Option<PathBuf> {
     if let Ok(p) = std::env::var("FLOWIX_BUNDLED_SKILLS") {

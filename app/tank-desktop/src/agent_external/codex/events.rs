@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 use crate::agent_external::AgentChunkMetadata;
-use crate::agent_flowix::{AgentChunk, StatusInfo, UsageInfo};
+use crate::agent_tank::{AgentChunk, StatusInfo, UsageInfo};
 
 use super::tool_events::{
     looks_like_unknown_tool_event, tool_event_definition, tool_event_id, tool_event_name,

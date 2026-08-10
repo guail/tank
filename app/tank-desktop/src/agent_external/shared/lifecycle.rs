@@ -4,7 +4,7 @@ use super::*;
 pub struct AgentChunkMetadata {
     pub message_id: Option<String>,
     /// Provider-native item/message id retained for diagnostics and future
-    /// transcript imports. `message_id` is the Flowix canonical identity.
+    /// transcript imports. `message_id` is the TANK的英雄笔记 canonical identity.
     pub source_message_id: Option<String>,
     pub message_phase: Option<&'static str>,
     pub content_mode: Option<&'static str>,

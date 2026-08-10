@@ -1,4 +1,4 @@
-use flowix_core::memo_file::{MemoFile, NotebookConfig};
+use tank_core::memo_file::{MemoFile, NotebookConfig};
 use serde_json::{json, Value};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
@@ -21,9 +21,9 @@ fn seed_notebook(config_dir: &std::path::Path, notebook_dir: &std::path::Path) {
 }
 
 fn spawn_mcp(config_dir: &std::path::Path) -> (Child, ChildStdin, BufReader<ChildStdout>) {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_flowix-cli"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_tank-cli"))
         .arg("mcp")
-        .env("FLOWIX_HOME", config_dir)
+        .env("TANK_HOME", config_dir)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -71,7 +71,7 @@ fn call_tool(
         stdout,
         id,
         "tools/call",
-        json!({"name": "flowix_memo", "arguments": arguments}),
+        json!({"name": "tank_memo", "arguments": arguments}),
     )
 }
 
@@ -91,17 +91,17 @@ fn mcp_process_initializes_and_exposes_one_tool() {
         json!({
             "protocolVersion": "2025-06-18",
             "capabilities": {},
-            "clientInfo": {"name": "flowix-test", "version": "1"}
+            "clientInfo": {"name": "tank-cli-test", "version": "1"}
         }),
     );
     assert_eq!(initialized["jsonrpc"], "2.0");
     assert_eq!(initialized["result"]["protocolVersion"], "2025-06-18");
-    assert_eq!(initialized["result"]["serverInfo"]["name"], "flowix-memo");
+    assert_eq!(initialized["result"]["serverInfo"]["name"], "tank-memo");
 
     let listed = request(&mut stdin, &mut stdout, 2, "tools/list", json!({}));
     let tools = listed["result"]["tools"].as_array().unwrap();
     assert_eq!(tools.len(), 1);
-    assert_eq!(tools[0]["name"], "flowix_memo");
+    assert_eq!(tools[0]["name"], "tank_memo");
     assert!(tools[0]["description"]
         .as_str()
         .unwrap()

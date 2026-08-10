@@ -10,7 +10,7 @@ use crate::memo_events::{self, MemoChangeSource, MemoDerivedChanged, MemoEvent};
 use crate::app::search_index::{force_rebuild_index, try_index_remove};
 use crate::app::state::AppState;
 use crate::watcher::runtime::mark_self_write_for;
-use flowix_core::MemoService;
+use tank_core::MemoService;
 
 use super::helpers::*;
 

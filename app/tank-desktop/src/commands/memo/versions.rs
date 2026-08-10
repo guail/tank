@@ -9,8 +9,8 @@ use std::fs;
 use tauri::{AppHandle, State};
 
 use crate::lock_utils::read_lock;
-use flowix_core::memo_file::{MemoVersionMeta, MemoVersionSource};
-use flowix_core::MemoService;
+use tank_core::memo_file::{MemoVersionMeta, MemoVersionSource};
+use tank_core::MemoService;
 
 use crate::app::state::AppState;
 use crate::commands::helpers::start_security_bookmark_access;

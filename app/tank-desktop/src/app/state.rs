@@ -2,12 +2,12 @@ use std::sync::{Arc, RwLock};
 
 use crate::agent_external::runtime_registry::ExternalRuntimeRegistry;
 use crate::agent_external_config::AgentExternalConfig;
-use crate::agent_flowix::AgentManager;
+use crate::agent_tank::AgentManager;
 use crate::agent_session::ThreadManager;
 use crate::config::{AgentAccessStore, SecurityBookmarkStore, UserConfigStore};
 use crate::system_data::SystemData;
-use flowix_core::memo_file::MemoFile;
-use flowix_core::search::MemoIndex;
+use tank_core::memo_file::MemoFile;
+use tank_core::search::MemoIndex;
 
 /// 应用状�?—通过 `tauri::State<AppState>` 注入�?Tauri 命令和运行时服务�?///
 /// `user_config` / `memo_file` / `thread_manager` �?`agent_manager` 之间会共�?/// 引用 (例�? `AgentManager` 需要�?�?thread_manager / memo_file), 共享形态是
@@ -15,7 +15,7 @@ use flowix_core::search::MemoIndex;
 /// `search` / `system_data` 没有跨模块需�? 保持原样 (�?Arc 包�?)�?
 pub struct AppState {
     pub user_config: Arc<UserConfigStore>,
-    pub cloud_sync: Arc<flowix_sync::SyncManager>,
+    pub cloud_sync: Arc<tank_sync::SyncManager>,
     /// System metadata (notebook tag order/layout/hidden state).
     /// Stored at `~/.flowix/boot/system.json`.
     pub system_data: SystemData,
@@ -31,7 +31,7 @@ pub struct AppState {
     pub external_runtimes: Arc<ExternalRuntimeRegistry>,
     pub thread_manager: Arc<ThreadManager>,
     /// Agent �??�?���?(notebook + 用户�?���?folder), 持久化在
-    /// `~/.flowix/agent-access.json`。驱�?[`crate::agent_flowix::tools::ToolScope`]
+    /// `~/.flowix/agent-access.json`。驱�?[`crate::agent_tank::tools::ToolScope`]
     /// �?`allowed_roots` �?`available_dirs` 工具的过滤�?
     pub agent_access: Arc<AgentAccessStore>,
     pub security_bookmarks: Arc<SecurityBookmarkStore>,

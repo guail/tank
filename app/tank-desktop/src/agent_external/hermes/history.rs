@@ -93,7 +93,7 @@ async fn session_messages(
 
 async fn export_sessions(session_id: Option<&str>) -> Result<String, String> {
     let temp = tempfile::Builder::new()
-        .prefix("flowix-hermes-history-")
+        .prefix("tank-hermes-history-")
         .suffix(".jsonl")
         .tempfile()
         .map_err(|e| format!("failed to create Hermes export temp file: {e}"))?;

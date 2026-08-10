@@ -8,7 +8,7 @@ mod search;
 
 pub use schema::{delete_tool, edit_tool, glob_tool, grep_tool, ls_tool, read_tool, write_tool};
 
-use crate::agent_flowix::tools::{ToolResult, ToolScope};
+use crate::agent_tank::tools::{ToolResult, ToolScope};
 
 pub(super) struct RegisteredMemoWrite {
     pub path: std::path::PathBuf,
@@ -22,7 +22,7 @@ pub(super) struct RegisteredMemoWrite {
 pub(super) fn save_registered_memo(
     path: &std::path::Path,
     content: &str,
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
 ) -> Result<Option<RegisteredMemoWrite>, String> {
     if !path
         .extension()
@@ -35,17 +35,17 @@ pub(super) fn save_registered_memo(
         Ok(existing) => existing,
         Err(_) => return Ok(None),
     };
-    let Some(key) = flowix_core::memo_file::extract_frontmatter_key(&existing) else {
+    let Some(key) = tank_core::memo_file::extract_frontmatter_key(&existing) else {
         return Ok(None);
     };
 
     let guard = memo_file
         .read()
         .map_err(|error| format!("memo_file read lock poisoned: {error}"))?;
-    let mut service = flowix_core::MemoService::new(&guard);
+    let mut service = tank_core::MemoService::new(&guard);
     let resolved = match service.resolve_memo(&key) {
         Ok(resolved) => resolved,
-        Err(flowix_core::FlowixError::NotFound(_)) => return Ok(None),
+        Err(tank_core::TankError::NotFound(_)) => return Ok(None),
         Err(error) => return Err(error.to_string()),
     };
     let requested_path = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
@@ -69,7 +69,7 @@ pub async fn execute_tool(
     arguments: &str,
     read_snapshot: Option<&str>,
     scope: &ToolScope,
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
     app: Option<&tauri::AppHandle>,
 ) -> ToolResult {
     match tool_name {
@@ -89,7 +89,7 @@ mod tests {
     use std::path::PathBuf;
     use std::time::Duration;
 
-    use flowix_core::memo_file::extract_frontmatter_key;
+    use tank_core::memo_file::extract_frontmatter_key;
 
     use super::edit::{edit, edit_with_memo, exact_match_boundary_error};
     use super::operations::{delete, ls, read, write, write_with_memo};
@@ -118,19 +118,19 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .expect("system time")
             .as_nanos();
-        std::env::temp_dir().join(format!("flowix-{}-{}", name, suffix))
+        std::env::temp_dir().join(format!("tank-{}-{}", name, suffix))
     }
 
     fn test_memo_file(
         root: &std::path::Path,
-    ) -> (std::sync::RwLock<flowix_core::memo_file::MemoFile>, PathBuf) {
+    ) -> (std::sync::RwLock<tank_core::memo_file::MemoFile>, PathBuf) {
         let notes = root.join("notes");
         let config = root.join("config");
         std::fs::create_dir_all(&notes).expect("create notes dir");
         std::fs::create_dir_all(&config).expect("create config dir");
-        let mut memo_file = flowix_core::memo_file::MemoFile::new(config);
+        let mut memo_file = tank_core::memo_file::MemoFile::new(config);
         memo_file
-            .write_notebook_configs(&[flowix_core::memo_file::NotebookConfig {
+            .write_notebook_configs(&[tank_core::memo_file::NotebookConfig {
                 id: "nb_test".to_string(),
                 name: "Test".to_string(),
                 icon: None,
@@ -675,7 +675,7 @@ mod tests {
             "path": path.display().to_string()
         })
         .to_string();
-        let memo_file = std::sync::RwLock::new(flowix_core::memo_file::MemoFile::default());
+        let memo_file = std::sync::RwLock::new(tank_core::memo_file::MemoFile::default());
         let result = delete(&args, &test_scope(root.clone()), &memo_file, None).await;
 
         assert!(result.success, "delete should succeed: {:?}", result);
@@ -693,7 +693,7 @@ mod tests {
             "path": dir.display().to_string()
         })
         .to_string();
-        let memo_file = std::sync::RwLock::new(flowix_core::memo_file::MemoFile::default());
+        let memo_file = std::sync::RwLock::new(tank_core::memo_file::MemoFile::default());
         let result = delete(&args, &test_scope(root.clone()), &memo_file, None).await;
 
         assert!(!result.success);
@@ -716,7 +716,7 @@ mod tests {
         let args = serde_json::json!({
             "path": path.display().to_string(),
             "old_string": "hello world",
-            "new_string": "hello flowix",
+            "new_string": "hello tank",
             "dry_run": true
         })
         .to_string();

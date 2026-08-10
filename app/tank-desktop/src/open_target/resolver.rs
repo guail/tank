@@ -12,7 +12,7 @@ use thiserror::Error;
 
 use crate::lock_utils::read_lock;
 use crate::watcher::path::normalize_for_compare;
-use flowix_core::memo_file::{MemoFile, NotebookConfig};
+use tank_core::memo_file::{MemoFile, NotebookConfig};
 
 use super::parser::OpenTarget;
 
@@ -75,7 +75,7 @@ pub fn resolve_open_target(
         .ok_or_else(|| ResolveError::NotFound(memo_id.clone()))?;
     let abs = build_abs_path(&location.notebook, &location.memo.filename);
     Ok(build_resolved(
-        flowix_core::memo_file::MemoFile::index_entry_to_memo(&location.memo),
+        tank_core::memo_file::MemoFile::index_entry_to_memo(&location.memo),
         &location.notebook,
         abs,
     ))
@@ -83,7 +83,7 @@ pub fn resolve_open_target(
 
 /// Build the response using the notebook resolved from the target.
 fn build_resolved(
-    memo: flowix_core::memo_file::Memo,
+    memo: tank_core::memo_file::Memo,
     cfg: &NotebookConfig,
     abs_path: String,
 ) -> ResolvedOpenTarget {
@@ -109,7 +109,7 @@ fn find_memo_by_path_in_notebooks(
     configs: &[NotebookConfig],
     abs_path: &str,
     filename: &str,
-) -> Option<(NotebookConfig, flowix_core::memo_file::Memo)> {
+) -> Option<(NotebookConfig, tank_core::memo_file::Memo)> {
     let target = Path::new(abs_path);
     let target_norm = normalize_for_compare(target);
     let memo_file = read_lock(memo_file, "memo_file");
@@ -134,7 +134,7 @@ fn find_memo_by_path_in_notebooks(
         }) {
             return Some((
                 cfg.clone(),
-                flowix_core::memo_file::MemoFile::index_entry_to_memo(&entry),
+                tank_core::memo_file::MemoFile::index_entry_to_memo(&entry),
             ));
         }
     }
@@ -158,7 +158,7 @@ fn target_physical_path(target: &OpenTarget) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flowix_core::memo_file::{MemoFile, NotebookConfig};
+    use tank_core::memo_file::{MemoFile, NotebookConfig};
     use std::fs;
     use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -167,7 +167,7 @@ mod tests {
     fn fresh_memo_file() -> (RwLock<MemoFile>, PathBuf, PathBuf) {
         let n = COUNTER.fetch_add(1, Ordering::SeqCst);
         let tmp = std::env::temp_dir().join(format!(
-            "flowix-open-target-resolver-test-{}-{}-{}",
+            "tank-open-target-resolver-test-{}-{}-{}",
             std::process::id(),
             n,
             chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
@@ -232,7 +232,7 @@ mod tests {
 
         let resolved = resolve_open_target(
             OpenTarget::DeepLink {
-                url: format!("flowix://memo/{id_two}"),
+                url: format!("tank://memo/{id_two}"),
                 memo_id: Some(id_two.clone()),
                 physical_path: None,
             },

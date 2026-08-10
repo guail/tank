@@ -1,6 +1,6 @@
-//! Flowix Cloud authentication and synchronization engine.
+//! TANK的英雄笔记 Cloud authentication and synchronization engine.
 //!
-//! This crate deliberately has no Tauri dependency. `flowix-desktop` owns the
+//! This crate deliberately has no Tauri dependency. `tank-desktop` owns the
 //! local Markdown adapter and secret persistence; this crate owns the Cloud
 //! HTTP contract, sync state database, revisions, cursors and conflict plans.
 

@@ -15,7 +15,7 @@ use crate::agent_external::{
     AgentChunkMetadata, ExternalRunRegistry, StreamingEmitBuffer, MAX_STDOUT_LINE_BYTES,
     STREAM_FLUSH_INTERVAL, STREAM_FLUSH_MAX_BYTES,
 };
-use crate::agent_flowix::AgentChunk;
+use crate::agent_tank::AgentChunk;
 use crate::agent_session::ThreadManager;
 use crate::runtime_log;
 use crate::agent_external::shared::TurnEvents;

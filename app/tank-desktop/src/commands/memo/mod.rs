@@ -35,8 +35,8 @@ pub use reads::*;
 
 use serde::Serialize;
 
-use flowix_core::memo_file::Memo;
-use flowix_core::search::MemoSearchHit;
+use tank_core::memo_file::Memo;
+use tank_core::search::MemoSearchHit;
 
 // Shared response / item structs 鈹€鈹€ referenced by multiple sections below.
 

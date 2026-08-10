@@ -260,7 +260,7 @@ mod tests {
         // 不存在的文件: 跳过 size 检�?(meta 失败不算超�?)
         assert!(w.allows(Path::new("/x/nonexistent.md")).is_ok());
         // �?/tmp 下创一�?100 字节�?.md 文件 (临时�?���?macOS 上以 . 开�? �?        // skip_dirs 兜底; 这里�?std::env::temp_dir() 显式�?��, 跳开隐含假�?)
-        let p = std::env::temp_dir().join("flowix_test_size.md");
+        let p = std::env::temp_dir().join("tank_test_size.md");
         std::fs::write(&p, b"x".repeat(100)).unwrap();
         assert_eq!(w.allows(&p), Err(DropReason::FileTooLarge));
         // 同样 10 字节 �?放�?

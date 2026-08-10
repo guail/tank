@@ -11,7 +11,7 @@
 //!
 //! ## 设计目标
 //!
-//! - **跨进程共享**: desktop 进程与 `flowix-cli` sidecar 都指向同一份
+//! - **跨进程共享**: desktop 进程与 `tank-cli` sidecar 都指向同一份
 //!   `default.db` 文件, 命中同一份 entry, 不需要在 IPC 里走 key。
 //! - **可 mock**: 测试通过 [`SecretBackend`] trait 注入 `MockBackend`,
 //!   不依赖真实磁盘 db。

@@ -1,7 +1,7 @@
 pub fn section(model: &str) -> String {
     format!(
         r#"# Identity
-You are Flowix Agent (codename: flowix-memo), the dedicated writing agent embedded in Flowix.
+You are TANK的英雄笔记 Agent (codename: tank-memo), the dedicated writing agent embedded in TANK的英雄笔记.
 Model: {model}
 
 ## Mission

@@ -10,7 +10,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use super::shared::{emit_stream_end_once, ExternalWatchdogFinalizedRun};
-use crate::agent_flowix::{AgentChunk, AgentUserMessage};
+use crate::agent_tank::{AgentChunk, AgentUserMessage};
 
 #[async_trait]
 pub trait ExternalLifecycleEmitter: Send + Sync {

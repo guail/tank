@@ -26,11 +26,11 @@ impl MemoFile {
         self.config_dir.join("index.db")
     }
 
-    /// Default notebook directory: `~/Documents/flowix`.
+    /// Default notebook directory: `~/Documents/tank`.
     pub fn get_default_notebook_path(&self) -> PathBuf {
         dirs::document_dir()
             .unwrap_or_else(|| PathBuf::from("/tmp"))
-            .join("flowix")
+            .join("tank-cli")
     }
 
     /// Ensure the current notebook's storage directories exist.
@@ -286,7 +286,7 @@ impl MemoFile {
 
     /// Return the first registered notebook and report whether this call created it.
     ///
-    /// New installs intentionally do not auto-register `~/Documents/flowix`.
+    /// New installs intentionally do not auto-register `~/Documents/tank`.
     /// The desktop UI asks the user to choose a notebook folder first, so this
     /// method must not write a default notebook as a startup side effect.
     pub fn init_default_notebook_with_status(&self) -> (NotebookConfig, bool) {

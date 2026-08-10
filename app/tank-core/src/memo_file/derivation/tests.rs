@@ -54,7 +54,7 @@ Use C# and # heading marker
 #[test]
 fn agent_thread_card_single_line_is_skipped_for_title_and_preview() {
     let md = "\
-::agent-thread-card{threadId=\"abc\" title=\"AI 对话\" agentType=\"flowix\" collapsed=\"false\"}
+::agent-thread-card{threadId=\"abc\" title=\"AI 对话\" agentType=\"tank\" collapsed=\"false\"}
 # Real title
 real preview line
 ";
@@ -66,15 +66,15 @@ real preview line
 #[test]
 fn agent_thread_card_refs_are_extracted_from_body() {
     let md = "\
-::agent-thread-card{threadId=\"abc\" title=\"AI &amp; Helper\" agentType=\"flowix\" collapsed=\"false\"}
-::agent-thread-card{threadId=\"abc\" title=\"Duplicate\" agentType=\"flowix\" collapsed=\"true\"}
-::agent-thread-card{threadId=\"\" title=\"Draft\" agentType=\"flowix\" collapsed=\"false\"}
+::agent-thread-card{threadId=\"abc\" title=\"AI &amp; Helper\" agentType=\"tank\" collapsed=\"false\"}
+::agent-thread-card{threadId=\"abc\" title=\"Duplicate\" agentType=\"tank\" collapsed=\"true\"}
+::agent-thread-card{threadId=\"\" title=\"Draft\" agentType=\"tank\" collapsed=\"false\"}
 ";
     let agents = extract_agent_threads_from_body(md);
     assert_eq!(agents.len(), 1);
     assert_eq!(agents[0].thread_id, "abc");
     assert_eq!(agents[0].title, "AI & Helper");
-    assert_eq!(agents[0].agent_type, "flowix");
+    assert_eq!(agents[0].agent_type, "tank-cli");
 }
 
 /// 围栏形态 `:::agent-thread-card ... :::` 同样要在 title / preview 之前
@@ -132,7 +132,7 @@ real preview
 #[test]
 fn indented_single_line_agent_thread_card_is_stripped() {
     let md = "\
-    ::agent-thread-card{threadId=\"x\" title=\"t\" agentType=\"flowix\" collapsed=\"false\"}
+    ::agent-thread-card{threadId=\"x\" title=\"t\" agentType=\"tank\" collapsed=\"false\"}
 # Real title
 real preview
 ";
@@ -145,8 +145,8 @@ real preview
 #[test]
 fn stacked_agent_thread_cards_are_all_stripped() {
     let md = "\
-::agent-thread-card{threadId=\"a\" title=\"A\" agentType=\"flowix\" collapsed=\"false\"}
-::agent-thread-card{threadId=\"b\" title=\"B\" agentType=\"flowix\" collapsed=\"false\"}
+::agent-thread-card{threadId=\"a\" title=\"A\" agentType=\"tank\" collapsed=\"false\"}
+::agent-thread-card{threadId=\"b\" title=\"B\" agentType=\"tank\" collapsed=\"false\"}
 # Real title
 real preview
 ";
@@ -160,7 +160,7 @@ real preview
 #[test]
 fn card_only_document_yields_empty_title_and_preview() {
     let md = "\
-::agent-thread-card{threadId=\"abc\" title=\"AI 对话\" agentType=\"flowix\" collapsed=\"false\"}
+::agent-thread-card{threadId=\"abc\" title=\"AI 对话\" agentType=\"tank\" collapsed=\"false\"}
 ";
     let (t, p) = extract_title_and_preview(md);
     assert_eq!(t, "");
@@ -260,7 +260,7 @@ preview ![shot](asset://localhost/shot.png) tail [doc](asset://localhost/doc.pdf
 fn markdown_image_size_attrs_are_removed_for_title_and_preview() {
     let md = "\
 # Real title
-preview ![image.png](asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Cflowix%2Fattachments%5Cimage_3.png){width=34%} tail
+preview ![image.png](asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Ctank%2Fattachments%5Cimage_3.png){width=34%} tail
 ";
     let (t, p) = extract_title_and_preview(md);
     assert_eq!(t, "Real title");

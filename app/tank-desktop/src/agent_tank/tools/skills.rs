@@ -12,7 +12,7 @@
 use rllm::chat::Tool;
 use serde::Deserialize;
 
-use crate::agent_flowix::skills::{SkillOrigin, SkillStore};
+use crate::agent_tank::skills::{SkillOrigin, SkillStore};
 
 use super::{function_tool, ToolResult};
 
@@ -92,7 +92,7 @@ pub async fn execute_tool(skill_store: &SkillStore, arguments: &str) -> ToolResu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::agent_flowix::skills::SkillStore;
+    use crate::agent_tank::skills::SkillStore;
     use std::fs;
 
     fn build_store() -> (tempfile::TempDir, SkillStore) {

@@ -219,7 +219,7 @@ fn maps_response_item_web_search_call_to_tool_message() {
         "type": "web_search_call",
         "id": "ws_1",
         "action": {
-            "query": [{"q": "Flowix Codex web search history"}]
+            "query": [{"q": "TANK的英雄笔记 Codex web search history"}]
         },
         "status": "completed"
     });
@@ -234,7 +234,7 @@ fn maps_response_item_web_search_call_to_tool_message() {
             .as_ref()
             .and_then(|v| v.get("action"))
             .and_then(|v| v.get("query")),
-        Some(&serde_json::json!([{ "q": "Flowix Codex web search history" }]))
+        Some(&serde_json::json!([{ "q": "TANK的英雄笔记 Codex web search history" }]))
     );
     assert_eq!(message.is_loading, Some(false));
 }

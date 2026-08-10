@@ -259,7 +259,7 @@ mod tests {
             .is_none());
 
         // Freeze a cwd.
-        let cwd = std::path::PathBuf::from("/tmp/flowix-frozen-cwd");
+        let cwd = std::path::PathBuf::from("/tmp/tank-frozen-cwd");
         manager
             .upsert_frozen_cwd("thread-frozen-cwd", &cwd)
             .await
@@ -289,7 +289,7 @@ mod tests {
         assert!(rc.get("frozenCwd").is_none());
         assert_eq!(
             instance.frozen_cwd.as_deref(),
-            Some("/tmp/flowix-frozen-cwd")
+            Some("/tmp/tank-frozen-cwd")
         );
 
         // A stale frontend upsert replaces runtime_config but cannot clear the
@@ -337,7 +337,7 @@ mod tests {
         let manager = ThreadManager::for_tests();
         let input = |title: &str, updated_at: i64| UpsertAgentConversationInstance {
             instance_id: "inst-versioned-upsert".to_string(),
-            agent_type: "flowix".to_string(),
+            agent_type: "tank-cli".to_string(),
             initial_title: title.to_string(),
             thread_id: Some("thread-versioned-upsert".to_string()),
             runtime_config: None,
@@ -404,7 +404,7 @@ mod tests {
                 "claude-local-cwd",
                 "claude",
                 sid,
-                Some(serde_json::json!({ "cwd": "/project/flowix-main" })),
+                Some(serde_json::json!({ "cwd": "/project/tank-main" })),
             )
             .await
             .unwrap();
@@ -416,7 +416,7 @@ mod tests {
                 sid,
                 "claude",
                 sid,
-                Some(serde_json::json!({ "cwd": "/project/flowix-main" })),
+                Some(serde_json::json!({ "cwd": "/project/tank-main" })),
             )
             .await
             .unwrap();
@@ -424,7 +424,7 @@ mod tests {
         for identity in ["claude-local-cwd", sid] {
             assert_eq!(
                 manager.read_frozen_cwd(identity).await.unwrap().as_deref(),
-                Some(std::path::Path::new("/project/flowix-main"))
+                Some(std::path::Path::new("/project/tank-main"))
             );
         }
         assert_eq!(

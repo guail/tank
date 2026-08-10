@@ -4,14 +4,14 @@ use rllm::chat::{ChatRole, MessageType};
 use rllm::{FunctionCall, ToolCall as LlmToolCall};
 use serde::Deserialize;
 
-use crate::agent_flowix::providers::OpenAICompatibleChatMessage;
-use crate::agent_flowix::tools::{execute_tool, get_sub_agent_tools};
+use crate::agent_tank::providers::OpenAICompatibleChatMessage;
+use crate::agent_tank::tools::{execute_tool, get_sub_agent_tools};
 use crate::runtime_log;
 
 use super::context::{
     estimate_llm_message_tokens, estimate_tokens_from_chars, truncate_for_sub_agent,
 };
-use super::provider::{build_chat_provider, provider_kind, FlowixProviderKind};
+use super::provider::{build_chat_provider, provider_kind, TANK的英雄笔记ProviderKind};
 use super::{AgentManager, AgentUserMessage};
 
 const DEFAULT_SUB_AGENT_MAX_TOOL_CYCLES: u32 = 4;
@@ -64,7 +64,7 @@ fn compact_tool_arguments(arguments: &str) -> serde_json::Value {
 fn summarize_tool_result_for_history(
     tool_name: &str,
     arguments: &str,
-    result: &crate::agent_flowix::tools::ToolResult,
+    result: &crate::agent_tank::tools::ToolResult,
 ) -> serde_json::Value {
     let result_json = serde_json::to_string(result).unwrap_or_default();
     serde_json::json!({
@@ -83,29 +83,29 @@ impl AgentManager {
         thread_id: &str,
         arguments: &str,
         runtime_workspace_paths: Option<&[String]>,
-    ) -> crate::agent_flowix::tools::ToolResult {
+    ) -> crate::agent_tank::tools::ToolResult {
         let args = match serde_json::from_str::<SubAgentArgs>(arguments) {
             Ok(args) => args,
             Err(e) => {
-                return crate::agent_flowix::tools::ToolResult::error(format!(
+                return crate::agent_tank::tools::ToolResult::error(format!(
                     "Invalid arguments: {e}"
                 ))
             }
         };
 
         if args.system_prompt.trim().is_empty() {
-            return crate::agent_flowix::tools::ToolResult::error("system_prompt cannot be empty");
+            return crate::agent_tank::tools::ToolResult::error("system_prompt cannot be empty");
         }
         if args.user_prompt.trim().is_empty() {
-            return crate::agent_flowix::tools::ToolResult::error("user_prompt cannot be empty");
+            return crate::agent_tank::tools::ToolResult::error("user_prompt cannot be empty");
         }
 
         let config = self.user_config.get_ai_config().model;
         if config.model.trim().is_empty()
-            || (provider_kind(&config.provider) != FlowixProviderKind::Ollama
+            || (provider_kind(&config.provider) != TANK的英雄笔记ProviderKind::Ollama
                 && config.effective_api_key(&config.provider).trim().is_empty())
         {
-            return crate::agent_flowix::tools::ToolResult::error(
+            return crate::agent_tank::tools::ToolResult::error(
                 "AI model is not configured; open Preferences -> Agent to set model and api key",
             );
         }
@@ -122,7 +122,7 @@ impl AgentManager {
         let provider = match build_chat_provider(&config, system_prompt.clone(), &tools) {
             Ok(provider) => provider,
             Err(err) => {
-                return crate::agent_flowix::tools::ToolResult::error(format!(
+                return crate::agent_tank::tools::ToolResult::error(format!(
                     "sub_agent provider setup failed: {err}"
                 ))
             }
@@ -146,7 +146,7 @@ impl AgentManager {
             let estimated_tokens = estimate_tokens_from_chars(system_prompt.chars().count())
                 .saturating_add(estimate_llm_message_tokens(&messages));
             if token_budget > 0 && estimated_tokens > token_budget {
-                return crate::agent_flowix::tools::ToolResult::error(format!(
+                return crate::agent_tank::tools::ToolResult::error(format!(
                     "sub_agent token budget exceeded before model call: estimated {estimated_tokens} of {token_budget} total tokens"
                 ));
             }
@@ -154,7 +154,7 @@ impl AgentManager {
             let response = match provider.chat_with_tools(&messages, Some(&tools)).await {
                 Ok(response) => response,
                 Err(e) => {
-                    return crate::agent_flowix::tools::ToolResult::error(format!(
+                    return crate::agent_tank::tools::ToolResult::error(format!(
                         "sub_agent model call failed: {e}"
                     ));
                 }
@@ -164,7 +164,7 @@ impl AgentManager {
             let tool_calls = response.tool_calls().unwrap_or_default();
 
             if tool_calls.is_empty() {
-                return crate::agent_flowix::tools::ToolResult::success(serde_json::json!({
+                return crate::agent_tank::tools::ToolResult::success(serde_json::json!({
                     "answer": text,
                     "tool_steps": tool_steps,
                     "cycles": cycles_used,
@@ -173,7 +173,7 @@ impl AgentManager {
             }
 
             if cycles_used >= max_cycles {
-                return crate::agent_flowix::tools::ToolResult::error(format!(
+                return crate::agent_tank::tools::ToolResult::error(format!(
                     "sub_agent exceeded {max_cycles} tool-call cycles without a final answer"
                 ));
             }
@@ -202,7 +202,7 @@ impl AgentManager {
                     )
                     .await
                 } else {
-                    crate::agent_flowix::tools::ToolResult::error(format!(
+                    crate::agent_tank::tools::ToolResult::error(format!(
                         "sub_agent cannot call tool '{name}'"
                     ))
                 };
@@ -254,10 +254,10 @@ impl AgentManager {
         tool_name: &str,
         arguments: &str,
         message: &AgentUserMessage,
-    ) -> crate::agent_flowix::tools::ToolResult {
-        let runtime_workspace_paths = message.runtime_workspace_paths_for_runtime("flowix");
+    ) -> crate::agent_tank::tools::ToolResult {
+        let runtime_workspace_paths = message.runtime_workspace_paths_for_runtime("tank-cli");
 
-        if tool_name == crate::agent_flowix::tools::sub_agent::TOOL_NAME {
+        if tool_name == crate::agent_tank::tools::sub_agent::TOOL_NAME {
             return self
                 .execute_sub_agent(thread_id, arguments, runtime_workspace_paths.as_deref())
                 .await;

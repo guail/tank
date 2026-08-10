@@ -23,17 +23,17 @@ pub enum CliError {
     Other(String),
 }
 
-impl From<flowix_core::FlowixError> for CliError {
-    fn from(error: flowix_core::FlowixError) -> Self {
-        use flowix_core::FlowixError;
+impl From<tank_core::TankError> for CliError {
+    fn from(error: tank_core::TankError) -> Self {
+        use tank_core::TankError;
         match error {
-            FlowixError::InvalidInput(message) => Self::Usage(message),
-            FlowixError::NotFound(message) => Self::NotFound(message),
-            FlowixError::Io(error) => Self::Io(error),
-            FlowixError::Conflict(message)
-            | FlowixError::PermissionDenied(message)
-            | FlowixError::CorruptData(message)
-            | FlowixError::Internal(message) => Self::Other(message),
+            TankError::InvalidInput(message) => Self::Usage(message),
+            TankError::NotFound(message) => Self::NotFound(message),
+            TankError::Io(error) => Self::Io(error),
+            TankError::Conflict(message)
+            | TankError::PermissionDenied(message)
+            | TankError::CorruptData(message)
+            | TankError::Internal(message) => Self::Other(message),
         }
     }
 }

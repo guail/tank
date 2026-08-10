@@ -1,21 +1,21 @@
 [package]
-name = "flowix-desktop"
+name = "tank-desktop"
 version.workspace = true
-description = "Flowix - AI Note Taking App"
+description = "TANK的英雄笔记 - AI Note Taking App"
 authors = ["you"]
 edition.workspace = true
-default-run = "flowix-desktop"
+default-run = "tank-desktop"
 
 [lib]
-name = "flowix_desktop"
+name = "tank_desktop"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-flowix-core = { workspace = true }
-flowix-sync = { workspace = true }
+tank-core = { workspace = true }
+tank-sync = { workspace = true }
 tauri = { version = "2", features = ["protocol-asset", "macos-private-api"] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"

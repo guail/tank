@@ -1,4 +1,4 @@
-//! `flowix-core` — Flowix business core library.
+//! `tank-core` — TANK的英雄笔记 business core library.
 //!
 //! Zero Tauri dependencies — can be compiled, tested, and consumed
 //! independently by the CLI, the Tauri desktop app, and any future
@@ -21,4 +21,4 @@ pub mod embed;
 pub mod secret;
 pub mod service;
 
-pub use service::{FlowixError, MemoService};
+pub use service::{TankError, MemoService};

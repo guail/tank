@@ -1,6 +1,6 @@
 //! Standalone CLI installation/status IPC commands.
 //!
-//! The desktop no longer starts a `flowix-cli serve` sidecar. The packaged CLI remains
+//! The desktop no longer starts a `tank-cli serve` sidecar. The packaged CLI remains
 //! available for terminal and MCP use, and this module only manages its PATH entry.
 
 #[tauri::command]

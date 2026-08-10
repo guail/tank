@@ -2,10 +2,10 @@
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-pub const WINDOW_OPEN_TAB_EVENT: &str = "flowix:window-open-tab";
-pub const WINDOW_MERGE_HOVER_EVENT: &str = "flowix:window-merge-hover";
-pub const WINDOW_ROLLBACK_TAB_EVENT: &str = "flowix:window-rollback-tab";
-pub const WINDOW_TAB_DRAG_POINTER_EVENT: &str = "flowix:window-tab-drag-pointer";
+pub const WINDOW_OPEN_TAB_EVENT: &str = "tank:window-open-tab";
+pub const WINDOW_MERGE_HOVER_EVENT: &str = "tank:window-merge-hover";
+pub const WINDOW_ROLLBACK_TAB_EVENT: &str = "tank:window-rollback-tab";
+pub const WINDOW_TAB_DRAG_POINTER_EVENT: &str = "tank:window-tab-drag-pointer";
 pub(super) const WINDOW_CASCADE_OFFSET: i32 = 32;
 pub(super) const WINDOW_CASCADE_SLOTS: usize = 8;
 pub(super) const TAB_DRAG_HOVER_POLL_INTERVAL: Duration = Duration::from_millis(24);

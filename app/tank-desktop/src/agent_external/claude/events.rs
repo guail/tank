@@ -2,7 +2,7 @@ use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
 
 use crate::agent_external::AgentChunkMetadata;
-use crate::agent_flowix::AgentChunk;
+use crate::agent_tank::AgentChunk;
 use crate::agent_types::UsageInfo;
 
 pub(crate) struct ParsedClaudeStdoutLine {
@@ -891,7 +891,7 @@ mod tests {
             &chunks[4],
             AgentChunk::ToolResult { id, result, .. }
                 if id == "toolu_1"
-                    && result.get("content").and_then(Value::as_str) == Some("/tmp/flowix\n")
+                    && result.get("content").and_then(Value::as_str) == Some("/tmp/tank\n")
         ));
         assert!(matches!(
             &chunks[5],

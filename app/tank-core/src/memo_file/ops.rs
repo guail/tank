@@ -167,7 +167,7 @@ fn atomic_create_bytes(final_path: &Path, content: &[u8]) -> std::io::Result<()>
         .map_err(|error| error.error)
 }
 
-/// 跟 `flowix-desktop::fs_watcher::normalize_for_compare` 同口径的路径归一。
+/// 跟 `tank-desktop::fs_watcher::normalize_for_compare` 同口径的路径归一。
 fn normalize_for_compare(path: &Path) -> PathBuf {
     if let Ok(canon) = dunce::canonicalize(path) {
         return canon;

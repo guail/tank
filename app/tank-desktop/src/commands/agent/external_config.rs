@@ -19,7 +19,7 @@ pub struct AgentRuntimeAvailability {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentRuntimeStatus {
-    flowix: AgentRuntimeAvailability,
+    tank: AgentRuntimeAvailability,
     codex: AgentRuntimeAvailability,
     claude: AgentRuntimeAvailability,
     hermes: AgentRuntimeAvailability,
@@ -61,7 +61,7 @@ fn external_availability(entry: AgentExternalEntry, label: &str) -> AgentRuntime
 #[tauri::command]
 pub fn agent_runtime_status(state: State<'_, AppState>) -> AgentRuntimeStatus {
     let ai_config = state.user_config.get_ai_config().model;
-    let flowix_available = !ai_config.model.trim().is_empty();
+    let tank_available = !ai_config.model.trim().is_empty();
 
     // The external CLI path comes from agent-external-config.json. Runtime
     // preflight can still add dependency details without hiding the entry.
@@ -75,9 +75,9 @@ pub fn agent_runtime_status(state: State<'_, AppState>) -> AgentRuntimeStatus {
     let opencode = external_availability(cfg.get_entry("opencode"), "OpenCode CLI");
 
     AgentRuntimeStatus {
-        flowix: AgentRuntimeAvailability {
-            available: flowix_available,
-            reason: (!flowix_available).then(|| "Flowix model is not configured".to_string()),
+        tank: AgentRuntimeAvailability {
+            available: tank_available,
+            reason: (!tank_available).then(|| "TANK的英雄笔记 model is not configured".to_string()),
         },
         codex,
         claude,

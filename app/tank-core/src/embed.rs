@@ -2,11 +2,11 @@
 //!
 //! 纯 lexical 检索见 [`crate::search`]. 本模块在 lexical 之上叠加一层
 //! 向量语义检索, 用 [`EmbeddingProvider`] 抽象屏蔽具体的 embedding 后端
-//! (默认实现在 flowix-cli: Ollama `/api/embed`).
+//! (默认实现在 tank-cli: Ollama `/api/embed`).
 //!
 //! # 设计
 //! - **EmbeddingProvider**: core 不依赖任何 HTTP 库, 只定义 trait; 具体
-//!   实现 (Ollama) 放在 flowix-cli, 经 `&dyn EmbeddingProvider` 注入.
+//!   实现 (Ollama) 放在 tank-cli, 经 `&dyn EmbeddingProvider` 注入.
 //! - **SemanticIndex**: 每个 notebook 一份向量缓存, 落盘在
 //!   `<notebook>/.metadata/semantic_cache.json`, 按正文内容 sha256 命中
 //!   复用, 只有新增/改动的 memo 才调用 provider 重新 embed. 跨 CLI 调用复用.
@@ -43,7 +43,7 @@ pub enum SearchMode {
 
 /// 一个文本 embedding 后端.
 ///
-/// core 不绑定任何具体实现 / HTTP 库; flowix-cli 提供基于 Ollama 的实现,
+/// core 不绑定任何具体实现 / HTTP 库; tank-cli 提供基于 Ollama 的实现,
 /// 经 `&dyn EmbeddingProvider` 注入到检索层.
 pub trait EmbeddingProvider: Send + Sync {
     /// 后端使用的模型名 (用于缓存失效判定).

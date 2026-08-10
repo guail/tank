@@ -1,15 +1,15 @@
-//! Ollama embedding provider for flowix-cli.
+//! Ollama embedding provider for tank-cli.
 //!
-//! 实现 `flowix_core::embed::EmbeddingProvider`, 走本地 Ollama 的
+//! 实现 `tank_core::embed::EmbeddingProvider`, 走本地 Ollama 的
 //! `/api/embed` HTTP 端点. 复用工作区已有的 `reqwest` (blocking) 客户端,
-//! 自带 tokio 运行时, 不需要 flowix-cli 自身引入 async 执行模型.
+//! 自带 tokio 运行时, 不需要 tank-cli 自身引入 async 执行模型.
 
-use flowix_core::embed::EmbeddingProvider;
+use tank_core::embed::EmbeddingProvider;
 
 /// 基于本地 Ollama 的 embedding 后端.
 ///
 /// 默认端点 `http://localhost:11434`, 模型 `nomic-embed-text`, 可通过环境变量
-/// `FLOWIX_OLLAMA_URL` / `FLOWIX_EMBED_MODEL` 覆盖 (见 `store::search_hits`).
+/// `TANK_OLLAMA_URL` / `TANK_EMBED_MODEL` 覆盖 (见 `store::search_hits`).
 pub struct OllamaEmbeddingProvider {
     url: String,
     model: String,

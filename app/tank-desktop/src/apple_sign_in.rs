@@ -1,4 +1,4 @@
-use flowix_sync::{AppleAuthChallenge, AppleAuthorization};
+use tank_sync::{AppleAuthChallenge, AppleAuthorization};
 use tauri::WebviewWindow;
 
 #[cfg(target_os = "macos")]
@@ -20,7 +20,7 @@ mod platform {
     use tauri::WebviewWindow;
     use tokio::sync::oneshot;
 
-    use flowix_sync::{AppleAuthChallenge, AppleAuthorization};
+    use tank_sync::{AppleAuthChallenge, AppleAuthorization};
 
     struct NativeCredential {
         identity_token: String,

@@ -10,8 +10,8 @@ use std::path::Path;
 use tauri::{AppHandle, Manager, State};
 
 use crate::lock_utils::{read_lock, write_lock};
-use flowix_core::memo_file::{MemoFile, MemoIndexFile, Notebook, NotebookConfig};
-use flowix_sync::V2LocalNotebook;
+use tank_core::memo_file::{MemoFile, MemoIndexFile, Notebook, NotebookConfig};
+use tank_sync::V2LocalNotebook;
 
 use super::agent_access::AGENT_ACCESS_CHANGED_EVENT;
 use super::helpers::{
@@ -608,7 +608,7 @@ mod tests {
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
         let n = COUNTER.fetch_add(1, Ordering::SeqCst);
         let root = std::env::temp_dir().join(format!(
-            "flowix-notebook-command-test-{}-{}-{}",
+            "tank-notebook-command-test-{}-{}-{}",
             std::process::id(),
             n,
             chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)

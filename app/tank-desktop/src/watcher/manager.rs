@@ -34,7 +34,7 @@ use crate::watcher::{
     filter::PathFilter, normalize_for_compare, FsEventKind, MemoEventProcessor,
     NotebookWatchContext, RawFsEvent, WhitelistConfig,
 };
-use flowix_core::memo_file::{MemoFile, NotebookConfig};
+use tank_core::memo_file::{MemoFile, NotebookConfig};
 
 const REMOVE_TOMBSTONE_DELAY: Duration = Duration::from_millis(450);
 
@@ -560,7 +560,7 @@ mod tests {
         // 父目录存�?(notebook dir 已建), 文件不存�?—canonicalize 父目�?        // 成功, 应当 join 回去。这�?��盘前 mark 期望走的回退�?���?        // pid + nano 后缀防跟其它测试�?tempdir 撞名, 避免 cargo test 并�?
         // 跑时的偶�?flake�?
         let tmp = std::env::temp_dir().join(format!(
-            "flowix-fs-watcher-norm-{}-{}",
+            "tank-fs-watcher-norm-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

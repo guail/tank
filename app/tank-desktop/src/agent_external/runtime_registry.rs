@@ -15,7 +15,7 @@ use super::claude::{ClaudeCliManager, AGENT_TYPE as CLAUDE_AGENT_TYPE};
 use super::codex::{CodexCliManager, AGENT_TYPE as CODEX_AGENT_TYPE};
 use super::hermes::HermesCliManager;
 use super::opencode::{OpenCodeAcpManager, AGENT_TYPE as OPENCODE_AGENT_TYPE};
-use crate::agent_flowix::{AgentUserMessage, RunInfo};
+use crate::agent_tank::{AgentUserMessage, RunInfo};
 
 const HERMES_AGENT_TYPE: &str = "hermes";
 

@@ -1,13 +1,13 @@
-//! `flowix-cli` 独立二进制入口。
+//! `tank-cli` 独立二进制入口。
 //!
-//! 与桌面端二进制 `flowix` 共用 `flowix-core` 业务核心, 但**不**启动 Tauri
+//! 与桌面端二进制 `tank-cli` 共用 `tank-core` 业务核心, 但**不**启动 Tauri
 //! runtime、不注册 plugin、不绑端口 ── 仅做命令行解析 + memo_file IO。
 //!
-//! 用法见 `print_help()` 或运行 `flowix --help`。
+//! 用法见 `print_help()` 或运行 `tank-cli --help`。
 
 use std::process::ExitCode;
 
-use flowix_cli::run_cli;
+use tank_cli::run_cli;
 
 fn main() -> ExitCode {
     ensure_utf8_console();
@@ -15,7 +15,7 @@ fn main() -> ExitCode {
     match run_cli(&args) {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
-            eprintln!("flowix: {e}");
+            eprintln!("tank: {e}");
             ExitCode::from(e.exit_code())
         }
     }
@@ -27,9 +27,9 @@ fn main() -> ExitCode {
 /// `println!` 写出的 UTF-8 字节会被终端按 GBK 解码 -> 显示乱码。启动时切一次
 /// CP_UTF8 即可; 失败 (无 console / 已是 UTF-8) 静默忽略, 不影响正确性。
 ///
-/// 注意: 这只管 flowix 自己的 console I/O ── 修不了 PowerShell 管道把内容压成
+/// 注意: 这只管 tank-cli 自己的 console I/O ── 修不了 PowerShell 管道把内容压成
 /// ASCII 的 `$OutputEncoding` 问题 (字节到 stdin 前已损毁), 那是调用方责任,
-/// 见 `flowix --help` 的 ENCODING 段。
+/// 见 `tank-cli --help` 的 ENCODING 段。
 #[cfg(windows)]
 fn ensure_utf8_console() {
     use windows_sys::Win32::System::Console::{SetConsoleCP, SetConsoleOutputCP};

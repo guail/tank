@@ -6,7 +6,7 @@ use rllm::chat::{ChatRole, MessageType};
 use rllm::ToolCall as LlmToolCall;
 
 use crate::agent_external::{emit_chunk_with_run_id, resolve_run_id};
-use crate::agent_flowix::providers::{OpenAICompatibleChatMessage, OpenAICompatibleStreamItem};
+use crate::agent_tank::providers::{OpenAICompatibleChatMessage, OpenAICompatibleStreamItem};
 use crate::runtime_log;
 
 use super::persistence::IsLoadingGuard;
@@ -272,7 +272,7 @@ impl AgentManager {
         // 没传�?mint 一�?(�?CLI managers 同形)。这保证每个 chunk 都带
         // run_id, 前�? mapper 不再 fallback �?`st.activeRunId`, self-interrupt
         // 时旧 run �?StreamEnd 不会�??归到�?run�?
-        let agent_type = message.agent_type.as_deref().unwrap_or("flowix");
+        let agent_type = message.agent_type.as_deref().unwrap_or("tank-cli");
         let model = message.model_for_runtime(agent_type).map(str::to_string);
         let reasoning_effort = message
             .reasoning_effort_for_runtime(agent_type)
@@ -361,7 +361,7 @@ impl AgentManager {
         run_id: String,
     ) -> Result<String, AgentError> {
         let mut ai_config = self.user_config.get_ai_config().model;
-        let agent_type = message.agent_type.as_deref().unwrap_or("flowix");
+        let agent_type = message.agent_type.as_deref().unwrap_or("tank-cli");
         if let Some(model) = message.model_for_runtime(agent_type) {
             if !model.trim().is_empty() {
                 ai_config.model = model.to_string();
@@ -371,7 +371,7 @@ impl AgentManager {
             // Runtime Agent Role takes the role slot 鈥?base_system_prompt
             // omits the default static role section in this branch, keeping
             // exactly one role block in the final prompt (mutual exclusion
-            // with [`crate::agent_flowix::prompt::role::section`]).
+            // with [`crate::agent_tank::prompt::role::section`]).
             let system_prompt = self.base_system_prompt(&ai_config, Some(&role_section));
             self.build_instance_with_system_prompt(&ai_config, system_prompt)?
         } else {

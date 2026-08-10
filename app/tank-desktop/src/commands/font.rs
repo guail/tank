@@ -106,7 +106,7 @@ pub fn remove_cached_font(font_id: String) -> Result<(), String> {
 
 async fn download_font(definition: &FontDefinition) -> Result<CachedFontResult, String> {
     let client = reqwest::Client::builder()
-        .user_agent("Mozilla/5.0 Flowix Font Cache")
+        .user_agent("Mozilla/5.0 TANK的英雄笔记 Font Cache")
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -256,7 +256,7 @@ fn parse_google_font_css(css: &str) -> Result<Vec<ParsedFontFace>, String> {
                 .into()
             });
         faces.push(ParsedFontFace {
-            family: family.unwrap_or_else(|| "Flowix Downloaded Font".into()),
+            family: family.unwrap_or_else(|| "TANK的英雄笔记 Downloaded Font".into()),
             weight: weight.unwrap_or_else(|| "400".into()),
             style: style.unwrap_or_else(|| "normal".into()),
             unicode_range,

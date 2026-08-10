@@ -10,7 +10,7 @@
 //! - Windows: 窗口�?alpha �?���? 故全部用 alpha=0xFF (不透明)�?//! - macOS:   需�?�� `macos-private-api` (Cargo feature + `tauri.conf.json` �?//!            `app.macOSPrivateApi`), 否则 wry �?`set_background_color` �?WKWebView
 //!            �?no-op -- webview 保持默�?不透明白色 (`drawsBackground=YES`), 盖住
 //!            NSWindow 背景�?resize 时边缘露白。启用后 wry 会关�?`drawsBackground`
-//!            并�? `underPageBackgroundColor`, webview 层即随主题变�?(resize/冷启�?//!            均不露白)。Flowix �?App Store 分发, 私有 API 不影响公证�?//! - Linux:   `window.theme()` �?��不支�?-> `Theme::System` 回退�?light (�?��受降�?�?
+//!            并�? `underPageBackgroundColor`, webview 层即随主题变�?(resize/冷启�?//!            均不露白)。TANK的英雄笔记 �?App Store 分发, 私有 API 不影响公证�?//! - Linux:   `window.theme()` �?��不支�?-> `Theme::System` 回退�?light (�?��受降�?�?
 use tauri::Manager;
 
 use crate::config::Theme;
@@ -40,7 +40,7 @@ pub fn apply_window_border_color<R: tauri::Runtime>(window: &tauri::WebviewWindo
 #[cfg(not(target_os = "windows"))]
 pub fn apply_window_border_color<R: tauri::Runtime>(_window: &tauri::WebviewWindow<R>) {}
 
-/// Flowix 涓婚 -> Tauri 绐楀彛鑳屾櫙鑹层€?///
+/// TANK的英雄笔记 涓婚 -> Tauri 绐楀彛鑳屾櫙鑹层€?///
 /// 色值由前�? `styles/theme/*.css` �?`--background` (oklch) 精��?���?sRGB,
 /// 与前�?��色�?齐避免闪色。`Theme::System` �?`system` (当前解析的系统明�?
 /// �?`window.theme()` 给出) 落到 light/dark; 取不到系统值时兜底 light�?
@@ -67,7 +67,7 @@ pub fn theme_background_color(
     }
 }
 
-/// Flowix 产品主�? -> 对应�?"os-theme" (原生窗口主�?)�?///
+/// TANK的英雄笔记 产品主�? -> 对应�?"os-theme" (原生窗口主�?)�?///
 /// 决定标�?�?/ 顶部分隔�?/ 红绿�?���?��原生 chrome 的明�? �?webview 内�?主�?
 /// 对齐。原�?chrome 默�?跟随系统外�?, 不显式�?�?��: 系统浅色 + 产品 dark 主�? ->
 /// 顶部画浅色分隔线 (表现为深色模式下顶部白线)�?///

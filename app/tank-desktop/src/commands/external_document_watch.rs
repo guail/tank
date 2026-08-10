@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn file_reference_count_releases_only_the_last_lease() {
-        let path = PathBuf::from("/tmp/flowix-external-watch/Reference.md");
+        let path = PathBuf::from("/tmp/tank-external-watch/Reference.md");
         let mut registry = WatchRegistry::default();
         registry.path_ref_counts.insert(path.clone(), 2);
 
@@ -504,22 +504,22 @@ mod tests {
 
     #[test]
     fn file_events_match_only_the_watched_external_document() {
-        let watched = PathBuf::from("/tmp/flowix-external-watch/docs/Reference.md");
+        let watched = PathBuf::from("/tmp/tank-external-watch/docs/Reference.md");
 
         assert!(event_matches_watched_file(&watched, &watched));
         assert!(!event_matches_watched_file(
-            Path::new("/tmp/flowix-external-watch/docs/Other.md"),
+            Path::new("/tmp/tank-external-watch/docs/Other.md"),
             &watched,
         ));
         assert!(!event_matches_watched_file(
-            Path::new("/tmp/flowix-external-watch/docs"),
+            Path::new("/tmp/tank-external-watch/docs"),
             &watched,
         ));
     }
 
     #[test]
     fn try_claim_revision_marks_lease_delivering_once() {
-        let path = PathBuf::from("/tmp/flowix-external-watch/docs/Reference.md");
+        let path = PathBuf::from("/tmp/tank-external-watch/docs/Reference.md");
         let mut registry = WatchRegistry::default();
         let lease_id = "lease-1".to_string();
         registry.leases.insert(
@@ -557,7 +557,7 @@ mod tests {
 
     #[test]
     fn complete_revision_delivery_advances_only_on_success() {
-        let path = PathBuf::from("/tmp/flowix-external-watch/docs/Reference.md");
+        let path = PathBuf::from("/tmp/tank-external-watch/docs/Reference.md");
         let mut registry = WatchRegistry::default();
         let lease_id = "lease-2".to_string();
         registry.leases.insert(
@@ -585,8 +585,8 @@ mod tests {
 
     #[test]
     fn try_claim_revision_rejects_unknown_or_renamed_lease() {
-        let original = PathBuf::from("/tmp/flowix-external-watch/docs/Old.md");
-        let renamed = PathBuf::from("/tmp/flowix-external-watch/docs/New.md");
+        let original = PathBuf::from("/tmp/tank-external-watch/docs/Old.md");
+        let renamed = PathBuf::from("/tmp/tank-external-watch/docs/New.md");
         let mut registry = WatchRegistry::default();
         registry.leases.insert(
             "lease-3".to_string(),

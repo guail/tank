@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Condvar, Mutex, RwLock};
 use std::time::{Duration, Instant};
 
-use flowix_core::memo_file::{extract_frontmatter_key, MemoFile};
+use tank_core::memo_file::{extract_frontmatter_key, MemoFile};
 use tauri::AppHandle;
 
 use crate::watcher::processor::{MemoEventProcessor, NotebookWatchContext};
@@ -194,7 +194,7 @@ mod tests {
         coalescer.insert_for_test(id.clone(), PathBuf::from("Old.md"), watch_ctx());
 
         let tmp = std::env::temp_dir().join(format!(
-            "flowix-pending-remove-cancel-{}-{}",
+            "tank-pending-remove-cancel-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -242,7 +242,7 @@ mod tests {
         coalescer.insert_for_test(id.clone(), PathBuf::from("Old.md"), watch_ctx());
 
         let tmp = std::env::temp_dir().join(format!(
-            "flowix-pending-remove-unknown-key-{}-{}",
+            "tank-pending-remove-unknown-key-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)

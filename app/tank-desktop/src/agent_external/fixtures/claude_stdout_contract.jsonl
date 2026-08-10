@@ -6,6 +6,6 @@
 {"type":"stream_event","event":{"type":"content_block_delta","index":2,"delta":{"type":"input_json_delta","partial_json":"{\"command\":\"pwd\"}"}}}
 {"type":"stream_event","event":{"type":"content_block_stop","index":2}}
 {"type":"stream_event","event":{"type":"message_delta","usage":{"input_tokens":90,"cache_read_input_tokens":30,"output_tokens":12}}}
-{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":"/tmp/flowix\n"}]}}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":"/tmp/tank\n"}]}}
 {"type":"system","subtype":"error","message":"Claude transport error"}
 {"type":"result","subtype":"success","duration_ms":1000}

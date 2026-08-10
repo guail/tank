@@ -4,7 +4,7 @@ use crate::agent_external::hermes::HermesCliManager;
 use crate::agent_external::opencode::OpenCodeAcpManager;
 use crate::agent_external::runtime_registry::ExternalRuntimeRegistry;
 use crate::agent_external_config::AgentExternalConfig;
-use crate::agent_flowix::AgentManager;
+use crate::agent_tank::AgentManager;
 use crate::agent_session::ThreadManager;
 use crate::app::panic::install_panic_log_hook;
 use crate::app::paths::{get_app_data_path, get_user_config_dir};
@@ -20,7 +20,7 @@ use crate::open_target;
 use crate::runtime_log;
 use crate::system_data::SystemData;
 use crate::watcher::MemoWatcher;
-use flowix_core::search::{BigramTokenizer, MemoIndex};
+use tank_core::search::{BigramTokenizer, MemoIndex};
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
@@ -47,7 +47,7 @@ pub fn run() {
         ),
     );
 
-    // �?��时在 `~/.local/bin/flowix-cli` 建一�?symlink。�?情�?
+    // �?��时在 `~/.local/bin/tank-cli` 建一�?symlink。�?情�?
     // `cli_link` 模块: 幂等 (每�?�?��都跑, 已存在就不动), 失败�?warn
     // This is idempotent and failures do not block GUI startup.
     cli_link::ensure_cli_symlink();
@@ -57,17 +57,17 @@ pub fn run() {
     let thread_db_path = user_config_dir.join("thread.db");
     let user_config = Arc::new(user_config::UserConfigStore::new(home_dir.clone()));
     let cloud_sync = Arc::new(
-        flowix_sync::SyncManager::new(
-            flowix_sync::DEFAULT_CLOUD_API_BASE,
+        tank_sync::SyncManager::new(
+            tank_sync::DEFAULT_CLOUD_API_BASE,
             user_config_dir.join("sync.db"),
         )
         .unwrap_or_else(|error| {
             tracing::error!(
                 "failed to initialize cloud sync database: {error}; using a temporary database"
             );
-            flowix_sync::SyncManager::new(
-                flowix_sync::DEFAULT_CLOUD_API_BASE,
-                std::env::temp_dir().join(format!("flowix-sync-{}.db", std::process::id())),
+            tank_sync::SyncManager::new(
+                tank_sync::DEFAULT_CLOUD_API_BASE,
+                std::env::temp_dir().join(format!("tank-sync-{}.db", std::process::id())),
             )
             .expect("failed to initialize temporary cloud sync database")
         }),
@@ -75,7 +75,7 @@ pub fn run() {
 
     // 笔�?�?��册表真源�?~/.flowix/index.db (SQLite); `MemoFile::open_index_db`
     // 首�?�??时建表�?这里不需要任何�?盘迁�?── �?`notebook.json` �?��已废�?
-    let memo_file = flowix_core::memo_file::MemoFile::new(user_config_dir.clone());
+    let memo_file = tank_core::memo_file::MemoFile::new(user_config_dir.clone());
 
     // System metadata goes under ~/.flowix/boot/system.json.
     let system_data_path = user_config_dir.join("boot").join("system.json");
@@ -160,9 +160,9 @@ pub fn run() {
     }
 
     // Seed-once: bundled `resources/skills/.system/*` 鈫?`~/.flowix/skills/.system/*`.
-    // 三个候选路�? 命中�?���?��用的就停 ── �?    // `crate::agent_flowix::skills::scanner::resolve_bundled_root`�?
-    if let Some(bundled) = crate::agent_flowix::skills::scanner::resolve_bundled_root() {
-        let report = crate::agent_flowix::skills::seed_system_skills(&bundled, &skills_root);
+    // 三个候选路�? 命中�?���?��用的就停 ── �?    // `crate::agent_tank::skills::scanner::resolve_bundled_root`�?
+    if let Some(bundled) = crate::agent_tank::skills::scanner::resolve_bundled_root() {
+        let report = crate::agent_tank::skills::seed_system_skills(&bundled, &skills_root);
         if !report.copied.is_empty() || !report.skipped.is_empty() {
             tracing::info!(
                 "[startup] skills seed: copied {}, skipped {} (already present)",
@@ -180,7 +180,7 @@ pub fn run() {
     // Let the agent read registered skills directly when needed.
     agent_access_arc.ensure_skill_folder(&skills_root);
 
-    let skill_store = Arc::new(crate::agent_flowix::skills::SkillStore::load(&skills_root));
+    let skill_store = Arc::new(crate::agent_tank::skills::SkillStore::load(&skills_root));
     tracing::info!(
         "[startup] loaded {} skill(s) from {}",
         skill_store.len(),
@@ -295,7 +295,7 @@ pub fn run() {
                             let _ = app_handle.emit("cloud-state-changed", &outcome.state);
                         }
                         Err(error) => {
-                            tracing::warn!("failed to restore Flowix Cloud session: {error}");
+                            tracing::warn!("failed to restore TANK的英雄笔记 Cloud session: {error}");
                             let _ = user_config.delete_cloud_refresh_token();
                             if let Ok(state) = cloud_sync.state() {
                                 let _ = app_handle.emit("cloud-state-changed", state);
@@ -472,7 +472,7 @@ pub fn run() {
             handle_cold_start_open_targets(app.handle());
 
             // release 构建不包�??分支�?用户随时�?�� F12 / Ctrl+Shift+I 切换�?
-            // 鈹€鈹€ spawn flowix-cli sidecar 鈹€鈹€
+            // 鈹€鈹€ spawn tank-cli sidecar 鈹€鈹€
             // 必须�?setup �?��, 此时 AppState 已经 manage, IPC 调用方可�?
             // 拿到 (虽然还没�?handle ── 失败时返 "not yet spawned" �?�?
             Ok(())
@@ -666,7 +666,7 @@ pub fn run() {
 }
 
 fn handle_second_instance(app: &tauri::AppHandle, args: Vec<String>) {
-    // 二�?�?��: 区分 markdown 文件�?���?flowix:// 深链�?    // 两个通道�?��同时触发 (用户�?`xdg-open foo.md flowix://memo/abc123` �?��)�?
+    // 二�?�?��: 区分 markdown 文件�?���?tank:// 深链�?    // 两个通道�?��同时触发 (用户�?`xdg-open foo.md tank://memo/abc123` �?��)�?
     let paths = commands::markdown_paths_from_args(args.clone());
     for path in &paths {
         route_markdown_path_to_tab(app, path);
@@ -684,7 +684,7 @@ fn register_deep_links(app: &mut tauri::App) {
     use tauri_plugin_deep_link::DeepLinkExt;
 
     // 开发期每�?�?��都注册一次幂等；正式打包�?installer 会接管，运�?时注册仍�?��漏�?
-    let _ = app.deep_link().register("flowix");
+    let _ = app.deep_link().register("tank-cli");
 
     // macOS / Windows: OS 把深链投�?running app, 通过 deep-link 插件回调派发�?
     let app_handle = app.handle().clone();
@@ -734,7 +734,7 @@ fn emit_open_target_if_resolved(app: &tauri::AppHandle, raw: &str) {
                 let _ = window.set_focus();
                 let _ = window.unminimize();
             }
-            dispatcher::emit_to(app, "flowix:open-target", resolved);
+            dispatcher::emit_to(app, "tank:open-target", resolved);
         }
     }
 }

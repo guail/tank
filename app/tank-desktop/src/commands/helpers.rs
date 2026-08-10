@@ -185,8 +185,8 @@ pub(crate) fn can_access_scoped_file(
     is_registered_notebook_path(root, state) && path_is_inside(file_path, root)
 }
 
-pub(crate) fn synthesize_minimal_memo(id: &str) -> flowix_core::memo_file::Memo {
-    flowix_core::memo_file::Memo {
+pub(crate) fn synthesize_minimal_memo(id: &str) -> tank_core::memo_file::Memo {
+    tank_core::memo_file::Memo {
         id: id.to_string(),
         filename: String::new(),
         preview: String::new(),

@@ -1,4 +1,4 @@
-use flowix_core::memo_file::{MemoIndexEntry, NotebookConfig};
+use tank_core::memo_file::{MemoIndexEntry, NotebookConfig};
 use std::collections::HashMap;
 
 pub fn display_width(s: &str) -> usize {
@@ -325,7 +325,7 @@ mod tests {
     fn display_width_ascii() {
         assert_eq!(display_width(""), 0);
         assert_eq!(display_width("hello"), 5);
-        assert_eq!(display_width("Flowix 0.1"), 10);
+        assert_eq!(display_width("TANK的英雄笔记 0.1"), 10);
     }
 
     #[test]

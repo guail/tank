@@ -8,7 +8,7 @@ use crate::agent_external::{
 
 use std::sync::Arc;
 
-use crate::agent_flowix::AgentChunk;
+use crate::agent_tank::AgentChunk;
 use crate::agent_session::ThreadManager;
 
 pub fn diagnostics_enabled() -> bool {

@@ -1,4 +1,4 @@
-//! Skills subsystem for the Flowix Agent.
+//! Skills subsystem for the TANK的英雄笔记 Agent.
 //!
 //! ## What this module owns
 //!

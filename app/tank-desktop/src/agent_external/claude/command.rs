@@ -7,7 +7,7 @@ use super::history::claude_session_cwd;
 use super::AGENT_TYPE;
 
 pub(crate) fn resolve_claude_cwd(
-    message: &crate::agent_flowix::AgentUserMessage,
+    message: &crate::agent_tank::AgentUserMessage,
     session_id: Option<&str>,
 ) -> Option<PathBuf> {
     // Claude stores conversations under a cwd-derived project directory.
@@ -180,7 +180,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("system time before unix epoch")
             .as_nanos();
-        std::env::temp_dir().join(format!("flowix-{name}-{nonce}"))
+        std::env::temp_dir().join(format!("tank-{name}-{nonce}"))
     }
 
     #[test]

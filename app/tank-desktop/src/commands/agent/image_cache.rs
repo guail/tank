@@ -162,9 +162,9 @@ mod tests {
     #[test]
     fn agent_image_cache_rejects_files_outside_its_root() {
         let root =
-            std::env::temp_dir().join(format!("flowix-agent-image-root-{}", std::process::id()));
+            std::env::temp_dir().join(format!("tank-agent-image-root-{}", std::process::id()));
         let outside = std::env::temp_dir().join(format!(
-            "flowix-agent-image-outside-{}.png",
+            "tank-agent-image-outside-{}.png",
             std::process::id()
         ));
         std::fs::create_dir_all(&root).expect("create cache root");

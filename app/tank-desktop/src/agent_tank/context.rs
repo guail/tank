@@ -1,7 +1,7 @@
 use rllm::chat::{ChatRole, MessageType};
 use rllm::{FunctionCall, ToolCall as LlmToolCall};
 
-use crate::agent_flowix::providers::OpenAICompatibleChatMessage;
+use crate::agent_tank::providers::OpenAICompatibleChatMessage;
 use crate::agent_session::{ChatMessage as ThreadChatMessage, MessageRole};
 
 pub(super) const LLM_CONTEXT_RECENT_MESSAGES: usize = 80;

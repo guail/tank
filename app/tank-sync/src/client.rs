@@ -123,8 +123,8 @@ impl CloudClient {
             .header("Idempotency-Key", idempotency_key)
             .json(&json!({
                 "productId": product_id,
-                "successUrl": "flowix://billing/success",
-                "cancelUrl": "flowix://billing/cancel",
+                "successUrl": "tank://billing/success",
+                "cancelUrl": "tank://billing/cancel",
             }))
             .send()
             .await?;
@@ -402,13 +402,13 @@ mod tests {
     #[test]
     fn apple_authorization_body_includes_first_login_name() {
         assert_eq!(
-            apple_authorization_body(&authorization(Some("Flowix User"))),
+            apple_authorization_body(&authorization(Some("TANK的英雄笔记 User"))),
             json!({
                 "challengeId": "ach_test",
                 "nonce": "nonce_test",
                 "identityToken": "identity_token_test",
                 "authorizationCode": "authorization_code_test",
-                "displayName": "Flowix User",
+                "displayName": "TANK的英雄笔记 User",
             })
         );
     }

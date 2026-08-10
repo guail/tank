@@ -15,7 +15,7 @@ use super::path::{
     normalize_relative_glob_pattern, normalized_relative_path, path_has_hidden_component,
     resolve_path, roots_for_absolute_pattern, should_descend_for_glob,
 };
-use crate::agent_flowix::tools::{ToolResult, ToolScope};
+use crate::agent_tank::tools::{ToolResult, ToolScope};
 
 pub(super) async fn glob_paths(arguments: &str, scope: &ToolScope) -> ToolResult {
     #[derive(Deserialize)]

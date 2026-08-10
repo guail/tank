@@ -10,7 +10,7 @@ use crate::agent_session::{ChatMessage, ThreadMessagesPage};
 const EXPORT_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// Read OpenCode's own durable transcript for display-only fallback. Nothing
-/// from this path is written back into Flowix storage.
+/// from this path is written back into TANK的英雄笔记 storage.
 pub async fn get_session_page(
     session_id: &str,
     before_sequence: Option<i64>,
@@ -160,7 +160,7 @@ fn tool_message(id: String, part: &Value, timestamp: i64) -> ChatMessage {
 }
 
 fn visible_user_text(content: &str) -> String {
-    const MARKERS: [&str; 2] = ["\n<## CONTEXT PROMPT ##>", "\n\n[Flowix workspace context]"];
+    const MARKERS: [&str; 2] = ["\n<## CONTEXT PROMPT ##>", "\n\n[TANK的英雄笔记 workspace context]"];
     let end = MARKERS
         .iter()
         .filter_map(|marker| content.find(marker))
@@ -218,7 +218,7 @@ mod tests {
             "messages": [
                 {
                     "info": {"id": "user-1", "role": "user", "time": {"created": 1000}},
-                    "parts": [{"type": "text", "text": "hello\n\n[Flowix workspace context]\ninternal"}]
+                    "parts": [{"type": "text", "text": "hello\n\n[TANK的英雄笔记 workspace context]\ninternal"}]
                 },
                 {
                     "info": {"id": "assistant-1", "role": "assistant", "time": {"created": 2000}},

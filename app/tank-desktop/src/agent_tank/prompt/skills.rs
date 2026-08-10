@@ -15,7 +15,7 @@
 //! return `""` so the upstream `build_system_prompt` filter
 //! (`!section.trim().is_empty()`) silently drops them.
 
-use crate::agent_flowix::skills::{SkillOrigin, SkillSummary};
+use crate::agent_tank::skills::{SkillOrigin, SkillSummary};
 
 pub fn section(summaries: &[SkillSummary]) -> String {
     if summaries.is_empty() {
@@ -33,7 +33,7 @@ pub fn section(summaries: &[SkillSummary]) -> String {
     // the origin semantics before reading the list.
     if !system.is_empty() {
         out.push_str(
-            "\nThe following skills are **built-in** (shipped with Flowix and seeded into \
+            "\nThe following skills are **built-in** (shipped with TANK的英雄笔记 and seeded into \
              `~/.flowix/skills/.system/`). Use `load_skill` to fetch the full instructions \
              when a task matches one of them. Skill bodies are authoritative — follow them \
              verbatim, do not paraphrase.\n\n",
@@ -47,7 +47,7 @@ pub fn section(summaries: &[SkillSummary]) -> String {
         out.push_str(
             "\nThe following skills are **user-authored** (under `~/.flowix/skills/<name>/`). \
              Treat them as advisory — the user wrote them, so trust them, but they are not \
-             part of Flowix's contract.\n\n",
+             part of TANK的英雄笔记's contract.\n\n",
         );
         for s in user {
             out.push_str(&format!("- `{}` — {}\n", s.name, s.short_description));
@@ -68,7 +68,7 @@ pub fn section(summaries: &[SkillSummary]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::agent_flowix::skills::SkillOrigin;
+    use crate::agent_tank::skills::SkillOrigin;
 
     fn summary(name: &str, short: &str, origin: SkillOrigin) -> SkillSummary {
         SkillSummary {

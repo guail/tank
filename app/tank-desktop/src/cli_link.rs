@@ -1,29 +1,29 @@
-//! 首�?�?��时在 `~/.local/bin/` �?`flowix` symlink,
+//! 首�?�?��时在 `~/.local/bin/` �?`tank-cli` symlink,
 //! 把内�?sidecar 暴露到用�?`$PATH`, 这样装完桌面应用后终�?��直接
-//! `flowix ...`銆?//!
+//! `tank-cli ...`銆?//!
 //! ## 璁捐
 //!
 //! - **幂等**: 每�?�?��都跑, 但只�?symlink 不存�?/ 指向错�?�?�� /
 //!   已损坏时实际写盘�?用户手动删了下�?�?���?��恢�? ── �?"marker file
 //!   �?��一�? 鲁�?�?//! - **失败宽�?**: 任何 I/O 错�? (权限 / 磁盘�?/ �?? fs) 都只
 //!   `tracing::warn!`, �?panic / �?propagate ── CLI 装不上不影响 GUI�?//! - **范围**: macOS + Linux �?��时建 symlink�?Windows 上的等效实现
-//!   �?`app/flowix-desktop/nsis/flowix-cli-path.nsh` ── 装包时建 .cmd shim
-//!   鍒?`$LOCALAPPDATA\Flowix\bin\`銆?//!
+//!   �?`app/tank-desktop/nsis/tank-cli-path.nsh` ── 装包时建 .cmd shim
+//!   鍒?`$LOCALAPPDATA\TANK的英雄笔记\bin\`銆?//!
 //! ## 璺緞閫夋嫨
 //!
-//! - **链接�?(target)**: `current_exe().parent().join("flowix-cli")` ──
+//! - **链接�?(target)**: `current_exe().parent().join("tank-cli")` ──
 //!   Tauri 2 �?`externalBin` 机制�?sidecar 放在主二进制旁边, dev
-//!   (`app/target/<host>/debug/flowix-cli`) 璺?prod
-//!   (`/Applications/Flowix.app/Contents/MacOS/flowix-cli`) 都是�?//!   layout�?�?`commands::cli::resolve_sidecar_path` �?prod 分支一致�?//! - **链接位置 (link)**: `$HOME/.local/bin/flowix` ── XDG
+//!   (`app/target/<host>/debug/tank-cli`) 璺?prod
+//!   (`/Applications/TANK的英雄笔记.app/Contents/MacOS/tank-cli`) 都是�?//!   layout�?�?`commands::cli::resolve_sidecar_path` �?prod 分支一致�?//! - **链接位置 (link)**: `$HOME/.local/bin/tank` ── XDG
 //!   用户�?bin �?���?macOS / 多数 Linux 发�?版的 zsh / bash **默�?**
 //!   不在 `$PATH`, 用户需�?`export PATH="$HOME/.local/bin:$PATH"` 加进
 //!   `~/.zshrc`�?�?�� hook 不自动改 shell config; 偏好设置里的显式
 //!   "安�?" 操作才会写入�?//!
 //! ## 閲嶅悕瀹夊叏
 //!
-//! - macOS: 妗岄潰 binary 瑁呭湪 `.app` 鍖呭唴 (`/Applications/Flowix.app/...`),
-//!   **不在** `$PATH`, 所�?`~/.local/bin/flowix` 不会�?���?���?//! - Linux: �?`.deb` 把�?�?binary 装到 `/usr/bin/flowix`, 而用�?//!   `$PATH` �?`~/.local/bin` �?`/usr/bin` **之前** (多数发�?版默�?,
-//!   symlink 胜出�?退一步�?, 用户装我�?��应用�? `/usr/bin/flowix` �?��
+//! - macOS: 妗岄潰 binary 瑁呭湪 `.app` 鍖呭唴 (`/Applications/TANK的英雄笔记.app/...`),
+//!   **不在** `$PATH`, 所�?`~/.local/bin/tank` 不会�?���?���?//! - Linux: �?`.deb` 把�?�?binary 装到 `/usr/bin/tank`, 而用�?//!   `$PATH` �?`~/.local/bin` �?`/usr/bin` **之前** (多数发�?版默�?,
+//!   symlink 胜出�?退一步�?, 用户装我�?��应用�? `/usr/bin/tank` �?��
 //!   就是我们装的同一�?sidecar ── 即便两个 entry 都在 PATH, 指向同一�?//!   inode 也无害�?
 use serde::Serialize;
 use std::path::{Path, PathBuf};
@@ -45,7 +45,7 @@ pub struct CliLinkStatus {
     pub message: Option<String>,
 }
 
-/// 在用户级 bin �?��里建 `flowix` symlink�?任何步�?失败�?`warn!` 后返�?
+/// 在用户级 bin �?��里建 `tank-cli` symlink�?任何步�?失败�?`warn!` 后返�?
 /// �?panic / �?propagate 错�?�?
 pub fn ensure_cli_symlink() {
     #[cfg(windows)]
@@ -85,7 +85,7 @@ pub fn ensure_cli_symlink() {
         }
     }
 
-    ensure_one_symlink(&bin_dir, "flowix", &target);
+    ensure_one_symlink(&bin_dir, "tank-cli", &target);
 }
 
 pub fn cli_link_status() -> CliLinkStatus {
@@ -108,13 +108,13 @@ pub fn cli_link_status() -> CliLinkStatus {
         };
     };
     let bin_dir = home.join(".local").join("bin");
-    let command_path = bin_dir.join("flowix");
+    let command_path = bin_dir.join("tank-cli");
     let target = current_sidecar_path();
     let symlink_installed = target
         .as_ref()
         .is_some_and(|target| link_points_to(&command_path, target));
     let path_configured = path_contains_dir(&bin_dir) || shell_config_contains_bin_dir(&home);
-    let available_in_path = command_resolves_to("flowix", target.as_deref());
+    let available_in_path = command_resolves_to("tank-cli", target.as_deref());
     // `available_in_path` reflects this GUI process environment. On macOS,
     // updating ~/.zshrc does not mutate the already-running Tauri process PATH,
     // so the install state should be based on durable config instead.
@@ -131,7 +131,7 @@ pub fn cli_link_status() -> CliLinkStatus {
         needs_install,
         message: target
             .is_none()
-            .then(|| "flowix-cli sidecar not found".to_string()),
+            .then(|| "tank-cli sidecar not found".to_string()),
     }
 }
 
@@ -165,7 +165,7 @@ fn ensure_one_symlink(bin_dir: &Path, name: &str, target: &Path) {
         }
         Ok(existing) => {
             // 指向�?? ── 删掉重建�?用户手动改过 symlink 我们也尊�?
-            // (写到�?Flowix 同�?更新的真�?, �?log 一下�?
+            // (写到�?TANK的英雄笔记 同�?更新的真�?, �?log 一下�?
             tracing::info!(
                 "[cli-link] {} pointed to {}; rewriting to {}",
                 link.display(),
@@ -210,7 +210,7 @@ fn ensure_one_symlink(bin_dir: &Path, name: &str, target: &Path) {
     }
 
     // Windows 上不做事 ── `.cmd` shim �?NSIS hook 处理
-    // (`app/flowix-desktop/nsis/flowix-cli-path.nsh`)銆?
+    // (`app/tank-desktop/nsis/tank-cli-path.nsh`)銆?
     #[cfg(not(unix))]
     {
         tracing::debug!(
@@ -228,13 +228,13 @@ fn link_points_to(link: &Path, target: &Path) -> bool {
 
 /// �?`commands::cli::resolve_sidecar_path` 对齐 ── 两条候选路�?
 /// 命中任一即可�?Prod 优先 (跟主二进制同�?��), 然后 dev fallback
-/// (`CARGO_MANIFEST_DIR/binaries/flowix-cli`)�?后者�? dev 模式�?/// 也能验证 symlink 行为 ── 链接会指向用�?checkout 里的 cargo 产物,
+/// (`CARGO_MANIFEST_DIR/binaries/tank-cli`)�?后者�? dev 模式�?/// 也能验证 symlink 行为 ── 链接会指向用�?checkout 里的 cargo 产物,
 /// 鍒囧洖 prod 瀹夎鍖呮椂, 涓嬫鍚姩浼氳 `paths_match` 妫€娴嬪埌閿欐寚骞堕噸寤恒€?
 fn current_sidecar_path() -> Option<PathBuf> {
     // 1. prod: sidecar 跟主二进制同�?�� (Tauri 2 `externalBin` 布局)�?
     if let Ok(exe) = std::env::current_exe() {
         if let Some(parent) = exe.parent() {
-            let prod = parent.join("flowix-cli");
+            let prod = parent.join("tank-cli");
             if prod.exists() {
                 return Some(prod);
             }
@@ -247,10 +247,10 @@ fn current_sidecar_path() -> Option<PathBuf> {
             }
         }
     }
-    // 2. dev fallback: `app/flowix-desktop/binaries/flowix-cli` (构建�?    //    �?��码进二进制的 manifest �?��, build-cli.sh 维护�?symlink)�?
+    // 2. dev fallback: `app/tank-desktop/binaries/tank-cli` (构建�?    //    �?��码进二进制的 manifest �?��, build-cli.sh 维护�?symlink)�?
     let dev = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("binaries")
-        .join("flowix-cli");
+        .join("tank-cli");
     if dev.exists() {
         return Some(dev);
     }
@@ -305,7 +305,7 @@ fn command_candidates(dir: &Path, command: &str) -> Vec<PathBuf> {
 
 #[cfg(windows)]
 fn windows_cli_bin_dir() -> Option<PathBuf> {
-    dirs::data_local_dir().map(|dir| dir.join("Flowix").join("bin"))
+    dirs::data_local_dir().map(|dir| dir.join("TANK的英雄笔记").join("bin"))
 }
 
 #[cfg(windows)]
@@ -323,14 +323,14 @@ fn windows_cli_link_status(include_user_path: bool) -> CliLinkStatus {
             message: Some("LOCALAPPDATA unavailable".into()),
         };
     };
-    let command_path = bin_dir.join("flowix.cmd");
+    let command_path = bin_dir.join("tank.cmd");
     let target = current_sidecar_path();
     let symlink_installed = target
         .as_ref()
         .is_some_and(|target| windows_shim_points_to(&command_path, target));
     let path_configured = path_contains_dir(&bin_dir)
         || (include_user_path && windows_user_path_contains_dir(&bin_dir).unwrap_or(false));
-    let available_in_path = command_resolves_to("flowix", None) || path_configured;
+    let available_in_path = command_resolves_to("tank-cli", None) || path_configured;
     let needs_install = !symlink_installed || !path_configured;
 
     CliLinkStatus {
@@ -344,22 +344,22 @@ fn windows_cli_link_status(include_user_path: bool) -> CliLinkStatus {
         needs_install,
         message: target
             .is_none()
-            .then(|| "flowix-cli sidecar not found".to_string()),
+            .then(|| "tank-cli sidecar not found".to_string()),
     }
 }
 
 #[cfg(windows)]
 fn ensure_windows_cli_shim() -> Result<(), String> {
     let target =
-        current_sidecar_path().ok_or_else(|| "flowix-cli sidecar not found".to_string())?;
+        current_sidecar_path().ok_or_else(|| "tank-cli sidecar not found".to_string())?;
     let bin_dir = windows_cli_bin_dir().ok_or_else(|| "LOCALAPPDATA unavailable".to_string())?;
     std::fs::create_dir_all(&bin_dir)
         .map_err(|e| format!("failed to create {}: {e}", bin_dir.display()))?;
 
-    let command_path = bin_dir.join("flowix.cmd");
+    let command_path = bin_dir.join("tank.cmd");
     std::fs::write(&command_path, windows_shim_content(&target))
         .map_err(|e| format!("failed to write {}: {e}", command_path.display()))?;
-    let legacy_path = bin_dir.join("flowix-cli.cmd");
+    let legacy_path = bin_dir.join("tank-cli.cmd");
     if legacy_path.exists() {
         std::fs::remove_file(&legacy_path)
             .map_err(|e| format!("failed to remove {}: {e}", legacy_path.display()))?;
@@ -837,7 +837,7 @@ fn ensure_shell_path_config(home: &Path, bin_dir: &Path) -> Result<(), String> {
     } else {
         SH_PATH_EXPORT_LINE
     };
-    let block = format!("{prefix}\n# Flowix CLI\n{line}\n");
+    let block = format!("{prefix}\n# TANK的英雄笔记 CLI\n{line}\n");
     std::fs::OpenOptions::new()
         .create(true)
         .append(true)

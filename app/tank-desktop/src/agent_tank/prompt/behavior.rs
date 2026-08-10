@@ -34,16 +34,16 @@ pub fn section() -> String {
 ## Cross-Reference
 When referring to a specific note in chat (e.g. summarizing what was written, directing the user to open it, listing related notes), render the reference as a clickable deep link so the user can jump straight to the note:
 
-  [笔记标题](flowix://memo/abc12345)
+  [笔记标题](tank://memo/abc12345)
 
 Rules:
-- After any successful `write` or `edit` that creates or changes a note, include that note in the final reply as `Notes: [Title](flowix://memo/<id>)`. Prefer the `key` returned by the successful tool call. If multiple notes were touched, list all of them on the same `Notes:` line or as short bullets.
-- Prefer `flowix://memo/<id>`. The ID is the memo's lowercase `[0-9a-z]` key from the app's index/frontmatter; current notes use 8 characters, and legacy notes may use 6. The deep link will fail to resolve if the ID is wrong, malformed, or uppercased. Since the v3 migration, the memo index owns the physical filename and filenames no longer carry a `#<id>` suffix. The ID must come from an existing note's frontmatter `key` or app-provided note metadata, not from the filename or path.
-- For a newly written note, use the `key` returned by `write` when present. If the exact memo key is not yet available, do not invent one; use a path-based app link as a fallback: `[笔记标题](flowix://open?path=<percent-encoded-absolute-path>)`.
+- After any successful `write` or `edit` that creates or changes a note, include that note in the final reply as `Notes: [Title](tank://memo/<id>)`. Prefer the `key` returned by the successful tool call. If multiple notes were touched, list all of them on the same `Notes:` line or as short bullets.
+- Prefer `tank://memo/<id>`. The ID is the memo's lowercase `[0-9a-z]` key from the app's index/frontmatter; current notes use 8 characters, and legacy notes may use 6. The deep link will fail to resolve if the ID is wrong, malformed, or uppercased. Since the v3 migration, the memo index owns the physical filename and filenames no longer carry a `#<id>` suffix. The ID must come from an existing note's frontmatter `key` or app-provided note metadata, not from the filename or path.
+- For a newly written note, use the `key` returned by `write` when present. If the exact memo key is not yet available, do not invent one; use a path-based app link as a fallback: `[笔记标题](tank://open?path=<percent-encoded-absolute-path>)`.
 - The display text is the note's title, not the file name and not the full path. If you do not know the exact title, paraphrase in plain text and do not invent a link.
-- The deep link opens the note in the Flowix desktop app — it is not a web URL. Do not present it as "open in browser".
+- The deep link opens the note in the TANK的英雄笔记 desktop app — it is not a web URL. Do not present it as "open in browser".
 - In pure narration where a link adds no value (e.g. "the foo.md you just read"), keep the raw form. The deep link is reserved for actionable references where the user is expected to open the note.
-- For references *inside* a note file, use the same `[笔记标题](flowix://memo/abc12345)` deep-link syntax as above when the memo key is known — the link works whether it appears in chat or in a note body, and the in-app link resolver handles both.
+- For references *inside* a note file, use the same `[笔记标题](tank://memo/abc12345)` deep-link syntax as above when the memo key is known — the link works whether it appears in chat or in a note body, and the in-app link resolver handles both.
 - Never expose the bare memo key to the user. The key is internal, not a user-facing identifier — surface notes by their title wrapped in the deep link, never as `vex4v9` / `abc12345` on its own. If the user asks for "the ID", answer with the deep link, not the raw id string.
 
 ## Hidden Directories

@@ -254,7 +254,7 @@ impl ThreadManager {
         Ok(updated > 0)
     }
 
-    /// Update an assistant checkpoint in place. The Flowix agent uses this
+    /// Update an assistant checkpoint in place. The TANK的英雄笔记 agent uses this
     /// when a stream is interrupted after some text has already reached the
     /// UI: the partial assistant row is first inserted, then later marked
     /// completed or promoted to an assistant+tool_calls row if the resumed

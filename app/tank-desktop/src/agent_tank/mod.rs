@@ -25,13 +25,13 @@ pub use wire::{
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::agent_flowix::skills::SkillStore;
+use crate::agent_tank::skills::SkillStore;
 use crate::agent_session::ThreadManager;
 use crate::config::AgentAccessStore;
 use crate::config::SecurityBookmarkStore;
 use crate::config::UserConfigStore;
 use factory::CachedInstance;
-use flowix_core::memo_file::MemoFile;
+use tank_core::memo_file::MemoFile;
 use state::{CallKey, InFlightChat};
 
 /// AgentManager 现在�?���?当前生效�?provider 实例", 真�?的配�?��源是
@@ -67,7 +67,7 @@ pub struct AgentManager {
     /// Agent �??�?��录真�?(`~/.flowix/agent-access.json`)�?
     /// `execute_tool` 鎶婂畠鍠傜粰 `ToolScope::from_memo_file_and_access`
     /// 决定 `allowed_roots`, 也用来过�?`available_dirs` 工具的返回�?    // `agent-access.json` backs defaults and legacy/global fallback. For a
-    // real agent-thread-card run, Flowix tool scope should use the message
+    // real agent-thread-card run, TANK的英雄笔记 tool scope should use the message
     // runtime config workspace paths when present.
     agent_access: Arc<AgentAccessStore>,
     /// macOS security-scoped bookmarks for user-selected notebook / agent roots.

@@ -162,7 +162,7 @@ fn extracts_markdown_remote_file_url_and_windows_image_paths() {
             "鐪嬪浘 ![remote](https://example.com/a.png?x=1) ",
             "瑁搁摼 https://example.com/b.jpg, ",
             "file:///D:/imgs/c.jpeg ",
-            "![asset](asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Cflowix%2Fattachments%5CSnipaste.png) ",
+            "![asset](asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Ctank%2Fattachments%5CSnipaste.png) ",
             "鏈湴 D:\\imgs\\nested dir\\d.png"
         );
     let sources = extract_image_sources(content);
@@ -170,7 +170,7 @@ fn extracts_markdown_remote_file_url_and_windows_image_paths() {
             sources,
             vec![
                 "https://example.com/a.png?x=1",
-                "asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Cflowix%2Fattachments%5CSnipaste.png",
+                "asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Ctank%2Fattachments%5CSnipaste.png",
                 "https://example.com/b.jpg",
                 "file:///D:/imgs/c.jpeg",
                 "D:\\imgs\\nested dir\\d.png",
@@ -203,12 +203,12 @@ fn extracts_markdown_remote_file_url_and_windows_video_paths() {
 #[test]
 fn asset_url_decodes_to_windows_path() {
     let path = asset_url_to_path(
-            "asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Cflowix%2Fattachments%5CSnipaste_2026-05-11_19-53-54.png",
+            "asset://localhost/C%3A%5CUsers%5CAdministrator%5CDocuments%5Ctank%2Fattachments%5CSnipaste_2026-05-11_19-53-54.png",
         )
         .unwrap();
     assert_eq!(
             path.display().to_string(),
-            "C:\\Users\\Administrator\\Documents\\flowix\\attachments\\Snipaste_2026-05-11_19-53-54.png"
+            "C:\\Users\\Administrator\\Documents\\tank\\attachments\\Snipaste_2026-05-11_19-53-54.png"
         );
 }
 

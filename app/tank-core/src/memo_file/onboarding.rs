@@ -8,7 +8,7 @@ struct OnboardingDoc {
 }
 
 // Keep the editable Markdown files as the single source of truth. `include_str!`
-// embeds them in flowix-core at compile time, so creating a notebook does not
+// embeds them in tank-core at compile time, so creating a notebook does not
 // depend on resource lookup or the current working directory at runtime.
 //
 // The array order is the reverse of the final display order: create_memo gives
@@ -101,7 +101,7 @@ mod tests {
         assert!(!filenames.iter().any(|filename| {
             matches!(
                 *filename,
-                "Flowix Memo 产品介绍.md" | "如何快速上手.md" | "配置使用 AI Agent.md"
+                "TANK的英雄笔记 产品介绍.md" | "如何快速上手.md" | "配置使用 AI Agent.md"
             )
         }));
 
@@ -109,10 +109,10 @@ mod tests {
         let chinese = fs::read_to_string(mf.get_memo_base().join("欢迎文档.md")).unwrap();
         assert!(english.contains("# Welcome"));
         assert!(english.contains("## Quick Start"));
-        assert!(english.contains("https://flowix-memo.com/docs/"));
+        assert!(english.contains("https://tank-memo.com/docs/"));
         assert!(chinese.contains("# 欢迎文档"));
         assert!(chinese.contains("## 快速上手"));
-        assert!(chinese.contains("https://flowix-memo.com/docs/"));
+        assert!(chinese.contains("https://tank-memo.com/docs/"));
 
         // The last-created document has the greatest createdAt and is displayed
         // first by the UI's descending sort.

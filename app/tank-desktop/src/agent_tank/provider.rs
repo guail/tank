@@ -6,7 +6,7 @@ use rllm::chat::{StreamChunk, Tool};
 #[cfg(test)]
 use rllm::error::LLMError;
 
-use crate::agent_flowix::providers::{
+use crate::agent_tank::providers::{
     DeepSeekProvider, OpenAICompatibleChatMessage, OpenAICompatibleConfig,
     OpenAICompatibleProvider, OpenAICompatibleStreamItem,
 };
@@ -190,7 +190,7 @@ fn is_streaming_with_tools_unsupported(err: &rllm::error::LLMError) -> bool {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum FlowixProviderKind {
+pub(super) enum TANK的英雄笔记ProviderKind {
     OpenAI,
     OpenAICompatible,
     Anthropic,
@@ -200,7 +200,7 @@ pub(super) enum FlowixProviderKind {
     OpenRouter,
 }
 
-pub(super) fn provider_kind(provider: &str) -> FlowixProviderKind {
+pub(super) fn provider_kind(provider: &str) -> TANK的英雄笔记ProviderKind {
     let normalized: String = provider
         .chars()
         .filter(|ch| !ch.is_whitespace() && *ch != '-' && *ch != '_')
@@ -209,17 +209,17 @@ pub(super) fn provider_kind(provider: &str) -> FlowixProviderKind {
 
     match normalized.as_str() {
         "openai" | "openairesponses" | "openairesponsesapi" | "responsesapi" => {
-            FlowixProviderKind::OpenAI
+            TANK的英雄笔记ProviderKind::OpenAI
         }
         "openaichatcompletions" | "openaicompatible" | "compatible" => {
-            FlowixProviderKind::OpenAICompatible
+            TANK的英雄笔记ProviderKind::OpenAICompatible
         }
-        "anthropic" | "claude" => FlowixProviderKind::Anthropic,
-        "google" | "gemini" => FlowixProviderKind::Google,
-        "ollama" => FlowixProviderKind::Ollama,
-        "deepseek" => FlowixProviderKind::DeepSeek,
-        "openrouter" => FlowixProviderKind::OpenRouter,
-        _ => FlowixProviderKind::OpenAICompatible,
+        "anthropic" | "claude" => TANK的英雄笔记ProviderKind::Anthropic,
+        "google" | "gemini" => TANK的英雄笔记ProviderKind::Google,
+        "ollama" => TANK的英雄笔记ProviderKind::Ollama,
+        "deepseek" => TANK的英雄笔记ProviderKind::DeepSeek,
+        "openrouter" => TANK的英雄笔记ProviderKind::OpenRouter,
+        _ => TANK的英雄笔记ProviderKind::OpenAICompatible,
     }
 }
 
@@ -229,12 +229,12 @@ pub(super) fn build_chat_provider(
     tools: &[Tool],
 ) -> Result<AgentChatProvider, AgentError> {
     match provider_kind(&config.provider) {
-        FlowixProviderKind::OpenAICompatible | FlowixProviderKind::OpenRouter => {
+        TANK的英雄笔记ProviderKind::OpenAICompatible | TANK的英雄笔记ProviderKind::OpenRouter => {
             // Enable reasoning_split to separate thinking from final response.
             let reasoning_split = config.model.contains("MiniMax");
             let api_url = if matches!(
                 provider_kind(&config.provider),
-                FlowixProviderKind::OpenRouter
+                TANK的英雄笔记ProviderKind::OpenRouter
             ) && config.api_url.trim().is_empty()
             {
                 "https://openrouter.ai/api/v1"
@@ -252,7 +252,7 @@ pub(super) fn build_chat_provider(
             );
             Ok(AgentChatProvider::OpenAICompatible(Arc::new(provider)))
         }
-        FlowixProviderKind::DeepSeek => {
+        TANK的英雄笔记ProviderKind::DeepSeek => {
             let provider = DeepSeekProvider::new(
                 OpenAICompatibleConfig::new(
                     config.effective_api_key(&config.provider),
@@ -266,13 +266,13 @@ pub(super) fn build_chat_provider(
         kind => {
             let mut builder = LLMBuilder::new()
                 .backend(match kind {
-                    FlowixProviderKind::OpenAI => LLMBackend::OpenAI,
-                    FlowixProviderKind::Anthropic => LLMBackend::Anthropic,
-                    FlowixProviderKind::Google => LLMBackend::Google,
-                    FlowixProviderKind::Ollama => LLMBackend::Ollama,
-                    FlowixProviderKind::DeepSeek
-                    | FlowixProviderKind::OpenAICompatible
-                    | FlowixProviderKind::OpenRouter => {
+                    TANK的英雄笔记ProviderKind::OpenAI => LLMBackend::OpenAI,
+                    TANK的英雄笔记ProviderKind::Anthropic => LLMBackend::Anthropic,
+                    TANK的英雄笔记ProviderKind::Google => LLMBackend::Google,
+                    TANK的英雄笔记ProviderKind::Ollama => LLMBackend::Ollama,
+                    TANK的英雄笔记ProviderKind::DeepSeek
+                    | TANK的英雄笔记ProviderKind::OpenAICompatible
+                    | TANK的英雄笔记ProviderKind::OpenRouter => {
                         unreachable!("handled by OpenAICompatible branch above")
                     }
                 })

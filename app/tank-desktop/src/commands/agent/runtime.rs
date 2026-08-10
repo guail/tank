@@ -3,12 +3,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use crate::agent_external::runtime_registry::ExternalCliRuntime;
-use crate::agent_flowix::{AgentManager, AgentUserMessage};
+use crate::agent_tank::{AgentManager, AgentUserMessage};
 use crate::app::state::AppState;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum AgentRuntime {
-    Flowix,
+    TANK的英雄笔记,
     Codex,
     Claude,
     Hermes,
@@ -18,7 +18,7 @@ pub(super) enum AgentRuntime {
 impl AgentRuntime {
     pub(super) fn from_agent_type(agent_type: Option<&str>) -> Self {
         match agent_type
-            .unwrap_or("flowix")
+            .unwrap_or("tank-cli")
             .trim()
             .to_ascii_lowercase()
             .as_str()
@@ -27,7 +27,7 @@ impl AgentRuntime {
             "claude" => Self::Claude,
             "hermes" => Self::Hermes,
             "opencode" => Self::OpenCode,
-            _ => Self::Flowix,
+            _ => Self::TANK的英雄笔记,
         }
     }
 
@@ -37,7 +37,7 @@ impl AgentRuntime {
 
     pub(super) fn key(self) -> &'static str {
         match self {
-            Self::Flowix => "flowix",
+            Self::TANK的英雄笔记 => "tank-cli",
             Self::Codex => "codex",
             Self::Claude => "claude",
             Self::Hermes => "hermes",
@@ -47,7 +47,7 @@ impl AgentRuntime {
 }
 
 pub(super) enum RuntimeHandle<'a> {
-    Flowix(&'a Arc<AgentManager>),
+    TANK的英雄笔记(&'a Arc<AgentManager>),
     External(&'a dyn ExternalCliRuntime),
 }
 
@@ -76,7 +76,7 @@ impl ChatRuntime for RuntimeHandle<'_> {
         app_handle: &tauri::AppHandle,
     ) -> Result<String, String> {
         match self {
-            Self::Flowix(manager) => manager
+            Self::TANK的英雄笔记(manager) => manager
                 .chat_stream(thread_id, message, app_handle)
                 .await
                 .map_err(|e| e.to_string()),
@@ -91,9 +91,9 @@ impl ChatRuntime for RuntimeHandle<'_> {
         app_handle: &tauri::AppHandle,
     ) -> bool {
         match self {
-            // Flowix 鍐呴儴 agent 鑷甫 cancel token + select!, stop 淇″彿鑳借娴佸紡
+            // TANK的英雄笔记 鍐呴儴 agent 鑷甫 cancel token + select!, stop 淇″彿鑳借娴佸紡
             // 任务即时响应, 不需要这里补�?StreamEnd, 故不�?app_handle�?
-            Self::Flowix(manager) => manager.stop_chat(thread_id, run_id).await,
+            Self::TANK的英雄笔记(manager) => manager.stop_chat(thread_id, run_id).await,
             Self::External(runtime) => runtime.stop_chat(thread_id, run_id, app_handle).await,
         }
     }
@@ -101,7 +101,7 @@ impl ChatRuntime for RuntimeHandle<'_> {
 
 pub(super) fn runtime_handle<'a>(state: &'a AppState, runtime: AgentRuntime) -> RuntimeHandle<'a> {
     match runtime {
-        AgentRuntime::Flowix => RuntimeHandle::Flowix(&state.agent_manager),
+        AgentRuntime::TANK的英雄笔记 => RuntimeHandle::TANK的英雄笔记(&state.agent_manager),
         external => RuntimeHandle::External(
             state
                 .external_runtimes
@@ -116,11 +116,11 @@ pub(super) async fn stop_any_runtime_chat(
     state: &AppState,
     app_handle: &tauri::AppHandle,
 ) -> bool {
-    let (flowix, external) = tokio::join!(
+    let (tank, external) = tokio::join!(
         state.agent_manager.stop_chat(thread_id, None),
         state.external_runtimes.stop_chat_all(thread_id, app_handle),
     );
-    flowix || external
+    tank || external
 }
 
 #[cfg(test)]
@@ -146,21 +146,21 @@ mod tests {
     }
 
     #[test]
-    fn agent_runtime_defaults_to_flowix() {
+    fn agent_runtime_defaults_to_tank() {
         assert_eq!(
             AgentRuntime::from_message(&message_with_agent_type(None)),
-            AgentRuntime::Flowix
+            AgentRuntime::TANK的英雄笔记
         );
         assert_eq!(
             AgentRuntime::from_message(&message_with_agent_type(Some(""))),
-            AgentRuntime::Flowix
+            AgentRuntime::TANK的英雄笔记
         );
     }
 
     #[test]
     fn agent_runtime_normalizes_known_agent_types() {
         let cases = [
-            ("flowix", AgentRuntime::Flowix),
+            ("tank-cli", AgentRuntime::TANK的英雄笔记),
             (" CODEX ", AgentRuntime::Codex),
             ("Claude", AgentRuntime::Claude),
             ("HERMES", AgentRuntime::Hermes),
@@ -177,10 +177,10 @@ mod tests {
     }
 
     #[test]
-    fn agent_runtime_unknown_values_fall_back_to_flowix() {
+    fn agent_runtime_unknown_values_fall_back_to_tank() {
         assert_eq!(
             AgentRuntime::from_message(&message_with_agent_type(Some("unknown-agent"))),
-            AgentRuntime::Flowix
+            AgentRuntime::TANK的英雄笔记
         );
     }
 }

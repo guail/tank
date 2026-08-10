@@ -39,11 +39,11 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "../flowix-desktop/icons/32x32.png",
-      "../flowix-desktop/icons/128x128.png",
-      "../flowix-desktop/icons/128x128@2x.png",
-      "../flowix-desktop/icons/icon.icns",
-      "../flowix-desktop/icons/icon.ico"
+      "../tank-desktop/icons/32x32.png",
+      "../tank-desktop/icons/128x128.png",
+      "../tank-desktop/icons/128x128@2x.png",
+      "../tank-desktop/icons/icon.icns",
+      "../tank-desktop/icons/icon.ico"
     ]
   }
 }

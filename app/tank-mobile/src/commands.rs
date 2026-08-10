@@ -3,9 +3,9 @@ use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 
 use base64::Engine;
-use flowix_core::memo_file::{Memo, Notebook};
-use flowix_core::MemoService;
-use flowix_sync::{CloudState, LocalChangeKind, V2LocalNotebook};
+use tank_core::memo_file::{Memo, Notebook};
+use tank_core::MemoService;
+use tank_sync::{CloudState, LocalChangeKind, V2LocalNotebook};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -102,7 +102,7 @@ pub(crate) fn emit_sync_status(
     );
 }
 
-fn notebook_from_config(config: flowix_core::memo_file::NotebookConfig) -> Notebook {
+fn notebook_from_config(config: tank_core::memo_file::NotebookConfig) -> Notebook {
     Notebook {
         id: config.id,
         name: config.name,
@@ -224,8 +224,8 @@ async fn restore_session_and_sync(app: AppHandle) {
                         state.save_refresh_token(&outcome.refresh_token)?;
                         SESSION_RESTORE_ATTEMPTS.store(0, Ordering::SeqCst);
                     }
-                    Err(flowix_sync::SyncError::NotAuthenticated)
-                    | Err(flowix_sync::SyncError::Api { status: 401, .. }) => {
+                    Err(tank_sync::SyncError::NotAuthenticated)
+                    | Err(tank_sync::SyncError::Api { status: 401, .. }) => {
                         state.delete_refresh_token()?
                     }
                     Err(error) => {
@@ -313,7 +313,7 @@ pub async fn cloud_login(
 #[tauri::command]
 pub async fn cloud_refresh_membership(
     state: State<'_, MobileState>,
-) -> Result<flowix_sync::CloudMembership, String> {
+) -> Result<tank_sync::CloudMembership, String> {
     let membership = state
         .cloud_sync
         .refresh_membership()
@@ -451,7 +451,7 @@ pub fn mobile_create_notebook(
         .read_notebook_configs()
         .map_err(|error| error.to_string())?;
     let now = chrono::Utc::now().timestamp_millis();
-    let config = flowix_core::memo_file::NotebookConfig {
+    let config = tank_core::memo_file::NotebookConfig {
         id,
         name: name.to_string(),
         icon: None,
@@ -592,13 +592,13 @@ pub fn open_memo_session(
     let mut service = MemoService::new(&memo_file);
     let document = match service.get_memo(&id) {
         Ok(document) => document,
-        Err(flowix_core::FlowixError::NotFound(_)) => return Ok(None),
+        Err(tank_core::TankError::NotFound(_)) => return Ok(None),
         Err(error) => return Err(error.to_string()),
     };
     let path = document.path.to_string_lossy().into_owned();
     let notebook_path = document.notebook.path.clone();
     let notebook_id = document.notebook.id.clone();
-    let memo = flowix_core::memo_file::MemoFile::index_entry_to_memo(&document.entry);
+    let memo = tank_core::memo_file::MemoFile::index_entry_to_memo(&document.entry);
     Ok(Some(OpenMemoSession {
         memo,
         notebook_id,
@@ -665,7 +665,7 @@ pub fn write_document(
             &notebook_id,
             &memo.id,
             LocalChangeKind::Put,
-            &flowix_sync::v2_content_hash(final_content.as_bytes()),
+            &tank_sync::v2_content_hash(final_content.as_bytes()),
         )
         .map_err(|error| error.to_string())?;
     drop(memo_file);
@@ -735,7 +735,7 @@ pub fn add_document(
             &notebook_id,
             &created.memo.id,
             LocalChangeKind::Put,
-            &flowix_sync::v2_content_hash(&final_content),
+            &tank_sync::v2_content_hash(&final_content),
         )
         .map_err(|error| error.to_string())?;
     let memo = created.memo;
@@ -783,7 +783,7 @@ fn set_memo_favorite(
         .map_err(|error| error.to_string())?;
     document.entry.favorited = favorited;
     document.entry.updated_at = chrono::Utc::now().timestamp_millis();
-    let memo = flowix_core::memo_file::MemoFile::index_entry_to_memo(&document.entry);
+    let memo = tank_core::memo_file::MemoFile::index_entry_to_memo(&document.entry);
     MemoService::new(&memo_file)
         .sync_memo_metadata(&memo)
         .map_err(|error| error.to_string())?;
@@ -793,7 +793,7 @@ fn set_memo_favorite(
             &document.notebook.id,
             &id,
             LocalChangeKind::Put,
-            &flowix_sync::v2_content_hash(document.body.as_bytes()),
+            &tank_sync::v2_content_hash(document.body.as_bytes()),
         )
         .map_err(|error| error.to_string())?;
     drop(memo_file);

@@ -19,7 +19,7 @@ use crate::embed::{EmbeddingProvider, SearchMode};
 const MAX_SEARCH_LIMIT: usize = 200;
 
 #[derive(Debug, Error)]
-pub enum FlowixError {
+pub enum TankError {
     #[error("{0}")]
     InvalidInput(String),
     #[error("{0}")]
@@ -89,16 +89,16 @@ impl<'a> MemoService<'a> {
         Self { memo_file }
     }
 
-    pub fn list_notebooks(&mut self) -> Result<Vec<NotebookConfig>, FlowixError> {
+    pub fn list_notebooks(&mut self) -> Result<Vec<NotebookConfig>, TankError> {
         self.memo_file
             .read_notebook_configs()
-            .map_err(FlowixError::Io)
+            .map_err(TankError::Io)
     }
 
     pub fn notebook_note_counts(
         &mut self,
         configs: &[NotebookConfig],
-    ) -> Result<HashMap<String, usize>, FlowixError> {
+    ) -> Result<HashMap<String, usize>, TankError> {
         let mut counts = HashMap::new();
         for config in configs {
             let count = self
@@ -112,7 +112,7 @@ impl<'a> MemoService<'a> {
         Ok(counts)
     }
 
-    pub fn list_memos(&mut self, notebook_key: &str) -> Result<Vec<MemoIndexEntry>, FlowixError> {
+    pub fn list_memos(&mut self, notebook_key: &str) -> Result<Vec<MemoIndexEntry>, TankError> {
         let notebook = self.resolve_notebook(notebook_key)?;
         Ok(self
             .memo_file
@@ -136,21 +136,21 @@ impl<'a> MemoService<'a> {
         self.memo_file.read_all_memos_for_notebook_id(notebook_id)
     }
 
-    pub fn memo_metadata(&mut self, id_or_filename: &str) -> Result<Memo, FlowixError> {
+    pub fn memo_metadata(&mut self, id_or_filename: &str) -> Result<Memo, TankError> {
         let resolved = self.resolve_memo(id_or_filename)?;
         Ok(MemoFile::index_entry_to_memo(&resolved.entry))
     }
 
-    pub fn get_memo(&mut self, id_or_filename: &str) -> Result<MemoDocument, FlowixError> {
+    pub fn get_memo(&mut self, id_or_filename: &str) -> Result<MemoDocument, TankError> {
         let resolved = self.resolve_memo(id_or_filename)?;
         let body = std::fs::read_to_string(&resolved.path).map_err(|error| {
             if error.kind() == std::io::ErrorKind::NotFound {
-                FlowixError::NotFound(format!(
+                TankError::NotFound(format!(
                     "note `{}` is indexed but its Markdown file is missing",
                     resolved.id
                 ))
             } else {
-                FlowixError::Io(error)
+                TankError::Io(error)
             }
         })?;
         Ok(MemoDocument {
@@ -165,9 +165,9 @@ impl<'a> MemoService<'a> {
         &mut self,
         notebook_key: &str,
         body: &str,
-    ) -> Result<CreatedMemo, FlowixError> {
+    ) -> Result<CreatedMemo, TankError> {
         if body.trim().is_empty() {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "empty body, note not created".into(),
             ));
         }
@@ -181,9 +181,9 @@ impl<'a> MemoService<'a> {
         &mut self,
         notebook_key: &str,
         body: &str,
-    ) -> Result<CreatedMemo, FlowixError> {
+    ) -> Result<CreatedMemo, TankError> {
         if body.trim().is_empty() {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "empty body, note not created".into(),
             ));
         }
@@ -212,7 +212,7 @@ impl<'a> MemoService<'a> {
         notebook_key: Option<&str>,
         title: &str,
         body: &str,
-    ) -> Result<CreatedMemo, FlowixError> {
+    ) -> Result<CreatedMemo, TankError> {
         self.create_memo_named_with_tag(notebook_key, title, body, None)
     }
 
@@ -224,7 +224,7 @@ impl<'a> MemoService<'a> {
         title: &str,
         body: &str,
         tag: Option<&str>,
-    ) -> Result<CreatedMemo, FlowixError> {
+    ) -> Result<CreatedMemo, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         let memo = if let Some(key) = notebook_key {
             let notebook = self.resolve_notebook(key)?;
@@ -233,12 +233,12 @@ impl<'a> MemoService<'a> {
         } else {
             self.memo_file.create_memo(title, body, tag)
         }
-        .map_err(FlowixError::Io)?;
+        .map_err(TankError::Io)?;
         let location = self
             .memo_file
             .resolve_memo_location(&memo.id)?
             .ok_or_else(|| {
-                FlowixError::Internal(format!(
+                TankError::Internal(format!(
                     "created note `{}` could not be resolved from the index",
                     memo.id
                 ))
@@ -258,7 +258,7 @@ impl<'a> MemoService<'a> {
         &mut self,
         notebook_key: Option<&str>,
         title: &str,
-    ) -> Result<PathBuf, FlowixError> {
+    ) -> Result<PathBuf, TankError> {
         let (base, entries) = if let Some(key) = notebook_key {
             let notebook = self.resolve_notebook(key)?;
             let entries = self
@@ -287,10 +287,10 @@ impl<'a> MemoService<'a> {
         old: &str,
         new: &str,
         dry_run: bool,
-    ) -> Result<EditedMemo, FlowixError> {
+    ) -> Result<EditedMemo, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         if old.is_empty() {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "edit: old_string cannot be empty".into(),
             ));
         }
@@ -298,13 +298,13 @@ impl<'a> MemoService<'a> {
         let current = std::fs::read_to_string(&resolved.path)?;
         let matches = current.matches(old).count();
         if matches == 0 {
-            return Err(FlowixError::Conflict(format!(
+            return Err(TankError::Conflict(format!(
                 "edit: old_string not found in `{}` (whitespace, indentation, and line endings must match)",
                 resolved.id
             )));
         }
         if matches > 1 {
-            return Err(FlowixError::Conflict(format!(
+            return Err(TankError::Conflict(format!(
                 "edit: old_string matched {matches} times in `{}`; provide more surrounding context to make it unique",
                 resolved.id
             )));
@@ -340,9 +340,9 @@ impl<'a> MemoService<'a> {
         &mut self,
         id_or_filename: &str,
         body: &str,
-    ) -> Result<EditedMemo, FlowixError> {
+    ) -> Result<EditedMemo, TankError> {
         if body.trim().is_empty() {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "empty body, note not modified".into(),
             ));
         }
@@ -354,7 +354,7 @@ impl<'a> MemoService<'a> {
         &mut self,
         id_or_filename: &str,
         body: &str,
-    ) -> Result<EditedMemo, FlowixError> {
+    ) -> Result<EditedMemo, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         let resolved = self.resolve_memo(id_or_filename)?;
         let old_bytes = std::fs::metadata(&resolved.path)
@@ -378,7 +378,7 @@ impl<'a> MemoService<'a> {
         &mut self,
         id_or_filename: &str,
         body: &str,
-    ) -> Result<EditedMemo, FlowixError> {
+    ) -> Result<EditedMemo, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         let resolved = self.resolve_memo(id_or_filename)?;
         let old_bytes = std::fs::metadata(&resolved.path)
@@ -402,7 +402,7 @@ impl<'a> MemoService<'a> {
         &mut self,
         id_or_filename: &str,
         new_title: &str,
-    ) -> Result<EditedMemo, FlowixError> {
+    ) -> Result<EditedMemo, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         let resolved = self.resolve_memo(id_or_filename)?;
         let memo = self.memo_file.rename_memo(&resolved.id, new_title)?;
@@ -417,13 +417,13 @@ impl<'a> MemoService<'a> {
         })
     }
 
-    pub fn sync_memo_metadata(&mut self, memo: &Memo) -> Result<(), FlowixError> {
+    pub fn sync_memo_metadata(&mut self, memo: &Memo) -> Result<(), TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         self.memo_file.sync_metadata_only_global(memo)?;
         Ok(())
     }
 
-    pub fn delete_memo(&mut self, id_or_filename: &str) -> Result<DeletedMemo, FlowixError> {
+    pub fn delete_memo(&mut self, id_or_filename: &str) -> Result<DeletedMemo, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         let resolved = self.resolve_memo(id_or_filename)?;
         let file_removed = self.memo_file.delete_memo_result_global(&resolved.id)?;
@@ -437,20 +437,20 @@ impl<'a> MemoService<'a> {
     pub fn tag_usage_summary(
         &mut self,
         notebook_id: Option<&str>,
-    ) -> Result<(Vec<String>, Vec<(String, usize)>, usize, usize, usize), FlowixError> {
+    ) -> Result<(Vec<String>, Vec<(String, usize)>, usize, usize, usize), TankError> {
         self.memo_file
             .read_tag_usage_summary_for_notebook_id(notebook_id)
-            .map_err(FlowixError::Io)
+            .map_err(TankError::Io)
     }
 
     pub fn todo_metadata(
         &mut self,
         notebook_id: Option<&str>,
         sort: &str,
-    ) -> Result<Vec<MemoTodoEntry>, FlowixError> {
+    ) -> Result<Vec<MemoTodoEntry>, TankError> {
         self.memo_file
             .read_todo_metadata_entries_for_notebook_id(notebook_id, sort)
-            .map_err(FlowixError::Io)
+            .map_err(TankError::Io)
     }
 
     pub fn list_memo_versions(&mut self, memo_id: &str) -> Vec<MemoVersionMeta> {
@@ -466,22 +466,22 @@ impl<'a> MemoService<'a> {
         memo_id: &str,
         content: &str,
         source: MemoVersionSource,
-    ) -> Result<Option<MemoVersionMeta>, FlowixError> {
+    ) -> Result<Option<MemoVersionMeta>, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         self.memo_file
             .create_memo_version(memo_id, content, source)
-            .map_err(FlowixError::Io)
+            .map_err(TankError::Io)
     }
 
     pub fn maybe_create_auto_memo_version(
         &mut self,
         memo_id: &str,
         content: &str,
-    ) -> Result<Option<MemoVersionMeta>, FlowixError> {
+    ) -> Result<Option<MemoVersionMeta>, TankError> {
         let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
         self.memo_file
             .maybe_create_auto_memo_version(memo_id, content)
-            .map_err(FlowixError::Io)
+            .map_err(TankError::Io)
     }
 
     pub fn delete_memo_version(&mut self, memo_id: &str, version_id: &str) -> bool {
@@ -496,14 +496,14 @@ impl<'a> MemoService<'a> {
         query: &str,
         notebook_filter: Option<&str>,
         limit: usize,
-    ) -> Result<NotebookSearchResults, FlowixError> {
+    ) -> Result<NotebookSearchResults, TankError> {
         if query.trim().is_empty() {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "search query cannot be empty".into(),
             ));
         }
         if limit == 0 {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "search limit must be greater than 0".into(),
             ));
         }
@@ -513,12 +513,12 @@ impl<'a> MemoService<'a> {
                 .iter()
                 .any(|config| config.id == filter || config.name == filter)
             {
-                return Err(FlowixError::NotFound(format!(
+                return Err(TankError::NotFound(format!(
                     "no notebooks matched filter `{filter}`"
                 )));
             }
         } else if configs.is_empty() {
-            return Err(FlowixError::NotFound("no notebooks configured".into()));
+            return Err(TankError::NotFound("no notebooks configured".into()));
         }
         Ok(search::search_notebooks(
             self.memo_file,
@@ -531,11 +531,11 @@ impl<'a> MemoService<'a> {
 
     /// 语义 / 混合检索. 校验逻辑同 [`MemoService::search_memos`], 区别在于
     /// 把检索交给 [`embed::search_notebooks_hybrid`], 需要注入一个
-    /// [`EmbeddingProvider`] (默认 Ollama 实现在 flowix-cli). 当 `mode` 为
+    /// [`EmbeddingProvider`] (默认 Ollama 实现在 tank-cli). 当 `mode` 为
     /// [`SearchMode::Lexical`] 时调用方应改用 [`MemoService::search_memos`]
     /// 以免无谓地构造 provider.
     ///
-    /// embedding 失败 (Ollama 未运行 / 模型未拉取) 会映射成 [`FlowixError::Internal`],
+    /// embedding 失败 (Ollama 未运行 / 模型未拉取) 会映射成 [`TankError::Internal`],
     /// 由上层转成 CLI `Other` 错误, 提示用户检查本地 embedding 服务.
     pub fn search_memos_hybrid(
         &mut self,
@@ -544,14 +544,14 @@ impl<'a> MemoService<'a> {
         limit: usize,
         mode: SearchMode,
         provider: &dyn EmbeddingProvider,
-    ) -> Result<NotebookSearchResults, FlowixError> {
+    ) -> Result<NotebookSearchResults, TankError> {
         if query.trim().is_empty() {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "search query cannot be empty".into(),
             ));
         }
         if limit == 0 {
-            return Err(FlowixError::InvalidInput(
+            return Err(TankError::InvalidInput(
                 "search limit must be greater than 0".into(),
             ));
         }
@@ -561,12 +561,12 @@ impl<'a> MemoService<'a> {
                 .iter()
                 .any(|config| config.id == filter || config.name == filter)
             {
-                return Err(FlowixError::NotFound(format!(
+                return Err(TankError::NotFound(format!(
                     "no notebooks matched filter `{filter}`"
                 )));
             }
         } else if configs.is_empty() {
-            return Err(FlowixError::NotFound("no notebooks configured".into()));
+            return Err(TankError::NotFound("no notebooks configured".into()));
         }
         crate::embed::search_notebooks_hybrid(
             self.memo_file,
@@ -577,10 +577,10 @@ impl<'a> MemoService<'a> {
             mode,
             provider,
         )
-        .map_err(FlowixError::Internal)
+        .map_err(TankError::Internal)
     }
 
-    pub fn resolve_notebook(&mut self, key: &str) -> Result<NotebookConfig, FlowixError> {
+    pub fn resolve_notebook(&mut self, key: &str) -> Result<NotebookConfig, TankError> {
         self.list_notebooks()?
             .into_iter()
             .find(|config| config.id == key)
@@ -591,10 +591,10 @@ impl<'a> MemoService<'a> {
                     .into_iter()
                     .find(|config| config.name == key)
             })
-            .ok_or_else(|| FlowixError::NotFound(format!("notebook `{key}` not found")))
+            .ok_or_else(|| TankError::NotFound(format!("notebook `{key}` not found")))
     }
 
-    pub fn resolve_memo(&mut self, id_or_filename: &str) -> Result<ResolvedMemo, FlowixError> {
+    pub fn resolve_memo(&mut self, id_or_filename: &str) -> Result<ResolvedMemo, TankError> {
         if let Some(location) = self.memo_file.resolve_memo_location(id_or_filename)? {
             let path = PathBuf::from(&location.notebook.path).join(&location.memo.filename);
             return Ok(ResolvedMemo {
@@ -629,7 +629,7 @@ impl<'a> MemoService<'a> {
                 });
             }
         }
-        Err(FlowixError::NotFound(format!(
+        Err(TankError::NotFound(format!(
             "note `{id_or_filename}` not found"
         )))
     }
@@ -707,7 +707,7 @@ mod tests {
         let error = service
             .edit_memo_exact(&created.memo.id, "repeat", "changed", false)
             .unwrap_err();
-        assert!(matches!(error, FlowixError::Conflict(_)));
+        assert!(matches!(error, TankError::Conflict(_)));
     }
 
     #[test]

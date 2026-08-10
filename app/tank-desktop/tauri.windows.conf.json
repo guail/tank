@@ -5,7 +5,7 @@
     ],
     "windows": {
       "nsis": {
-        "installerHooks": "nsis/flowix-cli-path.nsh",
+        "installerHooks": "nsis/tank-cli-path.nsh",
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico"
       }

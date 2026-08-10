@@ -1,14 +1,14 @@
 //! Model Context Protocol stdio frontend for external Agents.
 //!
-//! The server intentionally exposes exactly one tool, `flowix_memo`. Its input is a
-//! restricted Flowix CLI command plus optional stdin content. Commands are parsed into
+//! The server intentionally exposes exactly one tool, `tank_memo`. Its input is a
+//! restricted TANK的英雄笔记 CLI command plus optional stdin content. Commands are parsed into
 //! argv and dispatched directly to the typed store layer; no system shell is spawned.
 
 use crate::{cli, errors::CliError, fmt, output, store};
 use serde_json::{json, Map, Value};
 use std::io::{BufRead, Write};
 
-pub const TOOL_NAME: &str = "flowix_memo";
+pub const TOOL_NAME: &str = "tank_memo";
 const LATEST_PROTOCOL_VERSION: &str = "2025-11-25";
 const SUPPORTED_PROTOCOL_VERSIONS: &[&str] = &[
     "2024-11-05",
@@ -17,7 +17,7 @@ const SUPPORTED_PROTOCOL_VERSIONS: &[&str] = &[
     LATEST_PROTOCOL_VERSION,
 ];
 
-pub const TOOL_DESCRIPTION: &str = "Manage Flowix notebooks and Markdown notes using restricted Flowix CLI syntax. Do not include the leading `flowix`. Supported commands: `notebooks`; `list <notebook>`; `show <id>`; `search <query> [--notebook <name|id>] [--limit <1..200>]` (add `--semantic` for vector-only or `--hybrid` for lexical+semantic fusion — both require a local Ollama embedding backend such as `nomic-embed-text`); `create <notebook>` with the complete non-empty Markdown body in `stdin`; `edit <id> --old <exact-text> (--new <text> | --new-stdin)` where `--old` must occur exactly once and `stdin` supplies the replacement when `--new-stdin` is used; `edit` also supports `--dry-run`; `write <id>` with the complete replacement Markdown body in `stdin`; and `delete <id>`. Obtain memo IDs from list or search before reading or modifying a memo. Notebook may be a registered notebook name or ID. Quoted arguments are supported. Shell syntax and arbitrary programs are forbidden, including pipes, redirects, semicolons, `&&`, command substitution, and environment expansion. `delete` is destructive. Results are always returned as structured data, so `--json` is unnecessary.";
+pub const TOOL_DESCRIPTION: &str = "Manage TANK的英雄笔记 notebooks and Markdown notes using restricted TANK的英雄笔记 CLI syntax. Do not include the leading `tank-cli`. Supported commands: `notebooks`; `list <notebook>`; `show <id>`; `search <query> [--notebook <name|id>] [--limit <1..200>]` (add `--semantic` for vector-only or `--hybrid` for lexical+semantic fusion — both require a local Ollama embedding backend such as `nomic-embed-text`); `create <notebook>` with the complete non-empty Markdown body in `stdin`; `edit <id> --old <exact-text> (--new <text> | --new-stdin)` where `--old` must occur exactly once and `stdin` supplies the replacement when `--new-stdin` is used; `edit` also supports `--dry-run`; `write <id>` with the complete replacement Markdown body in `stdin`; and `delete <id>`. Obtain memo IDs from list or search before reading or modifying a memo. Notebook may be a registered notebook name or ID. Quoted arguments are supported. Shell syntax and arbitrary programs are forbidden, including pipes, redirects, semicolons, `&&`, command substitution, and environment expansion. `delete` is destructive. Results are always returned as structured data, so `--json` is unnecessary.";
 
 /// Run the MCP line-delimited JSON-RPC loop until stdin reaches EOF.
 pub fn run_mcp<R: BufRead, W: Write>(reader: R, mut writer: W) -> Result<(), CliError> {
@@ -72,25 +72,25 @@ fn initialize_result(params: &Value) -> Value {
         "protocolVersion": protocol_version,
         "capabilities": {"tools": {"listChanged": false}},
         "serverInfo": {
-            "name": "flowix-memo",
-            "title": "Flowix Memo",
+            "name": "tank-memo",
+            "title": "TANK的英雄笔记",
             "version": env!("CARGO_PKG_VERSION")
         },
-        "instructions": "Use the flowix_memo tool to search, read, create, and edit Flowix Markdown memos."
+        "instructions": "Use the tank_memo tool to search, read, create, and edit TANK的英雄笔记 Markdown memos."
     })
 }
 
 fn tool_definition() -> Value {
     json!({
         "name": TOOL_NAME,
-        "title": "Flowix Memo",
+        "title": "TANK的英雄笔记",
         "description": TOOL_DESCRIPTION,
         "inputSchema": {
             "type": "object",
             "properties": {
                 "command": {
                     "type": "string",
-                    "description": "A supported Flowix command without the leading `flowix`, for example `search \"product plan\" --notebook work --limit 10` (or add `--semantic`/`--hybrid` for semantic search, which needs a local Ollama embedding backend)."
+                    "description": "A supported TANK的英雄笔记 command without the leading `tank-cli`, for example `search \"product plan\" --notebook work --limit 10` (or add `--semantic`/`--hybrid` for semantic search, which needs a local Ollama embedding backend)."
                 },
                 "stdin": {
                     "type": "string",
@@ -117,17 +117,17 @@ fn call_tool(params: &Value) -> Result<Value, CliError> {
     let arguments = object
         .get("arguments")
         .and_then(Value::as_object)
-        .ok_or_else(|| CliError::Usage("flowix_memo arguments must be an object".into()))?;
+        .ok_or_else(|| CliError::Usage("tank_memo arguments must be an object".into()))?;
     validate_argument_keys(arguments)?;
     let command = arguments
         .get("command")
         .and_then(Value::as_str)
-        .ok_or_else(|| CliError::Usage("flowix_memo.command must be a string".into()))?;
+        .ok_or_else(|| CliError::Usage("tank_memo.command must be a string".into()))?;
     let stdin = match arguments.get("stdin") {
         Some(value) => Some(
             value
                 .as_str()
-                .ok_or_else(|| CliError::Usage("flowix_memo.stdin must be a string".into()))?,
+                .ok_or_else(|| CliError::Usage("tank_memo.stdin must be a string".into()))?,
         ),
         None => None,
     };
@@ -153,7 +153,7 @@ fn validate_argument_keys(arguments: &Map<String, Value>) -> Result<(), CliError
         .find(|key| key.as_str() != "command" && key.as_str() != "stdin")
     {
         return Err(CliError::Usage(format!(
-            "flowix_memo does not accept argument `{key}`"
+            "tank_memo does not accept argument `{key}`"
         )));
     }
     Ok(())
@@ -165,12 +165,12 @@ fn execute_command(command: &str, stdin: Option<&str>) -> Result<Value, CliError
         .map_err(|error| CliError::Usage(format!("invalid command quoting: {error}")))?;
     if args.is_empty() {
         return Err(CliError::Usage(
-            "flowix_memo.command cannot be empty".into(),
+            "tank_memo.command cannot be empty".into(),
         ));
     }
-    if args[0] == "flowix" || args[0] == "flowix-cli" {
+    if args[0] == "tank-cli" || args[0] == "tank-cli" {
         return Err(CliError::Usage(
-            "omit the leading `flowix`; pass only the subcommand".into(),
+            "omit the leading `tank-cli`; pass only the subcommand".into(),
         ));
     }
     if args
@@ -178,7 +178,7 @@ fn execute_command(command: &str, stdin: Option<&str>) -> Result<Value, CliError
         .any(|arg| matches!(arg.as_str(), "help" | "--help" | "-h" | "--version" | "-V"))
     {
         return Err(CliError::Usage(
-            "help and version commands are not available through flowix_memo".into(),
+            "help and version commands are not available through tank_memo".into(),
         ));
     }
 
@@ -255,7 +255,7 @@ fn execute_command(command: &str, stdin: Option<&str>) -> Result<Value, CliError
             output::to_json_value(&store::write_note(&mut memo_file, &full_id, body)?)
         }
         cli::Cli::Version | cli::Cli::Completion { .. } | cli::Cli::Mcp => Err(CliError::Usage(
-            "command is not available through flowix_memo".into(),
+            "command is not available through tank_memo".into(),
         )),
     }
 }

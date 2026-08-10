@@ -1,21 +1,21 @@
 [package]
-name = "flowix-mobile"
+name = "tank-mobile"
 version.workspace = true
-description = "Flowix mobile client"
-authors = ["Flowix"]
+description = "TANK的英雄笔记 mobile client"
+authors = ["TANK的英雄笔记"]
 edition.workspace = true
-default-run = "flowix-mobile"
+default-run = "tank-mobile"
 
 [lib]
-name = "flowix_mobile"
+name = "tank_mobile"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-flowix-core = { workspace = true }
-flowix-sync = { workspace = true }
+tank-core = { workspace = true }
+tank-sync = { workspace = true }
 tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-keyring-store = { version = "0.2.0", default-features = false }
 serde = { workspace = true }

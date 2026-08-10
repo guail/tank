@@ -7,7 +7,7 @@ use crate::app::search_index::try_index_upsert;
 use crate::lock_utils::read_lock;
 use crate::memo_events::{self, MemoEvent};
 use crate::watcher::runtime::mark_self_write_for;
-use flowix_core::memo_file::types::{DeleteTagReport, MoveTagReport};
+use tank_core::memo_file::types::{DeleteTagReport, MoveTagReport};
 
 use crate::app::state::AppState;
 

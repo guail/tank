@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <!--
-      macOS bundle entitlements for Flowix.
+      macOS bundle entitlements for TANK的英雄笔记.
 
       用于 `tauri.conf.production.json` 的 `bundle.macOS.entitlements` 字段;
       由 codesign 使用 runtime options 和本 entitlements 文件完成签名。
@@ -72,7 +72,7 @@
       standard macOS sandbox/bookmark model and are harmless for local
       ad-hoc/dev builds that do not enable the app sandbox.
 
-      Do not enable `com.apple.security.app-sandbox` here yet: Flowix runs
+      Do not enable `com.apple.security.app-sandbox` here yet: TANK的英雄笔记 runs
       local agents / CLI tools, and a full sandbox would need a broader
       audit of child process and workspace access.
     -->

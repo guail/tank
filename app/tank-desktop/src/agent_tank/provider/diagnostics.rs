@@ -4,12 +4,12 @@ use rllm::chat::{ChatRole, MessageType};
 use rllm::error::LLMError;
 use serde::{Deserialize, Serialize};
 
-use crate::agent_flowix::providers::OpenAICompatibleChatMessage;
+use crate::agent_tank::providers::OpenAICompatibleChatMessage;
 use crate::config::AiModelConfig;
 
 #[cfg(test)]
 use super::AgentChatProvider;
-use super::{build_chat_provider, provider_kind, FlowixProviderKind};
+use super::{build_chat_provider, provider_kind, TANK的英雄笔记ProviderKind};
 
 // 鈹€鈹€鈹€ Connection probe 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 //
@@ -199,7 +199,7 @@ enum Outcome {
 /// or buggy caller can't bypass).
 ///
 /// **Cross-file invariant**: the rules here are *deliberately duplicated*
-/// in `app/flowix-web/features/preferences/sections/agent.tsx::
+/// in `app/tank-web/features/preferences/sections/agent.tsx::
 /// validateBeforeSave` so the front-end can fail-fast on obvious mistakes
 /// without burning an HTTP round-trip. If you add a rule here, mirror it
 /// in `validateBeforeSave` too 鈥?otherwise the front-end will let through
@@ -229,7 +229,7 @@ fn precheck(config: &AiModelConfig) -> Option<TestConnectionError> {
     let kind = provider_kind(&config.provider);
     let key_required = !matches!(
         kind,
-        FlowixProviderKind::Ollama | FlowixProviderKind::OpenAICompatible
+        TANK的英雄笔记ProviderKind::Ollama | TANK的英雄笔记ProviderKind::OpenAICompatible
     );
     if key_required && config.effective_api_key(&config.provider).trim().is_empty() {
         return Some(TestConnectionError {
@@ -243,7 +243,7 @@ fn precheck(config: &AiModelConfig) -> Option<TestConnectionError> {
     // a clear "you forgot the URL" message.
     let url_required = matches!(
         kind,
-        FlowixProviderKind::Ollama | FlowixProviderKind::OpenAICompatible
+        TANK的英雄笔记ProviderKind::Ollama | TANK的英雄笔记ProviderKind::OpenAICompatible
     );
     if url_required && url.is_empty() {
         return Some(TestConnectionError {
@@ -352,7 +352,7 @@ fn classify_error(err: &LLMError) -> TestConnectionError {
         ),
         LLMError::ToolConfigError(msg) => {
             // This means *we* built a bad tool schema 鈥?a config bug on
-            // the Flowix side, not anything the user did. Tell them the
+            // the TANK的英雄笔记 side, not anything the user did. Tell them the
             // form is wrong so they don't blame the provider.
             (
                 TestConnectionErrorKind::BadConfig,
@@ -589,16 +589,16 @@ mod probe_tests {
 
     #[test]
     fn provider_kind_routes_deepseek_label_to_deepseek_provider() {
-        assert_eq!(provider_kind("DeepSeek"), FlowixProviderKind::DeepSeek);
-        assert_eq!(provider_kind("deepseek"), FlowixProviderKind::DeepSeek);
+        assert_eq!(provider_kind("DeepSeek"), TANK的英雄笔记ProviderKind::DeepSeek);
+        assert_eq!(provider_kind("deepseek"), TANK的英雄笔记ProviderKind::DeepSeek);
     }
 
     #[test]
     fn provider_kind_routes_builtin_provider_labels() {
-        assert_eq!(provider_kind("Anthropic"), FlowixProviderKind::Anthropic);
-        assert_eq!(provider_kind("Gemini"), FlowixProviderKind::Google);
-        assert_eq!(provider_kind("Ollama"), FlowixProviderKind::Ollama);
-        assert_eq!(provider_kind("OpenRouter"), FlowixProviderKind::OpenRouter);
+        assert_eq!(provider_kind("Anthropic"), TANK的英雄笔记ProviderKind::Anthropic);
+        assert_eq!(provider_kind("Gemini"), TANK的英雄笔记ProviderKind::Google);
+        assert_eq!(provider_kind("Ollama"), TANK的英雄笔记ProviderKind::Ollama);
+        assert_eq!(provider_kind("OpenRouter"), TANK的英雄笔记ProviderKind::OpenRouter);
     }
 
     #[test]

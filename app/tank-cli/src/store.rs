@@ -14,9 +14,9 @@ use crate::{
     },
     paths,
 };
-use flowix_core::embed::SearchMode;
-use flowix_core::memo_file::{MemoFile, NotebookConfig};
-use flowix_core::MemoService;
+use tank_core::embed::SearchMode;
+use tank_core::memo_file::{MemoFile, NotebookConfig};
+use tank_core::MemoService;
 use std::{collections::HashMap, path::PathBuf};
 
 /// 构造一个 `MemoFile`, 走 `paths::resolve()` 解析的数据目录。
@@ -29,7 +29,7 @@ fn read_notebook_configs_strict(mf: &MemoFile) -> Result<Vec<NotebookConfig>, Cl
     mf.read_notebook_configs().map_err(CliError::Io)
 }
 
-/// `flowix-cli notebooks --json` ── 输出 JSON 形式。
+/// `tank-cli notebooks --json` ── 输出 JSON 形式。
 pub fn cmd_notebooks_json() -> Result<(), CliError> {
     let configs = notebooks_list_configs()?;
     let note_counts = notebook_note_counts(&configs)?;
@@ -45,7 +45,7 @@ pub(crate) fn notebooks_list_configs() -> Result<Vec<NotebookConfig>, CliError> 
         .map_err(Into::into)
 }
 
-/// `flowix-cli notebooks` ── 列出所有 notebook。
+/// `tank-cli notebooks` ── 列出所有 notebook。
 pub fn cmd_notebooks() -> Result<(), CliError> {
     let mf = open()?;
     let configs = read_notebook_configs_strict(&mf)?;
@@ -78,7 +78,7 @@ pub(crate) fn open_in(notebook_key: &str) -> Result<(MemoFile, NotebookConfig), 
     let nb = find_notebook(&configs, notebook_key)
         .ok_or_else(|| {
             CliError::NotFound(format!(
-                "notebook `{notebook_key}` (try `flowix notebooks` to list)"
+                "notebook `{notebook_key}` (try `tank-cli notebooks` to list)"
             ))
         })?
         .clone();
@@ -87,7 +87,7 @@ pub(crate) fn open_in(notebook_key: &str) -> Result<(MemoFile, NotebookConfig), 
     Ok((mf, nb))
 }
 
-/// `flowix-cli list <notebook> --json` ── 输出 JSON 形式。
+/// `tank-cli list <notebook> --json` ── 输出 JSON 形式。
 pub fn cmd_list_json(notebook_key: &str) -> Result<(), CliError> {
     let entries = notes_list_entries(notebook_key)?;
     fmt::print_notes_json(&entries);
@@ -97,14 +97,14 @@ pub fn cmd_list_json(notebook_key: &str) -> Result<(), CliError> {
 /// memo 列表的数据源，读取 notebook 的 memo index。
 pub(crate) fn notes_list_entries(
     notebook_key: &str,
-) -> Result<Vec<flowix_core::memo_file::MemoIndexEntry>, CliError> {
+) -> Result<Vec<tank_core::memo_file::MemoIndexEntry>, CliError> {
     let mut mf = open()?;
     MemoService::new(&mut mf)
         .list_memos(notebook_key)
         .map_err(Into::into)
 }
 
-/// `flowix-cli list <notebook>` ── 列出某 notebook 下的笔记。
+/// `tank-cli list <notebook>` ── 列出某 notebook 下的笔记。
 pub fn cmd_list(notebook_key: &str) -> Result<(), CliError> {
     let entries = notes_list_entries(notebook_key)?;
     fmt::print_notes(&entries);
@@ -132,14 +132,14 @@ pub(crate) fn resolve_id_with_notebook(
     Ok((mf, resolved.id, resolved.notebook))
 }
 
-/// `flowix-cli show <id>` ── 读一条笔记到 stdout。
+/// `tank-cli show <id>` ── 读一条笔记到 stdout。
 pub fn cmd_show(id_arg: &str) -> Result<(), CliError> {
     let shown = note_show_data(id_arg)?;
     fmt::print_note(&shown.entry, &shown.body);
     Ok(())
 }
 
-/// `flowix-cli show <id> --json` ── 输出 JSON 形式。
+/// `tank-cli show <id> --json` ── 输出 JSON 形式。
 pub fn cmd_show_json(id_arg: &str) -> Result<(), CliError> {
     let shown = note_show_data(id_arg)?;
     println!(
@@ -151,7 +151,7 @@ pub fn cmd_show_json(id_arg: &str) -> Result<(), CliError> {
 }
 
 pub(crate) struct NoteShowData {
-    entry: flowix_core::memo_file::MemoIndexEntry,
+    entry: tank_core::memo_file::MemoIndexEntry,
     body: String,
     notebook: NotebookConfig,
     file_path: PathBuf,
@@ -175,7 +175,7 @@ pub(crate) fn note_show_data(id_arg: &str) -> Result<NoteShowData, CliError> {
     })
 }
 
-/// `flowix-cli create <notebook>` ── 从 stdin 读 body, 创建一条新笔记。
+/// `tank-cli create <notebook>` ── 从 stdin 读 body, 创建一条新笔记。
 ///
 /// 面向 AI agent 的接口 ── body 永远从 stdin 读, 不依赖 $EDITOR,
 /// Windows / Linux / macOS 行为完全一致。
@@ -272,7 +272,7 @@ fn derive_title(body: &str, name: Option<&str>) -> String {
     name.unwrap_or("untitled").to_string()
 }
 
-/// `flowix-cli delete <id>` ── 删除一条笔记 (.md + memo index entry)。
+/// `tank-cli delete <id>` ── 删除一条笔记 (.md + memo index entry)。
 pub fn cmd_delete(id_arg: &str, json: bool) -> Result<(), CliError> {
     let (mut mf, full_id) = resolve_id(id_arg)?;
     let file_path = mf.find_memo_file_path(&full_id);
@@ -312,7 +312,7 @@ pub(crate) fn delete_note(
     })
 }
 
-/// `flowix-cli search <query> [--notebook <name|id>] [--semantic|--hybrid]` ── 跨 notebook 全文搜索。
+/// `tank-cli search <query> [--notebook <name|id>] [--semantic|--hybrid]` ── 跨 notebook 全文搜索。
 pub fn cmd_search(
     query: &str,
     notebook_filter: Option<&str>,
@@ -339,9 +339,9 @@ pub fn cmd_search(
 
 /// 构造语义检索用的 Ollama provider, 端点 / 模型走环境变量覆盖.
 fn build_embed_provider() -> OllamaEmbeddingProvider {
-    let url = std::env::var("FLOWIX_OLLAMA_URL")
+    let url = std::env::var("TANK_OLLAMA_URL")
         .unwrap_or_else(|_| "http://localhost:11434".to_string());
-    let model = std::env::var("FLOWIX_EMBED_MODEL")
+    let model = std::env::var("TANK_EMBED_MODEL")
         .unwrap_or_else(|_| "nomic-embed-text".to_string());
     OllamaEmbeddingProvider::new(&url, &model)
 }
@@ -356,7 +356,7 @@ pub(crate) fn search_hits(
     notebook_filter: Option<&str>,
     limit: usize,
     mode: SearchMode,
-) -> Result<flowix_core::search::NotebookSearchResults, CliError> {
+) -> Result<tank_core::search::NotebookSearchResults, CliError> {
     let mut mf = open()?;
     if mode == SearchMode::Lexical {
         MemoService::new(&mut mf)
@@ -374,7 +374,7 @@ pub(crate) fn search_hits(
 /// MCP 和 `cmd_search --json` 共用同一份输出 shape。
 pub(crate) fn search_results_to_value(
     query: &str,
-    results: &flowix_core::search::NotebookSearchResults,
+    results: &tank_core::search::NotebookSearchResults,
 ) -> SearchOutput {
     let matches: Vec<SearchMatch> = results
         .hits
@@ -399,7 +399,7 @@ pub(crate) fn search_results_to_value(
     }
 }
 
-/// `flowix-cli edit <id> --old <text> --new <text>` ── 精确字符串替换增量编辑。
+/// `tank-cli edit <id> --old <text> --new <text>` ── 精确字符串替换增量编辑。
 ///
 /// B 风格 (Anthropic Claude API / Cursor 风格), 跟 desktop 端 AI 工具
 /// [`providers/tools/filesystem.rs::edit`] 完全同模型:
@@ -427,7 +427,7 @@ pub fn cmd_edit(
     let old = old.ok_or_else(|| {
         CliError::Usage(
             "edit: --old/-o is required\n\
-             usage: flowix edit <id> --old <text> --new <text> [--new-stdin]"
+             usage: tank-cli edit <id> --old <text> --new <text> [--new-stdin]"
                 .into(),
         )
     })?;
@@ -451,7 +451,7 @@ pub fn cmd_edit(
             None => {
                 return Err(CliError::Usage(
                     "edit: --new/-n is required (or use --new-stdin)\n\
-                     usage: flowix edit <id> --old <text> --new <text> [--new-stdin]"
+                     usage: tank-cli edit <id> --old <text> --new <text> [--new-stdin]"
                         .into(),
                 ))
             }
@@ -552,7 +552,7 @@ fn edit_note_impl(
     })
 }
 
-/// `flowix-cli write <id>` ── 从 stdin 读 body, 覆盖现有笔记内容。
+/// `tank-cli write <id>` ── 从 stdin 读 body, 覆盖现有笔记内容。
 ///
 /// `edit` 的非交互等价物 ── 适合脚本化批量改写、管道入内容、CI 注入等场景。
 ///
@@ -606,10 +606,10 @@ pub(crate) fn write_note(
     })
 }
 
-/// `flowix-cli completion <shell>` ── 输出 shell 补全脚本到 stdout。
+/// `tank-cli completion <shell>` ── 输出 shell 补全脚本到 stdout。
 pub fn cmd_completion(shell: &str) -> Result<(), CliError> {
     let mut cmd = crate::cli::cli_command();
-    let bin_name = "flowix";
+    let bin_name = "tank-cli";
     let mut stdout = std::io::stdout();
     match shell {
         "bash" => {
@@ -633,29 +633,29 @@ pub fn cmd_completion(shell: &str) -> Result<(), CliError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flowix_core::memo_file::NotebookConfig;
+    use tank_core::memo_file::NotebookConfig;
     use std::sync::Mutex;
 
     static ENV_LOCK: Mutex<()> = Mutex::new(());
 
-    fn with_flowix_env<T>(
+    fn with_tank_env<T>(
         home: &std::path::Path,
         data: &std::path::Path,
         f: impl FnOnce() -> T,
     ) -> T {
         let _guard = ENV_LOCK.lock().unwrap();
-        let old_home = std::env::var_os("FLOWIX_HOME");
-        let old_data = std::env::var_os("FLOWIX_DATA");
-        std::env::set_var("FLOWIX_HOME", home);
-        std::env::set_var("FLOWIX_DATA", data);
+        let old_home = std::env::var_os("TANK_HOME");
+        let old_data = std::env::var_os("TANK_DATA");
+        std::env::set_var("TANK_HOME", home);
+        std::env::set_var("TANK_DATA", data);
         let result = f();
         match old_home {
-            Some(value) => std::env::set_var("FLOWIX_HOME", value),
-            None => std::env::remove_var("FLOWIX_HOME"),
+            Some(value) => std::env::set_var("TANK_HOME", value),
+            None => std::env::remove_var("TANK_HOME"),
         }
         match old_data {
-            Some(value) => std::env::set_var("FLOWIX_DATA", value),
-            None => std::env::remove_var("FLOWIX_DATA"),
+            Some(value) => std::env::set_var("TANK_DATA", value),
+            None => std::env::remove_var("TANK_DATA"),
         }
         result
     }
@@ -701,7 +701,7 @@ mod tests {
         seed_notebook_config(&data_dir, &config_dir, &nb_dir);
         std::fs::write(nb_dir.join(".metadata").join("memo index"), "{not json").unwrap();
 
-        let entries = with_flowix_env(&config_dir, &data_dir, || {
+        let entries = with_tank_env(&config_dir, &data_dir, || {
             notes_list_entries("work").unwrap()
         });
         assert!(entries.is_empty());
@@ -716,7 +716,7 @@ mod tests {
         std::fs::create_dir_all(nb_dir.join(".metadata")).unwrap();
         seed_notebook_config(&data_dir, &config_dir, &nb_dir);
 
-        with_flowix_env(&config_dir, &data_dir, || {
+        with_tank_env(&config_dir, &data_dir, || {
             let (mut mf, nb) = open_in("work").unwrap();
             let created = create_note(&mut mf, &nb, "# Hello\nbody\n").unwrap();
             let id = created.id.clone();
@@ -736,19 +736,19 @@ mod tests {
         let nb_dir = tmp.path().join("notebooks").join("work");
         seed_notebook_config(&data_dir, &config_dir, &nb_dir);
 
-        with_flowix_env(&config_dir, &data_dir, || {
+        with_tank_env(&config_dir, &data_dir, || {
             let (mut mf, nb) = open_in("work").unwrap();
             let created = create_note(
                 &mut mf,
                 &nb,
-                "# flowix-cli-edit-write-test\nline A: original alpha\n",
+                "# tank-cli-edit-write-test\nline A: original alpha\n",
             )
             .unwrap();
             let id = created.id.clone();
             let file = created.file.as_str();
             let content = std::fs::read_to_string(file).unwrap();
             let frontmatter_key =
-                flowix_core::memo_file::extract_frontmatter_key(&content).unwrap();
+                tank_core::memo_file::extract_frontmatter_key(&content).unwrap();
 
             assert_eq!(id, frontmatter_key);
 
@@ -797,7 +797,7 @@ mod tests {
         let nb_dir = tmp.path().join("notebooks").join("work");
         seed_notebook_config(&data_dir, &config_dir, &nb_dir);
 
-        with_flowix_env(&config_dir, &data_dir, || {
+        with_tank_env(&config_dir, &data_dir, || {
             let (mut mf, nb) = open_in("work").unwrap();
             let created = create_note(&mut mf, &nb, "# T\nalpha beta gamma").unwrap();
             let id = created.id.clone();
@@ -821,7 +821,7 @@ mod tests {
         let nb_dir = tmp.path().join("notebooks").join("work");
         seed_notebook_config(&data_dir, &config_dir, &nb_dir);
 
-        with_flowix_env(&config_dir, &data_dir, || {
+        with_tank_env(&config_dir, &data_dir, || {
             let (mut mf, nb) = open_in("work").unwrap();
             let created = create_note(&mut mf, &nb, "# Alias Test\nalpha beta gamma").unwrap();
             let id = created.id.clone();

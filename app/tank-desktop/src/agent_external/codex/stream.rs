@@ -19,7 +19,7 @@ use super::{AGENT_TYPE, MAX_STDOUT_LINE_BYTES, MAX_TOOL_OUTPUT_CHARS};
 use crate::agent_external::{
     emit_chunk_with_run_id_and_metadata, truncate_for_log, AgentChunkMetadata, ExternalRunRegistry,
 };
-use crate::agent_flowix::AgentChunk;
+use crate::agent_tank::AgentChunk;
 use crate::agent_session::ThreadManager;
 use crate::runtime_log;
 use crate::agent_external::shared::TurnEvents;
@@ -712,7 +712,7 @@ mod tests {
                     thread_id: "session-1".to_string(),
                     model_id: None,
                     last_run_at: None,
-                    usage: Some(crate::agent_flowix::UsageInfo {
+                    usage: Some(crate::agent_tank::UsageInfo {
                         total_tokens: Some(total_tokens),
                         ..Default::default()
                     }),

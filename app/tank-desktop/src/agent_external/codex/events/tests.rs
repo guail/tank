@@ -631,7 +631,7 @@ fn maps_codex_stdout_contract_fixture_to_expected_chunks() {
             if id == "item_cmd_1"
                 && name == "command_execution"
                 && result.get("output_preview").and_then(Value::as_str)
-                    == Some("/tmp/flowix\n")
+                    == Some("/tmp/tank\n")
     ));
     assert!(matches!(
         &chunks[3],
@@ -640,7 +640,7 @@ fn maps_codex_stdout_contract_fixture_to_expected_chunks() {
     ));
     assert!(matches!(
         &chunks[4],
-        AgentChunk::Text { text, .. } if text == "The workspace is /tmp/flowix."
+        AgentChunk::Text { text, .. } if text == "The workspace is /tmp/tank."
     ));
     assert!(matches!(
         &chunks[5],
@@ -773,7 +773,7 @@ fn maps_codex_web_search_call_to_web_search_tool_call() {
             "call_id": "ws_1",
             "name": "web_search",
             "arguments": {
-                "query": "Flowix Codex web search"
+                "query": "TANK的英雄笔记 Codex web search"
             }
         }
     });
@@ -782,7 +782,7 @@ fn maps_codex_web_search_call_to_web_search_tool_call() {
         chunks.as_slice(),
         [AgentChunk::ToolCall { name, input, .. }]
             if name == "web_search"
-                && input.get("query").and_then(Value::as_str) == Some("Flowix Codex web search")
+                && input.get("query").and_then(Value::as_str) == Some("TANK的英雄笔记 Codex web search")
     ));
 }
 
@@ -802,10 +802,10 @@ fn refreshes_web_search_card_with_completed_query_and_action() {
         "item": {
             "id": "ws_1",
             "type": "web_search",
-            "query": "Flowix Codex web search",
+            "query": "TANK的英雄笔记 Codex web search",
             "action": {
                 "type": "search",
-                "queries": ["Flowix Codex web search", "Flowix agent notes"]
+                "queries": ["TANK的英雄笔记 Codex web search", "TANK的英雄笔记 agent notes"]
             }
         }
     });
@@ -829,7 +829,7 @@ fn refreshes_web_search_card_with_completed_query_and_action() {
                 && name == "web_search"
                 && result_name == name
                 && input.get("query").and_then(Value::as_str)
-                    == Some("Flowix Codex web search")
+                    == Some("TANK的英雄笔记 Codex web search")
                 && input.pointer("/action/type").and_then(Value::as_str) == Some("search")
     ));
 }

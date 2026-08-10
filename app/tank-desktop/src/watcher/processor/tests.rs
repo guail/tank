@@ -1,10 +1,10 @@
 //! 覆盖 `dispatch_modify_event` �?��数的两�?分流�?���?    //!
 //! 不依�?Tauri AppHandle / MemoWatcher / inode tracker ── �?MemoFile
 //! 直接调纯函数, �?�� emit 出来的事�?kind/path/memo 字�?�?    //!
-//! setup pattern �?flowix-core �?`fresh_memo_file` 一�? tempdir +
+//! setup pattern �?tank-core �?`fresh_memo_file` 一�? tempdir +
 //! seed notebook registry + MemoFile::new銆?
 use super::*;
-use flowix_core::memo_file::MemoFile;
+use tank_core::memo_file::MemoFile;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -15,7 +15,7 @@ static COUNTER: AtomicUsize = AtomicUsize::new(0);
 fn fresh_memo_file() -> (MemoFile, PathBuf) {
     let n = COUNTER.fetch_add(1, Ordering::SeqCst);
     let tmp = std::env::temp_dir().join(format!(
-        "flowix-watcher-processor-test-{}-{}-{}",
+        "tank-watcher-processor-test-{}-{}-{}",
         std::process::id(),
         n,
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
@@ -29,9 +29,9 @@ fn fresh_memo_file() -> (MemoFile, PathBuf) {
 
     let memo_file = MemoFile::new(config_dir);
     // 把测�?fixture �?nb_test 写进 SQLite ── 没有这条, register_existing_file
-    // �?memo index sync 时撞 `memos.notebook_id` -> `notebooks.id` �?        // FOREIGN KEY 失败 (FOREIGN KEY constraint failed)�?        // 不调 set_current_notebook 的话, get_memo_base 走默认路�?        // (~/Documents/flowix) ── register_existing_file / write_index
+    // �?memo index sync 时撞 `memos.notebook_id` -> `notebooks.id` �?        // FOREIGN KEY 失败 (FOREIGN KEY constraint failed)�?        // 不调 set_current_notebook 的话, get_memo_base 走默认路�?        // (~/Documents/tank) ── register_existing_file / write_index
     // 会写到那�?���? 我们�?tempdir 测试 fixture 失效�?
-    let cfg = flowix_core::memo_file::NotebookConfig {
+    let cfg = tank_core::memo_file::NotebookConfig {
         id: "nb_test".to_string(),
         name: "Test".to_string(),
         icon: None,

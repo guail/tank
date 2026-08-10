@@ -29,7 +29,7 @@ use crate::agent_external::acquire_test_env_lock as acquire_env_lock;
 #[test]
 fn appends_existing_images_as_claude_context() {
     let root =
-        std::env::temp_dir().join(format!("flowix-claude-image-test-{}", std::process::id(),));
+        std::env::temp_dir().join(format!("tank-claude-image-test-{}", std::process::id(),));
     std::fs::create_dir_all(&root).expect("create image test dir");
     let image = root.join("pasted.png");
     std::fs::write(&image, b"png").expect("create image");
@@ -92,7 +92,7 @@ fn normalizes_claude_model_override() {
 #[test]
 fn claude_command_adds_model_and_workspace_dirs() {
     let root = std::env::temp_dir().join(format!(
-        "flowix-claude-workspace-test-{}-{}",
+        "tank-claude-workspace-test-{}-{}",
         std::process::id(),
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
     ));
@@ -367,7 +367,7 @@ fn emits_claude_subagent_event_while_streaming() {
             "content": [{
                 "type": "tool_result",
                 "tool_use_id": "toolu_xxx",
-                "content": "flowix"
+                "content": "tank-cli"
             }]
         }
     });
@@ -697,7 +697,7 @@ fn should_silence_event_agrees_with_silence_reason_is_some() {
 
 fn make_fake_executable(dir_suffix: &str, name: &str, body: &str) -> (PathBuf, PathBuf) {
     let dir = std::env::temp_dir().join(format!(
-        "flowix-claude-cli-test-{}-{}-{}",
+        "tank-claude-cli-test-{}-{}-{}",
         std::process::id(),
         dir_suffix,
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
@@ -878,7 +878,7 @@ fn latest_versioned_subdir_prefers_high_major_over_lexicographic() {
     // sort would compare '8' > '1' and wrongly resolve `swap_remove(last)`
     // to this old v8 directory. The semver-aware sort must pick v20.10.0.
     let parent = std::env::temp_dir().join(format!(
-        "flowix-claude-cli-test-semver-major-{}",
+        "tank-claude-cli-test-semver-major-{}",
         std::process::id(),
     ));
     std::fs::create_dir_all(&parent).expect("create temp dir");

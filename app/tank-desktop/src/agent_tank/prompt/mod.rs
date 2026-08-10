@@ -7,7 +7,7 @@ mod safety;
 mod skills;
 mod tools;
 
-use crate::agent_flowix::skills::SkillSummary;
+use crate::agent_tank::skills::SkillSummary;
 
 pub struct SystemPromptConfig<'a> {
     pub model: &'a str,
@@ -62,7 +62,7 @@ mod tests {
             role_override: None,
         });
         assert!(out.contains("Document Types You Own"));
-        assert!(out.contains("Role name: Flowix Writer"));
+        assert!(out.contains("Role name: TANK的英雄笔记 Writer"));
     }
 
     #[test]
@@ -80,7 +80,7 @@ mod tests {
             "default role must be omitted when override is provided"
         );
         assert!(
-            !out.contains("Role name: Flowix Writer"),
+            !out.contains("Role name: TANK的英雄笔记 Writer"),
             "default role heading must be omitted when override is provided"
         );
     }

@@ -2,11 +2,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::agent_types::{StatusInfo, UsageInfo};
 
-/// `agent-chunk` 浜嬩欢閲岀殑 `agent_type` 瀛楁 鈹€鈹€ Flowix 璺緞鍐欐 "flowix",
-/// �?CLI managers �?`FlowixProviderKind::Flowix.key()` 对齐。前�?/// `dispatchAgentChunk` 拿这�?��做�?runtime �?���?fallback (e.g. Codex /
+/// `agent-chunk` 浜嬩欢閲岀殑 `agent_type` 瀛楁 鈹€鈹€ TANK的英雄笔记 璺緞鍐欐 "tank-cli",
+/// �?CLI managers �?`TANK的英雄笔记ProviderKind::TANK的英雄笔记.key()` 对齐。前�?/// `dispatchAgentChunk` 拿这�?��做�?runtime �?���?fallback (e.g. Codex /
 /// Claude / Gemini 不会�?`agent_type` �? �?`threadTypes[tid]` 兜底,
-/// Flowix 直接走这条不需�?fallback)�?
-pub(super) const FLOWIX_AGENT_TYPE: &str = "flowix";
+/// TANK的英雄笔记 直接走这条不需�?fallback)�?
+pub(super) const FLOWIX_AGENT_TYPE: &str = "tank-cli";
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
@@ -28,7 +28,7 @@ pub struct RuntimePathConfig {
 #[derive(Serialize, Deserialize, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AgentRuntimeConfig {
-    pub flowix: Option<RuntimePathConfig>,
+    pub tank: Option<RuntimePathConfig>,
     pub codex: Option<RuntimePathConfig>,
     pub claude: Option<RuntimePathConfig>,
     pub hermes: Option<RuntimePathConfig>,
@@ -44,7 +44,7 @@ pub struct AgentUserMessage {
     pub image_paths: Vec<String>,
     pub run_id: Option<String>,
     pub system_reminder_directory: Option<String>,
-    /// 閫変腑 Agent 绫诲瀷 鈹€鈹€ `'flowix' | 'codex' | 'claude'` (JSON wire: `agentType`).
+    /// 閫変腑 Agent 绫诲瀷 鈹€鈹€ `'tank' | 'codex' | 'claude'` (JSON wire: `agentType`).
     /// 前�? chat-store.ts `agent.chatStream()` �?���?���?payload 字�?.
     /// 后�?按值分�?(�?`commands/agent.rs:chat_with_agent_stream`).
     pub agent_type: Option<String>,
@@ -64,7 +64,7 @@ impl AgentUserMessage {
     fn runtime_config_for(&self, runtime: &str) -> Option<&RuntimePathConfig> {
         let config = self.runtime_config.as_ref()?;
         match runtime {
-            "flowix" => config.flowix.as_ref(),
+            "tank-cli" => config.tank.as_ref(),
             "codex" => config.codex.as_ref(),
             "claude" => config.claude.as_ref(),
             "hermes" => config.hermes.as_ref(),
@@ -166,7 +166,7 @@ impl RunInfo {
 }
 
 /// agent 流式协�? —emit �?`agent-chunk` 事件, 前�? `client.ts:listenToAgentStream`
-/// �?`listen<AgentChunk>` 接收。前�?TypeScript 镜像�?/// `app/flowix-web/types/agent.ts` 的同名类型�?///
+/// �?`listen<AgentChunk>` 接收。前�?TypeScript 镜像�?/// `app/tank-web/types/agent.ts` 的同名类型�?///
 /// �?`#[serde(tag = "kind")]` 内部标�?, 前�? `switch (chunk.kind)` 判别;
 /// 鏇挎崲涔嬪墠 `[REASONING]:` / `[TOOL_CALL]:` / `[TOOL_RESULT]:` / `[ERROR]:`
 /// 字�?串前缀协�? ── 那�?协�?�?[ERROR] chunk 会�?前�? fallthrough 当成�?��文�?/// 拼到 assistant 正文, 这里�?��构化错�?事件�?///

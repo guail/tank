@@ -21,7 +21,7 @@ pub(crate) fn rebuild_index_in_background(state: &AppState, app: &AppHandle) {
         let st: tauri::State<AppState> = app.state();
         let mf = read_lock(&st.memo_file, "memo_file");
         let mut index = write_lock(&st.search, "search");
-        flowix_core::search::rebuild_index_from_store(&mut index, &mf, nb);
+        tank_core::search::rebuild_index_from_store(&mut index, &mf, nb);
         dispatcher::emit_to(&app, "search-index-ready", ());
     });
 }
@@ -29,10 +29,10 @@ pub(crate) fn rebuild_index_in_background(state: &AppState, app: &AppHandle) {
 pub(crate) fn try_index_upsert(state: &AppState, id: &str) {
     let mf = read_lock(&state.memo_file, "memo_file");
     let mut idx = write_lock(&state.search, "search");
-    let _ = flowix_core::search::upsert_index_from_store(&mut idx, &mf, id);
+    let _ = tank_core::search::upsert_index_from_store(&mut idx, &mf, id);
 }
 
 pub(crate) fn try_index_remove(state: &AppState, id: &str) {
     let mut idx = write_lock(&state.search, "search");
-    let _ = flowix_core::search::remove_from_index(&mut idx, id);
+    let _ = tank_core::search::remove_from_index(&mut idx, id);
 }

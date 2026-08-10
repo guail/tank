@@ -3,7 +3,7 @@
 use serde::Serialize;
 use tauri::State;
 
-use crate::agent_flowix::default_agent_id;
+use crate::agent_tank::default_agent_id;
 use crate::agent_session::{
     AgentConversationInstance, ChatMessage, ThreadInfo, ThreadMessagesPage,
     UpsertAgentConversationInstance,
@@ -447,12 +447,12 @@ pub async fn thread_delete(
     state: State<'_, AppState>,
     app_handle: tauri::AppHandle,
 ) -> Result<bool, String> {
-    let flowix_stopped = state.agent_manager.stop_chat(&thread_id, None).await;
+    let tank_stopped = state.agent_manager.stop_chat(&thread_id, None).await;
     let external_stopped = state
         .external_runtimes
         .stop_chat_all(&thread_id, &app_handle)
         .await;
-    if flowix_stopped || external_stopped {
+    if tank_stopped || external_stopped {
         tracing::info!("[Thread] stopped running agent before deleting thread {thread_id}");
     }
 

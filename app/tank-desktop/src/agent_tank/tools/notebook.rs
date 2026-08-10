@@ -4,7 +4,7 @@ use std::path::Path;
 use crate::config::AgentAccessKind;
 use crate::config::AgentAccessStore;
 use crate::lock_utils::read_lock;
-use flowix_core::memo_file::NotebookConfig;
+use tank_core::memo_file::NotebookConfig;
 
 use super::{function_tool, ToolResult};
 
@@ -26,7 +26,7 @@ pub fn available_dirs_tool() -> Tool {
 
 pub async fn execute_tool(
     tool_name: &str,
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
     agent_access: &AgentAccessStore,
     runtime_workspace_paths: Option<&[String]>,
 ) -> ToolResult {
@@ -109,7 +109,7 @@ pub async fn execute_tool(
 }
 
 fn runtime_available_dirs(
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
     workspace_paths: &[String],
 ) -> ToolResult {
     let notebook_index: std::collections::HashMap<String, NotebookConfig> = {

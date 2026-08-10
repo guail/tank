@@ -1,11 +1,11 @@
 [package]
-name = "flowix-sync"
+name = "tank-sync"
 version.workspace = true
-description = "Flowix Cloud authentication and notebook synchronization engine"
+description = "TANK的英雄笔记 Cloud authentication and notebook synchronization engine"
 edition.workspace = true
 
 [lib]
-name = "flowix_sync"
+name = "tank_sync"
 path = "src/lib.rs"
 
 [dependencies]

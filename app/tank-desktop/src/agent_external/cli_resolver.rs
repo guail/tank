@@ -293,12 +293,12 @@ mod tests {
     fn query_cli_binary_with_shell_finds_path_once() {
         let _guard = acquire_env_lock();
         let dir = std::env::temp_dir().join(format!(
-            "flowix-cli-query-test-{}-{}",
+            "tank-cli-query-test-{}-{}",
             std::process::id(),
             chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
         ));
         std::fs::create_dir_all(&dir).expect("create temp dir");
-        let fake = dir.join("flowix-query-cli");
+        let fake = dir.join("tank-query-cli");
         std::fs::write(&fake, "#!/bin/sh\nexit 0\n").expect("write fake cli");
         {
             use std::os::unix::fs::PermissionsExt;
@@ -312,7 +312,7 @@ mod tests {
         std::env::set_var("PATH", &dir);
         std::env::set_var("SHELL", "/bin/sh");
 
-        let found = query_cli_binary_once("flowix-query-cli");
+        let found = query_cli_binary_once("tank-query-cli");
 
         match original_path {
             Some(value) => std::env::set_var("PATH", value),

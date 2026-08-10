@@ -42,7 +42,7 @@ pub fn run() {
             commands::mobile_save_attachment_content,
         ])
         .build(tauri::generate_context!())
-        .expect("error while building Flowix Mobile");
+        .expect("error while building TANK的英雄笔记 Mobile");
 
     app.run(|app_handle, event| {
         if matches!(event, tauri::RunEvent::Resumed) {

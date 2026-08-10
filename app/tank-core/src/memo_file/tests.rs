@@ -34,7 +34,7 @@ fn fresh_memo_file() -> (MemoFile, PathBuf) {
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let n = COUNTER.fetch_add(1, Ordering::SeqCst);
     let tmp = std::env::temp_dir().join(format!(
-        "flowix-memo-file-v3-test-{}-{}-{}",
+        "tank-memo-file-v3-test-{}-{}-{}",
         std::process::id(),
         n,
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
@@ -1708,7 +1708,7 @@ fn tempdir() -> PathBuf {
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let n = COUNTER.fetch_add(1, Ordering::SeqCst);
     let p = std::env::temp_dir().join(format!(
-        "flowix-v3-tmpdir-{}-{}-{}",
+        "tank-v3-tmpdir-{}-{}-{}",
         std::process::id(),
         n,
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
@@ -2539,16 +2539,16 @@ fn move_tag_no_match_returns_zero_affected() {
 fn empty_notebook_tag_can_be_created_and_listed() {
     let (mf, _base) = fresh_memo_file();
     let created = mf
-        .create_notebook_tag("nb_test", "projects/flowix")
+        .create_notebook_tag("nb_test", "projects/tank")
         .unwrap();
 
-    assert_eq!(created, "projects/flowix");
+    assert_eq!(created, "projects/tank");
     assert_eq!(
         mf.read_notebook_tag_paths(Some("nb_test")).unwrap(),
-        vec!["projects".to_string(), "projects/flowix".to_string()]
+        vec!["projects".to_string(), "projects/tank".to_string()]
     );
     assert!(mf
-        .read_all_memos_filtered("tagged", "createdAt", Some("projects/flowix"))
+        .read_all_memos_filtered("tagged", "createdAt", Some("projects/tank"))
         .is_empty());
 }
 
@@ -2817,7 +2817,7 @@ fn open_index_db_upgrades_legacy_schema_and_normalizes_sort() {
     // 模拟 v3 之前的 index.db: 没有 sort 列, 已存在多条笔记本 sort=0 (默认)。
     // 第一次 open_index_db 应该自动 ALTER + normalize, 让旧行 sort 变成 10/20/30...。
     let tmp = std::env::temp_dir().join(format!(
-        "flowix-notebook-legacy-{}-{}",
+        "tank-notebook-legacy-{}-{}",
         std::process::id(),
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
     ));

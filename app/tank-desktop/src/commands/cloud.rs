@@ -4,11 +4,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
-use flowix_core::memo_file::{
+use tank_core::memo_file::{
     atomic_write_bytes, extract_frontmatter_key, merge_frontmatter, resolve_filename_conflict,
     sanitize_filename_component, IsMd, MergeOverrides,
 };
-use flowix_sync::{
+use tank_sync::{
     v2_content_hash, CloudCheckout, CloudMembership, CloudNotebook, CloudProduct, CloudState,
     collect_v2_attachments, SyncError, V2AccountSyncReport, V2LocalNote, V2LocalNotebook, V2RemoteApply, V2SyncedNotebook,
 };
@@ -147,7 +147,7 @@ fn safe_cloud_note_path(base: &Path, filename: &str) -> Result<PathBuf, String> 
     Ok(base.join(filename))
 }
 
-fn write_cloud_attachments(base: &Path, attachments: &[flowix_sync::V2RemoteAttachment]) -> Result<(), String> {
+fn write_cloud_attachments(base: &Path, attachments: &[tank_sync::V2RemoteAttachment]) -> Result<(), String> {
     let directory = base.join("attachments");
     std::fs::create_dir_all(&directory).map_err(sync_error)?;
     for attachment in attachments {

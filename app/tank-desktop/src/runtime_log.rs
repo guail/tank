@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 
 use crate::{APP_DATA_DIR_NAME, USER_CONFIG_DIR_NAME};
 
-pub const PRODUCT_NAME: &str = "Flowix";
+pub const PRODUCT_NAME: &str = "TANK的英雄笔记";
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 static LOG_WRITE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));

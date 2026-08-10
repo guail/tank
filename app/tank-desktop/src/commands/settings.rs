@@ -3,7 +3,7 @@
 use crate::events as dispatcher;
 use tauri::{AppHandle, State};
 
-use crate::agent_flowix::provider::{probe_chat, TestConnectionResult};
+use crate::agent_tank::provider::{probe_chat, TestConnectionResult};
 use crate::config::{AiConfigFile, AiModelConfig, PreferenceFile};
 
 use crate::app::state::AppState;

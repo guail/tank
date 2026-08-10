@@ -1,7 +1,7 @@
 use rllm::chat::Tool;
 
 use super::constants::{MAX_GREP_LIMIT, MAX_LIST_LIMIT, MAX_READ_LIMIT, MAX_READ_LINE_COUNT};
-use crate::agent_flowix::tools::function_tool;
+use crate::agent_tank::tools::function_tool;
 
 pub fn read_tool() -> Tool {
     function_tool(

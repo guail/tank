@@ -23,7 +23,7 @@ use crate::agent_external::{
     read_stderr_to_string, resolve_and_freeze_runtime_cwd, select_external_session_for_runtime,
     truncate_for_log, ExternalRunRegistry, USER_STOPPED_REASON,
 };
-use crate::agent_flowix::{AgentChunk, AgentUserMessage};
+use crate::agent_tank::{AgentChunk, AgentUserMessage};
 use crate::agent_session::ThreadManager;
 use crate::runtime_log;
 
@@ -165,7 +165,7 @@ impl CodexCliManager {
         true
     }
 
-    pub async fn running_threads(&self) -> HashMap<String, crate::agent_flowix::RunInfo> {
+    pub async fn running_threads(&self) -> HashMap<String, crate::agent_tank::RunInfo> {
         self.runs.running_threads().await
     }
 

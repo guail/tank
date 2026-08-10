@@ -87,7 +87,7 @@ pub fn write_external_document(
     let permissions = fs::metadata(&path)
         .ok()
         .map(|metadata| metadata.permissions());
-    if let Err(error) = flowix_core::memo_file::atomic_write_bytes(&path, content.as_bytes()) {
+    if let Err(error) = tank_core::memo_file::atomic_write_bytes(&path, content.as_bytes()) {
         return ExternalDocumentWriteOutcome::Error {
             message: format!("failed to write {}: {error}", path.display()),
         };

@@ -19,7 +19,7 @@ use crate::agent_external::{
     resolve_and_freeze_runtime_cwd, truncate_for_log, AgentChunkMetadata, ExternalRunRegistry,
     MAX_STDOUT_LINE_BYTES, USER_STOPPED_REASON,
 };
-use crate::agent_flowix::{AgentChunk, AgentUserMessage, RunInfo};
+use crate::agent_tank::{AgentChunk, AgentUserMessage, RunInfo};
 use crate::agent_session::ThreadManager;
 use crate::runtime_log;
 

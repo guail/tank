@@ -18,8 +18,8 @@ use tauri::{AppHandle, State};
 use crate::lock_utils::read_lock;
 use crate::memo_events::{self, MemoChangeSource, MemoDerivedChanged, MemoEvent};
 use crate::USER_CONFIG_DIR_NAME;
-use flowix_core::memo_file::{atomic_write_bytes, extract_body_content, Memo, MemoColor, MemoFile};
-use flowix_core::MemoService;
+use tank_core::memo_file::{atomic_write_bytes, extract_body_content, Memo, MemoColor, MemoFile};
+use tank_core::MemoService;
 
 use crate::app::search_index::try_index_upsert;
 use crate::app::state::AppState;
@@ -337,7 +337,7 @@ pub fn update_memo_db(
         }
         // Derive preview/tags/todos from provided content when available.
         if let Some(ref body) = content {
-            use flowix_core::memo_file::apply_derived_memo_fields;
+            use tank_core::memo_file::apply_derived_memo_fields;
             apply_derived_memo_fields(&mut updated, body);
         }
         updated.updated_at = chrono::Utc::now().timestamp_millis();

@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::time::Instant;
 
-use flowix_core::memo_file::{extract_body_content, extract_frontmatter_key};
+use tank_core::memo_file::{extract_body_content, extract_frontmatter_key};
 
 use super::constants::{WRITE_KEY_REREAD_INTERVAL, WRITE_KEY_REREAD_TIMEOUT};
 

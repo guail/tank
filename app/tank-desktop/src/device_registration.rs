@@ -503,7 +503,7 @@ mod tests {
     fn tempdir_path() -> PathBuf {
         let mut dir = std::env::temp_dir();
         dir.push(format!(
-            "flowix-device-reg-test-{}-{}",
+            "tank-device-reg-test-{}-{}",
             std::process::id(),
             chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0)
         ));

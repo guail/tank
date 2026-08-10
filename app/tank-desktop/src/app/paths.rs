@@ -6,7 +6,7 @@ pub const USER_CONFIG_DIR_NAME: &str = ".flowix";
 
 /// 桌面应用数据�?���?(�?`dirs::data_dir()` 之下, macOS:
 /// `~/Library/Application Support/<NAME>/`)銆?
-pub const APP_DATA_DIR_NAME: &str = "flowix";
+pub const APP_DATA_DIR_NAME: &str = "tank-cli";
 
 pub fn get_app_data_path() -> PathBuf {
     dirs::data_dir()

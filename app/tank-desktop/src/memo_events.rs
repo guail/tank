@@ -8,7 +8,7 @@ use tauri::{AppHandle, Emitter, Manager};
 
 use crate::document_mutation::{DocumentCommit, DocumentMutationCoordinator};
 use crate::lock_utils::read_lock;
-use flowix_core::memo_file::Memo;
+use tank_core::memo_file::Memo;
 
 pub const MEMO_EVENT: &str = "memo-event";
 
@@ -28,7 +28,7 @@ pub enum MemoChangeSource {
     /// 外部编辑�?/ 其他 AI / Agent 改�?�? 文件监听器�?察到 ──
     /// v3 鍚庢墍鏈夐潪鐢ㄦ埛涓诲姩淇濆瓨鐨勮矾寰勯兘鍚堝埌杩欓噷
     ExternalTool,
-    /// Flowix Cloud pull applied this write locally. Automatic push scheduling
+    /// TANK的英雄笔记 Cloud pull applied this write locally. Automatic push scheduling
     /// must ignore this source to avoid a sync loop.
     CloudSync,
 }
@@ -127,7 +127,7 @@ pub enum MemoEvent {
         /// 全层名映射: [(oldFullPath, newFullPath), ...]。 前端用此重写
         /// memos[*].tags 里的 token (前缀替换, 含自身 / 后代)。
         /// 注意: 这里用 tuple 而非 `[String; 2]`, 跟
-        /// `flowix_core::MoveTagReport::renamed_tags` 类型保持一致
+        /// `tank_core::MoveTagReport::renamed_tags` 类型保持一致
         /// (直接 `.clone()` 进 payload, 不需要转换)。
         #[serde(rename = "renamedTags")]
         renamed_tags: Vec<(String, String)>,
@@ -204,7 +204,7 @@ pub fn emit_with_commit_from_window(
         } if !matches!(source, MemoChangeSource::CloudSync) => Some((
             notebook_id.clone(),
             memo.id.clone(),
-            flowix_sync::LocalChangeKind::Put,
+            tank_sync::LocalChangeKind::Put,
         )),
         MemoEvent::Updated {
             id,
@@ -214,7 +214,7 @@ pub fn emit_with_commit_from_window(
         } if !matches!(source, MemoChangeSource::CloudSync) => Some((
             notebook_id.clone(),
             id.clone(),
-            flowix_sync::LocalChangeKind::Put,
+            tank_sync::LocalChangeKind::Put,
         )),
         MemoEvent::Deleted {
             id,
@@ -224,7 +224,7 @@ pub fn emit_with_commit_from_window(
         } if !matches!(source, MemoChangeSource::CloudSync) => Some((
             notebook_id.clone(),
             id.clone(),
-            flowix_sync::LocalChangeKind::Delete,
+            tank_sync::LocalChangeKind::Delete,
         )),
         _ => None,
     };
@@ -249,8 +249,8 @@ pub fn emit_with_commit_from_window(
                 .as_ref()
                 .map(|commit| commit.content_hash.as_str())
                 .unwrap_or_else(|| match operation {
-                    flowix_sync::LocalChangeKind::Delete => "deleted",
-                    flowix_sync::LocalChangeKind::Put => "unobserved",
+                    tank_sync::LocalChangeKind::Delete => "deleted",
+                    tank_sync::LocalChangeKind::Put => "unobserved",
                 });
             if let Err(error) = state.cloud_sync.record_v2_local_change(
                 &notebook_id,
@@ -284,7 +284,7 @@ fn commit_for_event(app: &AppHandle, event: &MemoEvent) -> Option<DocumentCommit
             memo, notebook_id, ..
         } => {
             let state = app.try_state::<crate::app::state::AppState>()?;
-            let resolved = flowix_core::MemoService::new(&read_lock(&state.memo_file, "memo_file"))
+            let resolved = tank_core::MemoService::new(&read_lock(&state.memo_file, "memo_file"))
                 .resolve_memo(&memo.id)
                 .ok()?;
             (memo.id.as_str(), notebook_id.as_str(), resolved.path)
@@ -337,10 +337,10 @@ fn emit_committed_via_dispatcher(
 
 #[cfg(test)]
 mod tests {
-    //! serde wire-format 测试 —保证与前�?TypeScript 镜像 (app/flowix-web/types/memo.ts)
+    //! serde wire-format 测试 —保证与前�?TypeScript 镜像 (app/tank-web/types/memo.ts)
     //! 的硬契约。`kind` 必须�?snake_case, 字�?命名 (memo/id/path/source) �?    //! �?IPC 边界的硬约定, 不�?随便改�?
     use super::*;
-    use flowix_core::memo_file::Memo;
+    use tank_core::memo_file::Memo;
 
     fn sample_memo() -> Memo {
         Memo {

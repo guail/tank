@@ -551,7 +551,7 @@ mod tests {
             v2_content_hash(b""),
             "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU"
         );
-        assert_eq!(v2_content_hash(b"Flowix").len(), 43);
+        assert_eq!(v2_content_hash(b"TankHeroNotes").len(), 43);
     }
 
     #[test]

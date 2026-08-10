@@ -1,6 +1,6 @@
 //! YAML frontmatter parser for `SKILL.md`.
 //!
-//! Format (matches existing `flowix-note` skill):
+//! Format (matches existing `tank-note` skill):
 //!
 //! ```text
 //! ---
@@ -44,7 +44,7 @@ pub enum ParseError {
 }
 
 /// Raw frontmatter shape 鈥?`metadata` is a freeform map; we only look up
-/// `short-description` and ignore other keys. The real-world `flowix-note`
+/// `short-description` and ignore other keys. The real-world `tank-note`
 /// skill uses `metadata.short-description`, but the parser stays permissive
 /// so future keys don't break loading.
 ///
@@ -140,18 +140,18 @@ mod tests {
     }
 
     #[test]
-    fn parses_valid_flowix_note_fixture() {
+    fn parses_valid_tank_note_fixture() {
         let dir = tempfile::tempdir().expect("tempdir");
-        let skill_dir = dir.path().join("flowix-note");
+        let skill_dir = dir.path().join("tank-note");
         std::fs::create_dir_all(&skill_dir).expect("mkdir");
         // Bundled fixture: same content as the production seed.
         std::fs::write(
             skill_dir.join("SKILL.md"),
             "---\n\
-             name: flowix-note\n\
-             description: 在 Flowix 默认笔记本 (nb_default) 写一条「本次修复问题」笔记。\n\
+             name: tank-note\n\
+             description: 在 TANK的英雄笔记 默认笔记本 (nb_default) 写一条「本次修复问题」笔记。\n\
              metadata:\n  \
-             short-description: 在 Flowix 默认笔记本写一条修复笔记\n\
+             short-description: 在 TANK的英雄笔记 默认笔记本写一条修复笔记\n\
              ---\n\n\
              # body line 1\n\
              body line 2\n",
@@ -160,11 +160,11 @@ mod tests {
 
         let skill =
             parse_skill_file(&skill_dir.join("SKILL.md"), SkillOrigin::System).expect("parse ok");
-        assert_eq!(skill.name, "flowix-note");
-        assert!(skill.description.starts_with("在 Flowix"));
+        assert_eq!(skill.name, "tank-note");
+        assert!(skill.description.starts_with("在 TANK的英雄笔记"));
         assert_eq!(
             skill.short_description,
-            "在 Flowix 默认笔记本写一条修复笔记"
+            "在 TANK的英雄笔记 默认笔记本写一条修复笔记"
         );
         assert!(skill.body.starts_with("# body line 1"));
         assert_eq!(skill.origin, SkillOrigin::System);

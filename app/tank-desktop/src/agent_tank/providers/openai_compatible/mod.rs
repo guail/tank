@@ -596,7 +596,7 @@ impl OpenAICompatibleProvider {
             .map(str::to_string)
     }
 
-    /// 内部分流式方�? �?[`OpenAICompatibleStreamItem`]。agent.rs 用这�?���?—�?    /// 它需要把 `reasoning_content` �?`content` 区分开, 然后构�?    /// [`crate::agent_flowix::AgentChunk`] 发给前�?。这�?OpenAICompatibleProvider
+    /// 内部分流式方�? �?[`OpenAICompatibleStreamItem`]。agent.rs 用这�?���?—�?    /// 它需要把 `reasoning_content` �?`content` 区分开, 然后构�?    /// [`crate::agent_tank::AgentChunk`] 发给前�?。这�?OpenAICompatibleProvider
     /// �?��保留的流式入�? rllm trait 上的 `chat_stream_with_tools` �?    /// `unimplemented!()` (无活跃消费�? �?
     /// impl 注释)�?
     pub async fn chat_stream_tagged(

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use crate::agent_flowix::skills::SkillStore;
+use crate::agent_tank::skills::SkillStore;
 use crate::config::AgentAccessStore;
 use crate::config::SecurityBookmarkStore;
 
@@ -96,7 +96,7 @@ pub fn get_sub_agent_tools() -> Vec<Tool> {
 #[derive(Clone)]
 pub struct ToolScope {
     allowed_roots: Vec<PathBuf>,
-    /// Canonical default notebook path (e.g. `~/Documents/flowix` on macOS).
+    /// Canonical default notebook path (e.g. `~/Documents/tank` on macOS).
     /// Held separately so the read / scope tools can hint the correct path
     /// when the LLM tries one that's outside the registered scope. See
     /// `MemoFile::get_default_notebook_path`.
@@ -106,7 +106,7 @@ pub struct ToolScope {
 
 impl ToolScope {
     pub fn from_runtime_workspace_paths(
-        memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+        memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
         workspace_paths: &[String],
         security_bookmarks: Option<Arc<SecurityBookmarkStore>>,
     ) -> Self {
@@ -140,7 +140,7 @@ impl ToolScope {
     /// `runtime_workspace_paths` to `execute_tool`, which makes
     /// `from_runtime_workspace_paths` authoritative for that run.
     pub fn from_memo_file_and_access(
-        memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+        memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
         agent_access: &AgentAccessStore,
         security_bookmarks: Option<Arc<SecurityBookmarkStore>>,
     ) -> Self {
@@ -248,7 +248,7 @@ fn tool_dispatch_target(tool_name: &str) -> ToolDispatchTarget {
 pub async fn execute_tool(
     tool_name: &str,
     arguments: &str,
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
     agent_access: &AgentAccessStore,
     security_bookmarks: Option<Arc<SecurityBookmarkStore>>,
     skill_store: &SkillStore,
@@ -286,7 +286,7 @@ pub async fn execute_tool(
 mod tests {
     use super::*;
     use crate::config::{AgentAccessConfig, AgentAccessEntry, AgentAccessKind};
-    use flowix_core::memo_file::MemoFile;
+    use tank_core::memo_file::MemoFile;
     use std::sync::RwLock;
 
     struct ToolTestFixture {
@@ -300,7 +300,7 @@ mod tests {
 
     fn fixture() -> ToolTestFixture {
         let tmp = tempfile::Builder::new()
-            .prefix("flowix-agent-tools-")
+            .prefix("tank-agent-tools-")
             .tempdir()
             .expect("tempdir");
         let root = tmp.path();

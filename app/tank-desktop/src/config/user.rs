@@ -6,10 +6,10 @@ use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
 use crate::USER_CONFIG_DIR_NAME;
-use flowix_core::secret::{entry_name, SecretStore};
+use tank_core::secret::{entry_name, SecretStore};
 
 /// AI 模型配置文件�?── TOML 格式, 便于人手编辑与注释�?///
-/// TOML 格式便于用户手改磁盘配置时写注释 (TOML 原生 `# ...`), 避免�?��字�?�?/// �?Flowix 的其它配�?���?(`boot/preference.json` /
+/// TOML 格式便于用户手改磁盘配置时写注释 (TOML 原生 `# ...`), 避免�?��字�?�?/// �?TANK的英雄笔记 的其它配�?���?(`boot/preference.json` /
 ///    `boot/system.json` / `index.db`) 鍖哄垎寰楁洿鏄剧溂
 ///    (TOML 格式 + 显式 `agent-` 前缀, 不会出现"�?��文件该用 JSON"的�?�?
 pub const AI_CONFIG_FILE_NAME: &str = "agent-config.toml";
@@ -18,7 +18,7 @@ const BOOT_DIR_NAME: &str = "boot";
 const PREFERENCE_FILE_NAME: &str = "preference.json";
 const DEFAULT_SECRET_DB_NAME: &str = "default.db";
 const SECRET_ACCOUNT_NAME: &str = "default";
-const CLOUD_SECRET_PROVIDER: &str = "flowix_cloud_refresh";
+const CLOUD_SECRET_PROVIDER: &str = "tank_cloud_refresh";
 
 /// ~/.flowix/boot/preference.json —用户偏好设置
 /// 瀛楁鍏ㄩ儴 #[serde(default)], 鏂囦欢鎹熷潖鎴栫己澶辨椂鍥為€€鍒伴粯璁ゅ€笺€?
@@ -544,7 +544,7 @@ fn set_dir_owner_only_perms(_path: &Path) {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use flowix_core::secret::{KeyBackend, SecretBackend, SecretStoreError, SecretString};
+    use tank_core::secret::{KeyBackend, SecretBackend, SecretStoreError, SecretString};
     use std::sync::Mutex;
 
     struct TestSecretBackend {

@@ -49,7 +49,7 @@ fn scripted_user_message() -> AgentUserMessage {
         image_paths: vec![],
         run_id: Some("run-scripted".to_string()),
         system_reminder_directory: None,
-        agent_type: Some("flowix".to_string()),
+        agent_type: Some("tank-cli".to_string()),
         runtime_config: None,
         permission_mode: None,
         codex_model: None,
@@ -709,7 +709,7 @@ async fn running_threads_reports_in_flight_run_id() {
     let running = mgr.running_threads().await;
     let info = running.get("thread-1").expect("thread should be running");
     assert_eq!(info.started_at, 1_700_000_000_000);
-    assert_eq!(info.agent_type.as_deref(), Some("flowix"));
+    assert_eq!(info.agent_type.as_deref(), Some("tank-cli"));
     assert_eq!(info.run_id.as_deref(), Some("run-1"));
 }
 

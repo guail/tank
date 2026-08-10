@@ -14,7 +14,7 @@ pub struct WebPageMetadata {
 pub async fn parse_web_page(url: String) -> Result<WebPageMetadata, String> {
     let normalized_url = normalize_url(&url)?;
     let client = reqwest::Client::builder()
-        .user_agent("Mozilla/5.0 Flowix Web Card")
+        .user_agent("Mozilla/5.0 TANK的英雄笔记 Web Card")
         .redirect(reqwest::redirect::Policy::limited(6))
         .build()
         .map_err(|e| e.to_string())?;

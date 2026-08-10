@@ -3,11 +3,11 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 
-use flowix_core::memo_file::{
+use tank_core::memo_file::{
     atomic_write_bytes, merge_frontmatter, resolve_filename_conflict, sanitize_filename_component,
     IsMd, MergeOverrides, NotebookConfig,
 };
-use flowix_sync::{
+use tank_sync::{
     collect_v2_attachments, v2_content_hash, V2AccountSyncReport, V2LocalNote, V2LocalNotebook, V2RemoteApply,
 };
 use tauri::{AppHandle, Emitter, Manager};
@@ -53,7 +53,7 @@ fn safe_cloud_note_path(base: &Path, filename: &str) -> Result<PathBuf, String> 
     Ok(base.join(filename))
 }
 
-fn write_cloud_attachments(base: &Path, attachments: &[flowix_sync::V2RemoteAttachment]) -> Result<(), String> {
+fn write_cloud_attachments(base: &Path, attachments: &[tank_sync::V2RemoteAttachment]) -> Result<(), String> {
     let directory = base.join("attachments");
     std::fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
     for attachment in attachments {

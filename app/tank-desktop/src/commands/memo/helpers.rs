@@ -11,8 +11,8 @@ use tauri::AppHandle;
 use crate::document_mutation::DocumentCommit;
 use crate::lock_utils::read_lock;
 use crate::memo_events::{self, MemoChangeSource, MemoDerivedChanged, MemoEvent};
-use flowix_core::memo_file::{extract_body_content, Memo};
-use flowix_core::MemoService;
+use tank_core::memo_file::{extract_body_content, Memo};
+use tank_core::MemoService;
 
 use crate::app::search_index::try_index_upsert;
 use crate::app::state::AppState;

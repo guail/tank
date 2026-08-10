@@ -6,7 +6,7 @@ use super::constants::{
 };
 use super::frontmatter::frontmatter_key_value;
 use super::path::{ensure_allowed, ensure_visible, resolve_path};
-use crate::agent_flowix::tools::{ToolResult, ToolScope};
+use crate::agent_tank::tools::{ToolResult, ToolScope};
 
 fn line_start_offsets(content: &str) -> Vec<usize> {
     let mut offsets = vec![0usize];
@@ -390,7 +390,7 @@ pub(super) async fn edit_with_memo(
     arguments: &str,
     read_snapshot: Option<&str>,
     scope: &ToolScope,
-    memo_file: Option<&std::sync::RwLock<flowix_core::memo_file::MemoFile>>,
+    memo_file: Option<&std::sync::RwLock<tank_core::memo_file::MemoFile>>,
 ) -> ToolResult {
     let args = match serde_json::from_str::<EditArgs>(arguments) {
         Ok(args) => args,

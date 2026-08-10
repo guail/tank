@@ -1,12 +1,12 @@
 [package]
-name = "flowix-core"
+name = "tank-core"
 version.workspace = true
-description = "Flowix business core: notebook / memo storage, search, threads. Zero Tauri dependency."
+description = "TANK的英雄笔记 business core: notebook / memo storage, search, threads. Zero Tauri dependency."
 authors = ["you"]
 edition.workspace = true
 
 [lib]
-name = "flowix_core"
+name = "tank_core"
 path = "src/lib.rs"
 
 [dependencies]

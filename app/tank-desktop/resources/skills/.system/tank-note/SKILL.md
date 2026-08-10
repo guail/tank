@@ -1,19 +1,19 @@
 ---
-name: flowix-note
-description: 在 Flowix 默认笔记本 (nb_default) 写一条「本次修复问题」笔记。标题 `N<月日>-<标题>`，正文按问题描述/环境/复现/原因/建议方法/修复方法 六段。
+name: tank-note
+description: 在 TANK的英雄笔记 默认笔记本 (nb_default) 写一条「本次修复问题」笔记。标题 `N<月日>-<标题>`，正文按问题描述/环境/复现/原因/建议方法/修复方法 六段。
 metadata:
-  short-description: 在 Flowix 默认笔记本写一条修复笔记
+  short-description: 在 TANK的英雄笔记 默认笔记本写一条修复笔记
 ---
 
-# Flowix Note
+# TANK的英雄笔记 Note
 
-把一次修复沉淀到 Flowix 默认笔记本 (`nb_default`, `~/Documents/flowix/`)。
+把一次修复沉淀到 TANK的英雄笔记 默认笔记本 (`nb_default`, `~/Documents/tank/`)。
 **走项目自带 CLI** 写盘,不要直接编辑 .md ── 绕开 CLI 会让 `index.json` 漏同步。
 
 ## CLI
 
 ```
-FLOWIX_CLI="/Users/rop/Desktop/flowix-main/app/flowix-desktop/binaries/flowix-cli-aarch64-apple-darwin"
+FLOWIX_CLI="/Users/rop/Desktop/tank-main/app/tank-desktop/binaries/tank-cli-aarch64-apple-darwin"
 ```
 
 > macOS arm64 默认路径。换 host 后跑 `bash scripts/build-cli.sh` 重编,
@@ -21,7 +21,7 @@ FLOWIX_CLI="/Users/rop/Desktop/flowix-main/app/flowix-desktop/binaries/flowix-cl
 
 ## 触发
 
-用户说"记录一下 / 写个 fix 笔记 / 存到 Flowix / 写一条修复记录",或执行 `$flowix-note`。
+用户说"记录一下 / 写个 fix 笔记 / 存到 TANK的英雄笔记 / 写一条修复记录",或执行 `$tank-note`。
 
 ## 工作流
 
@@ -71,7 +71,7 @@ FLOWIX_CLI="/Users/rop/Desktop/flowix-main/app/flowix-desktop/binaries/flowix-cl
 ## 行为约束
 
 - 默认笔记本 `nb_default`。用户说"写到工作笔记"等改用对应 id/name。
-- 重复检测:`flowix-cli list nb_default | grep '<title>'` 命中则提示并跳过。
+- 重复检测:`tank-cli list nb_default | grep '<title>'` 命中则提示并跳过。
 - 不加版权/license header,不附 emoji。
 - 日期用本地时区(Asia/Shanghai),不用 UTC。
 - 缺要素写 `N/A` 而不是省略小节。

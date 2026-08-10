@@ -9,7 +9,7 @@ use super::path::{
     clamp_limit, ensure_allowed, ensure_min_one, ensure_visible, path_has_hidden_component,
     resolve_path,
 };
-use crate::agent_flowix::tools::{ToolResult, ToolScope};
+use crate::agent_tank::tools::{ToolResult, ToolScope};
 
 fn read_lines(content: &str, start_line: usize, line_count: usize) -> (String, usize, usize, bool) {
     debug_assert!(start_line >= 1);
@@ -98,7 +98,7 @@ pub(super) async fn write(arguments: &str, scope: &ToolScope) -> ToolResult {
 pub(super) async fn write_with_memo(
     arguments: &str,
     scope: &ToolScope,
-    memo_file: Option<&std::sync::RwLock<flowix_core::memo_file::MemoFile>>,
+    memo_file: Option<&std::sync::RwLock<tank_core::memo_file::MemoFile>>,
 ) -> ToolResult {
     #[derive(Deserialize)]
     struct Args {
@@ -194,7 +194,7 @@ pub(super) async fn write_with_memo(
 pub(super) async fn delete(
     arguments: &str,
     scope: &ToolScope,
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
     app: Option<&tauri::AppHandle>,
 ) -> ToolResult {
     #[derive(Deserialize)]
@@ -257,7 +257,7 @@ pub(super) async fn delete(
 /// 进 tombstone、450ms 后再查时 index 已空 (no-op), 天然不会重复 emit。
 fn delete_indexed_memo(
     path: &std::path::Path,
-    memo_file: &std::sync::RwLock<flowix_core::memo_file::MemoFile>,
+    memo_file: &std::sync::RwLock<tank_core::memo_file::MemoFile>,
     app: Option<&tauri::AppHandle>,
 ) -> Option<ToolResult> {
     use tauri::Manager;
@@ -272,12 +272,12 @@ fn delete_indexed_memo(
     let app = app?;
 
     let content = std::fs::read_to_string(path).ok()?;
-    let key = flowix_core::memo_file::extract_frontmatter_key(&content)?;
+    let key = tank_core::memo_file::extract_frontmatter_key(&content)?;
 
     // 解析 + 路径校验 (与 save_registered_memo 同一口径)
     let (id, notebook_id, abs_path, before) = {
         let guard = memo_file.read().ok()?;
-        let mut service = flowix_core::MemoService::new(&guard);
+        let mut service = tank_core::MemoService::new(&guard);
         let resolved = service.resolve_memo(&key).ok()?;
         let requested = dunce::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
         let resolved_path =
@@ -297,7 +297,7 @@ fn delete_indexed_memo(
     // 领域删除: 注销 memo index + 删文件 (delete_memo_result_global)
     let file_removed = {
         let guard = memo_file.read().ok()?;
-        let mut service = flowix_core::MemoService::new(&guard);
+        let mut service = tank_core::MemoService::new(&guard);
         match service.delete_memo(&id) {
             Ok(deleted) => deleted.file_removed,
             Err(error) => {

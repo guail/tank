@@ -111,7 +111,7 @@ fn select_session_returns_none_for_brand_new_thread() {
 #[test]
 fn new_codex_session_adds_enabled_workspace_dirs() {
     let root = std::env::temp_dir().join(format!(
-        "flowix-codex-workspace-test-{}-{}",
+        "tank-codex-workspace-test-{}-{}",
         std::process::id(),
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
     ));
@@ -197,7 +197,7 @@ fn codex_command_enables_web_search_for_new_and_resumed_sessions() {
 #[test]
 fn resumed_codex_session_does_not_add_workspace_dirs() {
     let root = std::env::temp_dir().join(format!(
-        "flowix-codex-resume-workspace-test-{}-{}",
+        "tank-codex-resume-workspace-test-{}-{}",
         std::process::id(),
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
     ));
@@ -232,7 +232,7 @@ fn resumed_codex_session_uses_config_override_instead_of_sandbox_flag() {
     // `codex exec resume` 拒绝 `--sandbox`（exit 2: unexpected argument）�?        // resume �?���?CLI invocation，必须用它支持的 config override 重新
     // 应用 thread card 的权限快照，不能假定首�? turn �?sandbox 会�?恢�?�?
     let root = std::env::temp_dir().join(format!(
-        "flowix-codex-resume-sandbox-test-{}-{}",
+        "tank-codex-resume-sandbox-test-{}-{}",
         std::process::id(),
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
     ));
@@ -267,7 +267,7 @@ fn resumed_codex_session_uses_config_override_instead_of_sandbox_flag() {
 #[test]
 fn resumed_codex_session_reapplies_yolo_permission_mode() {
     let root = std::env::temp_dir().join(format!(
-        "flowix-codex-resume-yolo-test-{}-{}",
+        "tank-codex-resume-yolo-test-{}-{}",
         std::process::id(),
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
     ));
@@ -351,7 +351,7 @@ fn codex_command_uses_yolo_flag_for_yolo_permission_mode() {
 #[test]
 fn codex_command_attaches_images_for_new_and_resumed_sessions() {
     let root =
-        std::env::temp_dir().join(format!("flowix-codex-image-test-{}", std::process::id(),));
+        std::env::temp_dir().join(format!("tank-codex-image-test-{}", std::process::id(),));
     std::fs::create_dir_all(&root).expect("create image test dir");
     let image = root.join("pasted.png");
     std::fs::write(&image, b"png").expect("create image");
@@ -378,7 +378,7 @@ fn latest_versioned_subdir_prefers_high_major_over_lexicographic() {
     // sort would compare '8' > '1' and wrongly resolve `swap_remove(last)`
     // to this old v8 directory. The semver-aware sort must pick v20.10.0.
     let parent = std::env::temp_dir().join(format!(
-        "flowix-codex-cli-test-semver-major-{}",
+        "tank-codex-cli-test-semver-major-{}",
         std::process::id(),
     ));
     std::fs::create_dir_all(&parent).expect("create temp dir");
@@ -424,7 +424,7 @@ fn parse_node_version_handles_nvm_fnm_and_asdf_shapes() {
 
 fn make_fake_codex_dir(suffix: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "flowix-codex-cli-test-{}-{}-{}",
+        "tank-codex-cli-test-{}-{}-{}",
         std::process::id(),
         suffix,
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
@@ -478,7 +478,7 @@ fn resolve_codex_binary_ignores_missing_codex_cli_path() {
     let original = std::env::var_os("CODEX_CLI_PATH");
     std::env::set_var(
         "CODEX_CLI_PATH",
-        std::env::temp_dir().join("flowix-nonexistent-codex-cli-path"),
+        std::env::temp_dir().join("tank-nonexistent-codex-cli-path"),
     );
     let resolved = resolve_codex_binary();
     match original {
@@ -487,7 +487,7 @@ fn resolve_codex_binary_ignores_missing_codex_cli_path() {
     }
     assert_ne!(
         resolved,
-        std::env::temp_dir().join("flowix-nonexistent-codex-cli-path")
+        std::env::temp_dir().join("tank-nonexistent-codex-cli-path")
     );
 }
 
@@ -575,7 +575,7 @@ fn resolve_codex_binary_falls_back_to_chatgpt_app_bundle_cli() {
 
 fn make_fake_node_dir(suffix: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "flowix-codex-node-test-{}-{}-{}",
+        "tank-codex-node-test-{}-{}-{}",
         std::process::id(),
         suffix,
         chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0),
@@ -691,7 +691,7 @@ fn preflight_codex_returns_friendly_error_when_no_node() {
     // �?codex 指向一�?���?��存在�?.js，�? needs_node=true �?node 找不�?
     std::env::set_var(
         "CODEX_CLI_PATH",
-        std::env::temp_dir().join("flowix-preflight-nonexistent-codex.js"),
+        std::env::temp_dir().join("tank-preflight-nonexistent-codex.js"),
     );
 
     let result = preflight_codex();

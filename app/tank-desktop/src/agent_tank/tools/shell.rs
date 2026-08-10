@@ -379,7 +379,7 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .expect("system time")
             .as_nanos();
-        std::env::temp_dir().join(format!("flowix-shell-{}-{}", name, suffix))
+        std::env::temp_dir().join(format!("tank-shell-{}-{}", name, suffix))
     }
 
     #[tokio::test]
@@ -407,9 +407,9 @@ mod tests {
         let root = unique_temp_dir("run");
         std::fs::create_dir_all(&root).expect("create root");
         let command = if cfg!(windows) {
-            "Write-Output flowix-shell-ok"
+            "Write-Output tank-shell-ok"
         } else {
-            "printf flowix-shell-ok"
+            "printf tank-shell-ok"
         };
 
         let args = serde_json::json!({
@@ -426,7 +426,7 @@ mod tests {
         assert!(data["stdout"]
             .as_str()
             .unwrap_or_default()
-            .contains("flowix-shell-ok"));
+            .contains("tank-shell-ok"));
         let _ = std::fs::remove_dir_all(root);
     }
 

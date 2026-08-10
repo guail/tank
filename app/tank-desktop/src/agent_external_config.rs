@@ -292,7 +292,7 @@ mod tests {
     fn set_user_path_persists_and_marks_user_source() {
         let _guard = acquire_env_lock();
         let (_dir, cfg) = temp_config();
-        let fake = std::env::temp_dir().join("flowix-aec-fake-codex");
+        let fake = std::env::temp_dir().join("tank-aec-fake-codex");
         std::fs::write(&fake, "#!/bin/sh\n").ok();
         #[cfg(unix)]
         {

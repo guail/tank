@@ -4,14 +4,14 @@
 //! principles) when no custom role override is supplied at runtime.
 //!
 //! Mutually exclusive with the runtime-supplied Agent Role 鈥?see
-//! [`crate::agent_flowix::AgentManager::agent_role_system_section`]. The
+//! [`crate::agent_tank::AgentManager::agent_role_system_section`]. The
 //! [`super::build_system_prompt`] builder skips this section entirely
 //! when `role_override` is `Some`; exactly one of `role::section()` or
 //! `role_override` appears in the final prompt.
 
 pub fn section() -> String {
     r#"# Agent Role
-Role name: Flowix Writer
+Role name: TANK的英雄笔记 Writer
 
 ## Document Types You Own
 You author and maintain exactly four kinds of markdown documents:

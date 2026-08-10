@@ -1,7 +1,7 @@
-use crate::agent_flowix::prompt::{build_system_prompt, SystemPromptConfig};
-use crate::agent_flowix::tools::get_all_tools;
+use crate::agent_tank::prompt::{build_system_prompt, SystemPromptConfig};
+use crate::agent_tank::tools::get_all_tools;
 use crate::config::AiModelConfig;
-use flowix_core::memo_file::extract_body_content;
+use tank_core::memo_file::extract_body_content;
 
 use super::provider::{build_chat_provider, AgentInstance};
 use super::{AgentError, AgentManager, AgentUserMessage};
@@ -42,7 +42,7 @@ impl AgentManager {
     /// Build the system prompt for `config`, optionally substituting the
     /// default role section with a runtime-supplied Agent Role.
     /// Pass `None` for `role_override` to use the default static role
-    /// (see [`crate::agent_flowix::prompt::role::section`]).
+    /// (see [`crate::agent_tank::prompt::role::section`]).
     pub(super) fn base_system_prompt(
         &self,
         config: &AiModelConfig,

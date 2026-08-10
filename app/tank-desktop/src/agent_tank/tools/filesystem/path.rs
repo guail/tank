@@ -1,7 +1,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use super::constants::GLOB_PRUNED_DIRS;
-use crate::agent_flowix::tools::{ToolResult, ToolScope};
+use crate::agent_tank::tools::{ToolResult, ToolScope};
 
 pub(super) fn resolve_path(path: &str) -> PathBuf {
     let path = PathBuf::from(path);

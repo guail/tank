@@ -86,7 +86,7 @@ pub async fn execute_tool(arguments: &str) -> ToolResult {
 
     let client = match reqwest::Client::builder()
         .timeout(Duration::from_secs(10))
-        .user_agent("Mozilla/5.0 Flowix Agent Web Search")
+        .user_agent("Mozilla/5.0 TANK的英雄笔记 Agent Web Search")
         .redirect(reqwest::redirect::Policy::limited(5))
         .build()
     {

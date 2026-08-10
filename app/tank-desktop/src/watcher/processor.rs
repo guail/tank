@@ -13,7 +13,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::memo_events::{emit, MemoChangeSource, MemoDerivedChanged, MemoEvent};
 use crate::watcher::event::{FsEventKind, RawFsEvent};
-use flowix_core::memo_file::{extract_frontmatter_key, Memo, MemoFile};
+use tank_core::memo_file::{extract_frontmatter_key, Memo, MemoFile};
 
 #[derive(Debug, Clone)]
 pub struct NotebookWatchContext {

@@ -13,7 +13,7 @@ use crate::agent_external::node::node_runtime_target;
 /// 1. `message.cwd_for_runtime` from IPC runtime_config.
 /// 2. The original cwd persisted in Codex session metadata.
 pub(crate) fn resolve_codex_cwd(
-    message: &crate::agent_flowix::AgentUserMessage,
+    message: &crate::agent_tank::AgentUserMessage,
     session_id: Option<&str>,
 ) -> Option<PathBuf> {
     let from_ipc = message
@@ -68,7 +68,7 @@ pub(crate) fn build_codex_command_with_images(
     cmd.current_dir(cwd);
     crate::process_window::hide_command_window(&mut cmd);
     // `--search` is a Codex top-level option (not an `exec` subcommand
-    // option). Keep it before both `exec` and `exec resume` so every Flowix
+    // option). Keep it before both `exec` and `exec resume` so every TANK的英雄笔记
     // Codex turn exposes the native Responses web_search tool by default.
     cmd.arg("--search");
     match session_id {

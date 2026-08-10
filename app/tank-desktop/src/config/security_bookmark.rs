@@ -362,9 +362,9 @@ mod tests {
     fn sample_config() -> BookmarkConfig {
         let mut config = BookmarkConfig::default();
         config.entries.insert(
-            "/tmp/flowix-bookmark-test".to_string(),
+            "/tmp/tank-bookmark-test".to_string(),
             BookmarkEntry {
-                path: "/tmp/flowix-bookmark-test".to_string(),
+                path: "/tmp/tank-bookmark-test".to_string(),
                 bookmark: "bookmark-data".to_string(),
                 updated_at: 1,
             },
@@ -382,7 +382,7 @@ mod tests {
         let loaded = read_from_disk(tmp.path()).unwrap().unwrap();
 
         assert_eq!(loaded.entries.len(), 1);
-        assert!(loaded.entries.contains_key("/tmp/flowix-bookmark-test"));
+        assert!(loaded.entries.contains_key("/tmp/tank-bookmark-test"));
     }
 
     #[test]

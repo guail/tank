@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
-use flowix_core::memo_file::{MemoFile, NotebookConfig};
+use tank_core::memo_file::{MemoFile, NotebookConfig};
 use serde::{Deserialize, Serialize};
 
 use crate::config::user::{atomic_write_json, UserConfigError};
@@ -414,7 +414,7 @@ mod tests {
     #[test]
     fn config_defaults_round_trip_shape() {
         let defaults = serde_json::json!({
-            "runtime": { "flowix": { "model": "gpt-5" } },
+            "runtime": { "tank-cli": { "model": "gpt-5" } },
             "files": { "workspacePaths": ["/tmp"] }
         });
         let cfg = AgentAccessConfig {
