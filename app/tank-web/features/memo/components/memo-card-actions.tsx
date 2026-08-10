@@ -234,7 +234,7 @@ export function MemoCardActions({
     const notebook = useMemoStore.getState().selectedNotebook;
     void openMemoSession(memo, notebook).then(() => {
       window.dispatchEvent(
-        new CustomEvent('flowix:open-note-properties', {
+        new CustomEvent('tank:open-note-properties', {
           detail: { memoId: memo.id },
         }),
       );

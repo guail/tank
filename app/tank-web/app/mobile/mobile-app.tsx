@@ -21,7 +21,7 @@ const MobileAccountPanel = lazy(() =>
 function MobileBootScreen({ message }: { message: string }) {
   return (
     <main className="mobile-boot-screen" aria-busy="true">
-      <img className="mobile-boot-icon" src={appIcon} alt="Flowix" width={96} height={96} />
+      <img className="mobile-boot-icon" src={appIcon} alt="TANK的英雄笔记" width={96} height={96} />
       <p>{message}</p>
     </main>
   );
@@ -44,15 +44,15 @@ export function MobileApp() {
   const edgeGestureRef = useRef({ startX: -1, startY: 0, swiping: false });
 
   const openDrawer = useCallback(() => {
-    window.history.pushState({ flowixMobileLayer: 'drawer' }, '');
+    window.history.pushState({ tankMobileLayer: 'drawer' }, '');
     setDrawerOpen(true);
   }, []);
 
   const openAccount = useCallback(() => {
     if (drawerOpen) {
-      window.history.replaceState({ flowixMobileLayer: 'account' }, '');
+      window.history.replaceState({ tankMobileLayer: 'account' }, '');
     } else {
-      window.history.pushState({ flowixMobileLayer: 'account' }, '');
+      window.history.pushState({ tankMobileLayer: 'account' }, '');
     }
     setDrawerOpen(false);
     setAccountOpen(true);

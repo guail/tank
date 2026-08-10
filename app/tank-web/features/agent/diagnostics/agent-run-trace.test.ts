@@ -30,7 +30,7 @@ describe('agent run trace diagnostics', () => {
   });
 
   it('records and exports mapped chunks when diagnostics are enabled', () => {
-    localStorage.setItem('flowix.agent.diagnostics', '1');
+    localStorage.setItem('tank.agent.diagnostics', '1');
     recordAgentChunkMapped({
       kind: 'stream_start',
       thread_id: 'thread-1',

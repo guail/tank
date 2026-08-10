@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
-const tauriDir = path.join(repoRoot, "app", "flowix-desktop");
+const tauriDir = path.join(repoRoot, "app", "tank-desktop");
 const baseConfigPath = path.join(tauriDir, "tauri.conf.json");
 const productionConfigPath = path.join(tauriDir, "tauri.conf.production.json");
 const platformArgIndex = process.argv.indexOf("--platform");

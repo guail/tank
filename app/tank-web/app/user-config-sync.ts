@@ -22,6 +22,6 @@ export function syncUserConfigChange(
 
   // Runtime freshness currently has one timestamp for the complete status
   // snapshot. Refresh the complete snapshot so unrelated agent statuses are
-  // not marked fresh after only Flowix was updated.
+  // not marked fresh after only TANK的英雄笔记 was updated.
   void actions.refreshAgentRuntime();
 }

@@ -19,11 +19,11 @@ describe("canonical agent message identity", () => {
     },
   );
 
-  it("is idempotent and preserves Flowix compatibility", () => {
+  it("is idempotent and preserves TANK的英雄笔记 compatibility", () => {
     const canonical = "msg:codex:run-1:assistant:source-1";
     expect(
       canonicalAgentMessageId("codex", "run-1", "assistant", canonical),
     ).toBe(canonical);
-    expect(completedRunUserMessageId("flowix", "run-1")).toBe("user-run-1");
+    expect(completedRunUserMessageId("tank-cli", "run-1")).toBe("user-run-1");
   });
 });

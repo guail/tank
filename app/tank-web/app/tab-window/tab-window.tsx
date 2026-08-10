@@ -32,10 +32,10 @@ import {
   useMemoTabMetadataStore,
 } from './memo-tab-adapter';
 
-const WINDOW_FALLBACK_TITLE = 'Flowix';
-const WINDOW_OPEN_TAB_EVENT = 'flowix:window-open-tab';
-const WINDOW_MERGE_HOVER_EVENT = 'flowix:window-merge-hover';
-const WINDOW_ROLLBACK_TAB_EVENT = 'flowix:window-rollback-tab';
+const WINDOW_FALLBACK_TITLE = 'TANK的英雄笔记';
+const WINDOW_OPEN_TAB_EVENT = 'tank:window-open-tab';
+const WINDOW_MERGE_HOVER_EVENT = 'tank:window-merge-hover';
+const WINDOW_ROLLBACK_TAB_EVENT = 'tank:window-rollback-tab';
 const NOOP = () => {};
 
 function isWindowsPlatform(): boolean {
@@ -556,7 +556,7 @@ export function TabWindow() {
       onOpenSearch: () => setIsSearchPanelOpen(true),
       onCopyLink: commands.handleCopyLink,
       onCopyFullText: commands.handleCopyFullText,
-      onOpenProperties: () => currentMemo && window.dispatchEvent(new CustomEvent('flowix:open-note-properties', { detail: { memoId: currentMemo.id } })),
+      onOpenProperties: () => currentMemo && window.dispatchEvent(new CustomEvent('tank:open-note-properties', { detail: { memoId: currentMemo.id } })),
       onTogglePin: commands.handleTogglePin,
       onExportMarkdown: commands.handleExportMarkdown,
       onSaveAsTemplate: commands.handleSaveAsTemplate,

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const frontendRoot = resolve(__dirname, "app/flowix-web");
+const frontendRoot = resolve(__dirname, "app/tank-web");
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   const isMobile = mode === "mobile";
 
   return {
-    // 前端入口: app/flowix-web/ 作为 Vite 根, 让 index.html / entrypoints /
+    // 前端入口: app/tank-web/ 作为 Vite 根, 让 index.html / entrypoints /
     // public 都在同一目录, 避免 Tauri / Vite 路径互相穿越。
     root: frontendRoot,
     publicDir: resolve(frontendRoot, "public"),
@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
         "@shared": resolve(frontendRoot, "shared"),
         // A compile-time target selection; never use a runtime MODE branch
         // here, otherwise both application roots can enter one bundle.
-        "@flowix-target-entry": resolve(
+        "@tank-target-entry": resolve(
           frontendRoot,
           isMobile ? "entrypoints/mobile.tsx" : "entrypoints/desktop.tsx",
         ),
@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => {
         : undefined,
       watch: {
         // 3. tell Vite to ignore watching `backend` (relative to repo root)
-        ignored: ["**/app/flowix-desktop/**", "**/app/flowix-mobile/**", "**/app/flowix-core/**", "**/app/flowix-cli/**", "**/app/target/**"],
+        ignored: ["**/app/tank-desktop/**", "**/app/tank-mobile/**", "**/app/tank-core/**", "**/app/tank-cli/**", "**/app/target/**"],
       },
     },
   };

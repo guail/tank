@@ -146,9 +146,9 @@ export function DocumentContainer({
       setPropertiesOpen(true);
     };
 
-    window.addEventListener('flowix:open-note-properties', handleOpenProperties);
+    window.addEventListener('tank:open-note-properties', handleOpenProperties);
     return () => {
-      window.removeEventListener('flowix:open-note-properties', handleOpenProperties);
+      window.removeEventListener('tank:open-note-properties', handleOpenProperties);
     };
   }, [memoId]);
 
@@ -181,9 +181,9 @@ export function DocumentContainer({
       }));
     };
 
-    window.addEventListener('flowix:memo-version-restored', handleVersionRestored);
+    window.addEventListener('tank:memo-version-restored', handleVersionRestored);
     return () => {
-      window.removeEventListener('flowix:memo-version-restored', handleVersionRestored);
+      window.removeEventListener('tank:memo-version-restored', handleVersionRestored);
     };
   }, [clearSaveTimer, documentIdentity, memoId, setState]);
 
@@ -303,7 +303,7 @@ export function DocumentContainer({
     // 同步调 clearDocument() 把当前打开的 ghost 文档也清掉, 避免下次
     // 切回时再次尝试 readDocument 同一个 path。
     //
-    // 不走 flowix:request-delete-memo 弹窗 ── 用户在错误态点按钮本身
+    // 不走 tank:request-delete-memo 弹窗 ── 用户在错误态点按钮本身
     // 已经是"我接受清掉这条"的明确意图, 多一层 dialog 反而干扰恢复流。
     const handleDeleteCurrent = async () => {
       if (!memoId) return;

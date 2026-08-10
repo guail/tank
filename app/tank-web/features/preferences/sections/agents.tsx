@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
 
 type CollapsibleAgentKey =
-  | 'flowix'
+  | 'tank'
   | 'codex'
   | 'claude'
   | 'gemini'
@@ -27,7 +27,7 @@ type CollapsibleAgentKey =
   | 'opencode';
 
 /// "使用自定义模型" 文档链接, codex/claude 的"查看"按钮跳转此处。
-const CUSTOM_MODEL_DOCS_URL = 'https://flowix-memo.com/docs/ai-access/';
+const CUSTOM_MODEL_DOCS_URL = 'https://tank-memo.com/docs/ai-access/';
 
 /// 偏好设置里要隐藏的 agent ── 这些 agent (coming-soon) 在 slash 菜单
 /// 等其它入口仍可独立打开, 但偏好列表里不再展示。
@@ -81,7 +81,7 @@ export function AgentsSection() {
 
   const renderHeaderAction = (typeKey: string) => {
     const isCollapsible =
-      typeKey === 'flowix' ||
+      typeKey === 'tank' ||
       typeKey === 'codex' ||
       typeKey === 'claude' ||
       typeKey === 'gemini' ||
@@ -164,11 +164,11 @@ export function AgentsSection() {
               />
             );
           };
-          if (typeKey === 'flowix') {
-            // 模型配置整段塞到 Flowix 卡片里 ── 用户展开 Flowix 时直接看到
+          if (typeKey === 'tank') {
+            // 模型配置整段塞到 TANK的英雄笔记 卡片里 ── 用户展开 TANK的英雄笔记 时直接看到
             // 供应商/模型/key 的表单, 不用跳到独立 tab。
             return renderCollapsible(
-              'flowix',
+              'tank',
               <div className="border-t border-[var(--divider)] py-3">
                 <AgentSection />
               </div>,

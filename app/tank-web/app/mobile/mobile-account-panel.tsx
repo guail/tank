@@ -14,7 +14,7 @@ interface MobileAccountPanelProps {
 function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (message.includes('MOBILE_CLOUD_ACCOUNT_MISMATCH')) {
-    return '为防止不同云账号的笔记混用，此设备已绑定其他 Flowix Cloud 账号。当前版本暂不支持直接切换账号。';
+    return '为防止不同云账号的笔记混用，此设备已绑定其他 TANK的英雄笔记 Cloud 账号。当前版本暂不支持直接切换账号。';
   }
   return message;
 }
@@ -119,13 +119,13 @@ export function MobileAccountPanel({ state, syncStatus, onClose, onStateChange }
         ) : (
           <div className="mobile-membership-card">
             <div className="mobile-membership-card__heading">
-              <div><strong>{state?.account?.user.email}</strong><span>Flowix Cloud</span></div>
+              <div><strong>{state?.account?.user.email}</strong><span>TANK的英雄笔记 Cloud</span></div>
               <span className={syncAvailable ? 'is-active' : undefined}>
                 {syncAvailable ? '云同步已开启' : '仅本地'}
               </span>
             </div>
             {syncAvailable ? (
-              <p>订阅有效，笔记将在此设备与 Flowix Cloud 之间同步。</p>
+              <p>订阅有效，笔记将在此设备与 TANK的英雄笔记 Cloud 之间同步。</p>
             ) : state?.membership?.readOnly ? (
               <p>当前云空间为只读状态，请检查订阅或存储配额。本地编辑不受影响。</p>
             ) : (

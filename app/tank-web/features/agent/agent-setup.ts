@@ -15,7 +15,7 @@ const AGENT_SETUP_URLS: Partial<Record<AgentTypeKey, string>> = {
 export async function openAgentSetup(typeKey: AgentTypeKey): Promise<void> {
   if (isAgentTypeComingSoon(typeKey)) return;
 
-  if (typeKey === 'flowix') {
+  if (typeKey === 'tank') {
     await windows.openPreferences('agent');
     return;
   }

@@ -7,7 +7,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = fileURLToPath(new URL('../app/flowix-web', import.meta.url));
+const ROOT = fileURLToPath(new URL('../app/tank-web', import.meta.url));
 const MOBILE_ROOTS = [
   'app/mobile/',
   'features/editor/mobile/',

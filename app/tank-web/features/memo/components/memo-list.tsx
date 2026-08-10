@@ -4,7 +4,7 @@ import { displayTitleFromFilename } from '@/lib/utils';
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useShortcutScope, pushHandler } from '@features/shortcuts';
-import { SquarePen, Search, ChevronDown, Check, ChevronRight, Loader2 } from 'lucide-react';
+import { SquarePen, Search, ChevronDown, Check, ChevronRight, Loader2, LayoutTemplate } from 'lucide-react';
 import { useDocumentStore } from '@features/document';
 import {
   type AgentConversationInstance,
@@ -42,6 +42,7 @@ import { Button } from '@shared/ui/button';
 import { Tooltip } from '@shared/ui/tooltip';
 import { OverlayScrollbar } from '@shared/ui/overlay-scrollbar';
 import { MemoCard } from '@features/memo/components/memo-card';
+import { TemplateCenterDialog } from '@features/memo/components/template-center-dialog';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -234,6 +235,7 @@ export function MemoList() {
   const [createNotebookOpen, setCreateNotebookOpen] = useState(false);
   const [notebookDropdownOpen, setNotebookDropdownOpen] = useState(false);
   const [searchCommandOpen, setSearchCommandOpen] = useState(false);
+  const [templateCenterOpen, setTemplateCenterOpen] = useState(false);
   const [colorSubmenuOpen, setColorSubmenuOpen] = useState(false);
   const colorTriggerRef = useRef<HTMLButtonElement>(null);
   const colorSubmenuCloseTimerRef = useRef<number | null>(null);
@@ -305,8 +307,8 @@ export function MemoList() {
       setRemoteNotebookSyncingId(null);
       setCreateNotebookOpen(true);
     };
-    window.addEventListener('flowix:open-create-notebook', handleOpenNotebook);
-    cleanups.push(() => window.removeEventListener('flowix:open-create-notebook', handleOpenNotebook));
+    window.addEventListener('tank:open-create-notebook', handleOpenNotebook);
+    cleanups.push(() => window.removeEventListener('tank:open-create-notebook', handleOpenNotebook));
     const handleEditNotebook = (event: Event) => {
       const ce = event as CustomEvent<Notebook>;
       const notebook = ce.detail;
@@ -316,19 +318,19 @@ export function MemoList() {
       setEditNotebookIcon(normalizeNotebookIconId(notebook.icon));
       setEditNotebookOpen(true);
     };
-    window.addEventListener('flowix:open-edit-notebook', handleEditNotebook as EventListener);
-    cleanups.push(() => window.removeEventListener('flowix:open-edit-notebook', handleEditNotebook as EventListener));
+    window.addEventListener('tank:open-edit-notebook', handleEditNotebook as EventListener);
+    cleanups.push(() => window.removeEventListener('tank:open-edit-notebook', handleEditNotebook as EventListener));
     const handleRequestDelete = (event: Event) => {
       const ce = event as CustomEvent<MemoItem>;
       const memo = ce.detail;
       if (!memo) return;
       setDeleteMemo(memo);
     };
-    window.addEventListener('flowix:request-delete-memo', handleRequestDelete as EventListener);
-    cleanups.push(() => window.removeEventListener('flowix:request-delete-memo', handleRequestDelete as EventListener));
+    window.addEventListener('tank:request-delete-memo', handleRequestDelete as EventListener);
+    cleanups.push(() => window.removeEventListener('tank:request-delete-memo', handleRequestDelete as EventListener));
     const handleTogglePalette = () => setSearchCommandOpen(prev => !prev);
-    window.addEventListener('flowix:toggle-palette', handleTogglePalette);
-    cleanups.push(() => window.removeEventListener('flowix:toggle-palette', handleTogglePalette));
+    window.addEventListener('tank:toggle-palette', handleTogglePalette);
+    cleanups.push(() => window.removeEventListener('tank:toggle-palette', handleTogglePalette));
     return () => {
       for (const cleanup of cleanups) cleanup();
     };
@@ -494,8 +496,8 @@ export function MemoList() {
   });
   const visibleLoadingText = blockingLoadingText;
   // 选中标签的展示名: tagMap 只收录真实 tag (id = 完整路径, 如
-  // "Flowix/云存储"), 不含路径前缀 segment。选中父节点 (e.g. "Flowix")
-  // 时 selectedTagId = fullPath "Flowix" 是前缀而非任何 memo 的真实 tag,
+  // "TANK的英雄笔记/云存储"), 不含路径前缀 segment。选中父节点 (e.g. "TANK的英雄笔记")
+  // 时 selectedTagId = fullPath "TANK的英雄笔记" 是前缀而非任何 memo 的真实 tag,
   // tagMap 取不到, fallback 到 activeTagId (即 fullPath) 本身展示 ──
   // 与 memo-card 的 `tagMap[tagId] || tagId` 同模式。
   const activeTagName = activeTagId ? (tagMap[activeTagId] ?? activeTagId) : null;
@@ -522,6 +524,7 @@ export function MemoList() {
     }
     if (activeFilter === 'thisWeek') parts.push(t('memo.list.filterThisWeek'));
     if (activeFilter === 'thisMonth') parts.push(t('memo.list.filterThisMonth'));
+    if (activeFilter === 'recent') parts.push(t('memo.list.filterRecent'));
     return parts.length > 0
       ? { headerLabel: parts.join(' '), hasActiveFilter: true }
       : { headerLabel: t('memo.list.filterAll'), hasActiveFilter: false };
@@ -545,6 +548,19 @@ export function MemoList() {
     scrollerRef: listContainerRef,
   });
 
+  // 最近编辑: activeFilter==='recent' 时主区切到网格预览。这里从已渲染的
+  // memos 里按 updatedAt 倒序取前 N 条 ── 'recent' 不走后端 filter, store
+  // 返回全量, 所以这里二次裁剪。沿用 memoMatchesFilter('recent')=true 的策略
+  // 让前端取数据, 不动后端 schema。
+  const RECENT_GRID_LIMIT = 20;
+  const recentGridMemos =
+    activeFilter === 'recent'
+      ? renderedMemos
+          .slice()
+          .sort((a, b) => b.updatedAt - a.updatedAt)
+          .slice(0, RECENT_GRID_LIMIT)
+      : [];
+
   // ─── row ref 缓存 ──────────────────────────────────────────────
   // 同一 memo.id 跨 render 拿到**稳定**的 ref 回调, 避免 React 在重渲时
   // 反复调 null/node (虽然没了 virtualizer, 但 useMemoInsertAnimation 仍
@@ -566,13 +582,6 @@ export function MemoList() {
   };
   const handleSelectMemo = useCallback((memo: MemoItem) => {
     openMemoSession(memo, useMemoStore.getState().selectedNotebook);
-  }, []);
-
-  const handleOpenMemoWindow = useCallback((memo: MemoItem) => {
-    void tauriWindows.openNoteTab(memo.id).catch((error) => {
-      logger.warn('open note window failed', { error });
-      toast.error(String(error));
-    });
   }, []);
 
   const handleFavoriteToggle = useCallback(async (memo: MemoItem) => {
@@ -680,8 +689,8 @@ export function MemoList() {
     const handleRequest = () => {
       void handleCreateMemo();
     };
-    window.addEventListener('flowix:create-memo', handleRequest);
-    return () => window.removeEventListener('flowix:create-memo', handleRequest);
+    window.addEventListener('tank:create-memo', handleRequest);
+    return () => window.removeEventListener('tank:create-memo', handleRequest);
   }, [handleCreateMemo]);
 
   // 入场动画入口: 每次 memos 变化时 (含新建/更新/删除) 在 layout 阶段同步
@@ -983,6 +992,17 @@ export function MemoList() {
               <SquarePen className="w-4 h-4 text-[var(--primary-foreground)]" />
             </Button>
           </Tooltip>
+          <Tooltip content={t("memo.templateCenter.title")}>
+            <Button
+              size="icon"
+              variant="outline"
+              className={cn(HEADER_ICON_BTN_CLASS, 'bg-[var(--card)]')}
+              onClick={() => setTemplateCenterOpen(true)}
+              aria-label={t("memo.templateCenter.title")}
+            >
+              <LayoutTemplate className="w-4 h-4" />
+            </Button>
+          </Tooltip>
         </div>
       </div>
       </>
@@ -994,43 +1014,66 @@ export function MemoList() {
         onScroll={handleMemoListScroll}
       >
         {memos.length > 0 ? (
-          // 普通列渲染: 父容器是 flex-col, 每张卡在文档流里自然堆叠, 高度
-          // 由内容撑开, 不再用 transform 定位。 GSAP 入场动画只作用在
-          // 命中的 [data-insert-anim] 节点, 不影响周围 row 的流式布局 ──
-          // 物理上消除了"上下 row 重叠"的可能性。
-          <div className="flex flex-col">
-            {renderedMemos.map((memo) => {
-              // 用 closure 缓存让同一 memo 跨 render 拿到稳定 ref, 避免
-              // React 在重渲时反复卸载/挂载 ref (虽然现在没了 virtualizer
-              // 测量问题, 但保持稳定仍是好习惯, 也便于 useMemoInsertAnimation
-              // 通过 cardRefs 拿到正确的 row 节点)。
-              const cardRef = getMemoRowRef(memo.id);
-              return (
-                <div
-                  key={memo.id}
-                  ref={cardRef}
-                >
-                  <div data-insert-anim>
-                    <MemoCard
-                      memo={memo}
-                      variant={memoCardVariant}
-                      tagMap={tagMap}
-                      isSelected={selectedMemo?.id === memo.id}
-                      isDropdownOpen={openDropdown === memo.id}
-                      runningAgentType={getRunningAgentForMemo(memo)?.agentType}
-                      onOpenDropdown={setOpenDropdown}
-                      onSelect={handleSelectMemo}
-                      onOpenInWindow={handleOpenMemoWindow}
-                      onFavoriteToggle={handleFavoriteToggle}
-                      onDelete={setDeleteMemo}
-                      onColorsChange={handleColorsChange}
-                    />
-                    <hr className="mx-3 border-t border-[var(--border)] opacity-50" />
-                  </div>
+          activeFilter === 'recent' ? (
+            // 最近编辑: 按 updatedAt 倒序取前 N 条 (见上方 recentGridMemos),
+            // 网格卡片预览 ── 响应式 2/3/4/5 列, 与 list 视图共用 MemoCard (compact 变体)。
+            <div className="grid grid-cols-2 gap-3 px-3 py-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {recentGridMemos.map((memo) => (
+                <div key={memo.id}>
+                  <MemoCard
+                    memo={memo}
+                    variant="compact"
+                    tagMap={tagMap}
+                    isSelected={selectedMemo?.id === memo.id}
+                    isDropdownOpen={openDropdown === memo.id}
+                    runningAgentType={getRunningAgentForMemo(memo)?.agentType}
+                    onOpenDropdown={setOpenDropdown}
+                    onSelect={handleSelectMemo}
+                    onFavoriteToggle={handleFavoriteToggle}
+                    onDelete={setDeleteMemo}
+                    onColorsChange={handleColorsChange}
+                  />
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            // 普通列渲染: 父容器是 flex-col, 每张卡在文档流里自然堆叠, 高度
+            // 由内容撑开, 不再用 transform 定位。 GSAP 入场动画只作用在
+            // 命中的 [data-insert-anim] 节点, 不影响周围 row 的流式布局 ──
+            // 物理上消除了"上下 row 重叠"的可能性。
+            <div className="flex flex-col">
+              {renderedMemos.map((memo) => {
+                // 用 closure 缓存让同一 memo 跨 render 拿到稳定 ref, 避免
+                // React 在重渲时反复卸载/挂载 ref (虽然现在没了 virtualizer
+                // 测量问题, 但保持稳定仍是好习惯, 也便于 useMemoInsertAnimation
+                // 通过 cardRefs 拿到正确的 row 节点)。
+                const cardRef = getMemoRowRef(memo.id);
+                return (
+                  <div
+                    key={memo.id}
+                    ref={cardRef}
+                  >
+                    <div data-insert-anim>
+                      <MemoCard
+                        memo={memo}
+                        variant={memoCardVariant}
+                        tagMap={tagMap}
+                        isSelected={selectedMemo?.id === memo.id}
+                        isDropdownOpen={openDropdown === memo.id}
+                        runningAgentType={getRunningAgentForMemo(memo)?.agentType}
+                        onOpenDropdown={setOpenDropdown}
+                        onSelect={handleSelectMemo}
+                        onFavoriteToggle={handleFavoriteToggle}
+                        onDelete={setDeleteMemo}
+                        onColorsChange={handleColorsChange}
+                      />
+                      <hr className="mx-3 border-t border-[var(--border)] opacity-50" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
         ) : (
           <EmptyState />
         )}
@@ -1159,6 +1202,9 @@ export function MemoList() {
           />
         </Suspense>
       )}
+
+      {/* 模板中心 */}
+      <TemplateCenterDialog open={templateCenterOpen} onOpenChange={setTemplateCenterOpen} />
 
       {/* 全局搜索 / 命令面板 */}
       <LazyGlobalSearchCommand open={searchCommandOpen} onOpenChange={setSearchCommandOpen} />

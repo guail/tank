@@ -141,7 +141,7 @@ export interface AgentRuntimeAvailability {
 }
 
 export interface AgentRuntimeStatus {
-  flowix: AgentRuntimeAvailability;
+  tank: AgentRuntimeAvailability;
   codex: AgentRuntimeAvailability;
   claude: AgentRuntimeAvailability;
   gemini: AgentRuntimeAvailability;
@@ -333,7 +333,7 @@ export interface CachedAgentImage {
 type StreamCallback = (chunk: AgentChunk) => void;
 
 // Standalone CLI installation/status. Memo automation is exposed to external Agents
-// through `flowix mcp`; the desktop does not keep a CLI sidecar process alive.
+// through `tank-cli mcp`; the desktop does not keep a CLI sidecar process alive.
 export interface CliLinkStatus {
   targetPath: string | null;
   binDir: string;

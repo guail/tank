@@ -232,7 +232,7 @@
   background-color: #999;
   content: '';
   transform: translate(-50%, -50%);
-  mask: var(--flowix-hand-check-mask) center / contain no-repeat;
+  mask: var(--tank-hand-check-mask) center / contain no-repeat;
 }
 .mobile-markdown-editor__content ul[data-type="taskList"] li[data-checked="true"] > div > p { color: #999; text-decoration: line-through; }
 

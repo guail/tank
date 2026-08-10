@@ -20,7 +20,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-FONT_DIR="$REPO_ROOT/app/flowix-web/assets/fonts"
+FONT_DIR="$REPO_ROOT/app/tank-web/assets/fonts"
 
 # Latin + Latin Extended + 常用标点 / 货币 / 箭头 / 数学 / 连字 / ZWNBSP。
 # 覆盖移动端 / 桌面端 UI 全部拉丁字符; 字体里没有的码位 pyftsubset 会自动忽略。

@@ -53,7 +53,7 @@ export async function renderMermaidDiagram(source: string): Promise<string> {
     throw new MermaidParseError(error);
   }
 
-  const id = `flowix-mermaid-${Date.now()}-${renderCounter++}`;
+  const id = `tank-mermaid-${Date.now()}-${renderCounter++}`;
   const result = await mermaid.render(id, source);
   return result.svg;
 }

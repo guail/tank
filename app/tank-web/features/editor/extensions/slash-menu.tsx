@@ -50,7 +50,7 @@ function disposeMenuRoot(root: Root, container: HTMLDivElement) {
 }
 
 const AGENT_THREAD_TYPE_BY_SLASH_ID: Record<AgentThreadSlashMenuItemId, AgentTypeKey> = {
-  'agent-thread-flowix': 'flowix',
+  'agent-thread-tank': 'tank',
   'agent-thread-codex': 'codex',
   'agent-thread-claude': 'claude',
   'agent-thread-gemini': 'gemini',

@@ -403,7 +403,7 @@ export function NotebookSwitcher({
               // Defer to next tick so the dropdown finishes closing
               // before the modal opens.
               setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('flowix:open-create-notebook'));
+                window.dispatchEvent(new CustomEvent('tank:open-create-notebook'));
               }, 0);
             }}
             className={cn(

@@ -36,7 +36,7 @@ export type SlashMenuItemId =
   | 'image'
   | 'video'
   | 'file'
-  | 'agent-thread-flowix'
+  | 'agent-thread-tank'
   | 'agent-thread-codex'
   | 'agent-thread-claude'
   | 'agent-thread-gemini'
@@ -54,7 +54,7 @@ type SlashMenuIcon = PhosphorIcon | string;
 
 export interface SlashMenuItem {
   id: SlashMenuItemId;
-  /** 原始展示文本 ── 用于品牌名 (Flowix / Codex / Claude Code 等不可翻译字串)。
+  /** 原始展示文本 ── 用于品牌名 (TANK的英雄笔记 / Codex / Claude Code 等不可翻译字串)。
    *  与 labelKey 互斥: 同时存在时 labelKey 优先。 */
   label?: string;
   /** i18n key ── 渲染 / 过滤时按当前语言翻译。 */
@@ -125,11 +125,11 @@ export const SLASH_MENU_ITEMS: SlashMenuItem[] = [
     sectionKey: 'editor.slash.section.agent',
   },
   {
-    id: 'agent-thread-flowix',
-    label: getAgentType('flowix').name,
+    id: 'agent-thread-tank',
+    label: getAgentType('tank').name,
     description: 'AI Agent',
-    keywords: ['ai', 'agent', 'thread', 'chat', 'duihua', 'flowix', '任务', 'renwu', 'task'],
-    icon: getAgentType('flowix').icon,
+    keywords: ['ai', 'agent', 'thread', 'chat', 'duihua', 'tank', '任务', 'renwu', 'task'],
+    icon: getAgentType('tank').icon,
     sectionKey: 'editor.slash.section.agent',
   },
   {

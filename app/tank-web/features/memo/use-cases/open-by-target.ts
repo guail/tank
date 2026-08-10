@@ -114,8 +114,8 @@ export async function openNoteByTarget(resolved: ResolvedOpenTarget): Promise<vo
 }
 
 /**
- * 入口: 深链 `flowix://...` ── 直接调后端 IPC 解析 + 打开。
- * 主窗口 listener 收到 `flowix:open-target` 事件时也是同样的逻辑。
+ * 入口: 深链 `tank://...` ── 直接调后端 IPC 解析 + 打开。
+ * 主窗口 listener 收到 `tank:open-target` 事件时也是同样的逻辑。
  */
 export async function openNoteByDeepLink(url: string): Promise<void> {
   const resolved = await memosClient.openMemoByTarget(url, { emitEvent: false });
@@ -136,7 +136,7 @@ export async function openNoteByPhysicalPath(rawPath: string): Promise<void> {
 }
 
 /**
- * 入口: 直接按 memoId 打开 ── 走 `flowix://memo/<id>` 深链语法。
+ * 入口: 直接按 memoId 打开 ── 走 `tank://memo/<id>` 深链语法。
  *
  * NoteReference 卡片以 `memoId` (memo 稳定 id) 作为第一公民;
  * 双击时优先用 memoId 反查, 跨 notebook / 笔记改名 / 笔记被搬都不断链,
@@ -144,7 +144,7 @@ export async function openNoteByPhysicalPath(rawPath: string): Promise<void> {
  *
  * 失败语义:
  * - memoId 缺失 / 后端 resolve 失败 (memo 被删) → 返回 null, 调用方走 stale 流程.
- * - 后端 emit `flowix:open-target` 跟 `openNoteByDeepLink` 走同一事件, 跨窗口同步一致.
+ * - 后端 emit `tank:open-target` 跟 `openNoteByDeepLink` 走同一事件, 跨窗口同步一致.
  */
 export async function openNoteByMemoId(memoId: string): Promise<boolean> {
   const resolved = await resolveMemoById(memoId);
@@ -159,7 +159,7 @@ export async function openNoteByMemoId(memoId: string): Promise<boolean> {
  * 用途: noteReference NodeView 渲染时 (mount + update) 异步校验并刷新
  * `notebookName` / `title`, 避免 markdown 里缓存的旧名与磁盘上的真实名
  * 长期不一致。 仅调用后端 `openMemoByTarget` (走 memo index), 不动
- * document-store / notebook 切换状态, 不 emit `flowix:open-target` 事件。
+ * document-store / notebook 切换状态, 不 emit `tank:open-target` 事件。
  *
  * 失败语义:
  * - memoId 缺失 / 后端解析失败 (memo 被删) → 返回 null.
@@ -167,7 +167,7 @@ export async function openNoteByMemoId(memoId: string): Promise<boolean> {
  */
 export async function resolveMemoById(memoId: string): Promise<ResolvedOpenTarget | null> {
   if (!memoId) return null;
-  return memosClient.openMemoByTarget(`flowix://memo/${memoId}`, { emitEvent: false });
+  return memosClient.openMemoByTarget(`tank://memo/${memoId}`, { emitEvent: false });
 }
 
 /**

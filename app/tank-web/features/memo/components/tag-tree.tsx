@@ -55,7 +55,7 @@ interface TagTreeProps {
 }
 
 // 笔记本列表区域高度 ── 持久化键 + 读 / 写助手。
-const TAG_COLLAPSED_STORAGE_PREFIX = 'flowix:tag-collapsed:';
+const TAG_COLLAPSED_STORAGE_PREFIX = 'tank:tag-collapsed:';
 
 function getCollapsedTagsStorageKey(notebookId: string): string {
   return `${TAG_COLLAPSED_STORAGE_PREFIX}${notebookId}`;

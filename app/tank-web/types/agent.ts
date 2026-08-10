@@ -1,5 +1,5 @@
 /**
- * Unified chat message types for Flowix app
+ * Unified chat message types for TANK的英雄笔记 app
  */
 
 // Thread list item
@@ -12,7 +12,8 @@ export interface ThreadListItem {
 
 // Core message type used throughout the app
 export type AgentTypeKey =
-  | "flowix"
+  | "tank"
+  | "tank-cli"
   | "codex"
   | "claude"
   | "gemini"
@@ -75,7 +76,7 @@ export interface HermesRuntimeConfig extends AgentRuntimeConfigBase {
   permissionMode?: AgentPermissionMode;
 }
 
-export interface FlowixRuntimeConfig extends AgentRuntimeConfigBase {}
+export interface TANK的英雄笔记RuntimeConfig extends AgentRuntimeConfigBase {}
 
 export interface AgentRuntimeConfig {
   codex?: CodexRuntimeConfig;
@@ -84,7 +85,7 @@ export interface AgentRuntimeConfig {
   hermes?: HermesRuntimeConfig;
   openclaw?: SimpleCliRuntimeConfig;
   opencode?: CodexRuntimeConfig;
-  flowix?: FlowixRuntimeConfig;
+  tank?: TANK的英雄笔记RuntimeConfig;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -92,7 +93,7 @@ export interface AgentRuntimeConfig {
 // Used by Agent Thread Card instances to lock model / permission / files
 // configuration without polluting other cards.
 //
-// 字段语义对齐后端 `app/flowix-desktop/src/threads.rs::RuntimeConfig`。
+// 字段语义对齐后端 `app/tank-desktop/src/threads.rs::RuntimeConfig`。
 // 序列化 / 反序列化与后端保持 camelCase 命名一致。
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -354,7 +355,7 @@ export interface AgentChunkStreamEnd {
 /**
  * Token usage breakdown — nested object emitted on `usage` field of the
  * `AgentChunk::Usage` wire variant. Mirrors Rust
- * [`crate::agent_flowix::UsageInfo`]. Fields are all optional so providers that
+ * [`crate::agent_tank::UsageInfo`]. Fields are all optional so providers that
  * only report `total_tokens` can still send a chunk without zero-filling.
  *
  * `total_tokens` is the sum used by the Rust `token_budget` cross-cycle
@@ -379,7 +380,7 @@ export interface UsageInfo {
 /**
  * Provider-specific status snapshot — nested object emitted on the
  * `status_info` field of `AgentChunk::Usage`. Mirrors Rust
- * [`crate::agent_flowix::StatusInfo`]. Fields use `codex_` / `claude_` /
+ * [`crate::agent_tank::StatusInfo`]. Fields use `codex_` / `claude_` /
  * `hermes_` prefixes for flat namespace; no nested `codex: CodexStatus`
  * sub-struct. Latest-snapshot semantics, not accumulated.
  */
@@ -528,7 +529,7 @@ export interface RunInfo {
 /**
  * 通用 metadata 协议 —— 一次 run 的"展示快照"。写在 `ThreadState.lastRun` 中, 在 run 结束 (applyRunEnded) 后, 即使该 run
  * 已从 `runs` map 中清理, 展示用的 metadata 仍然可见 —— BadgeHoverCard 仍依赖这个字段在"会话已结束"时仍能读出
- * sessionId/model/elapsed/totalTokens。Provider-agnostic: 对 Codex / Claude / Gemini / Flowix / Hermes / OpenClaw 全部适用, 字段不识别时为 undefined。
+ * sessionId/model/elapsed/totalTokens。Provider-agnostic: 对 Codex / Claude / Gemini / TANK的英雄笔记 / Hermes / OpenClaw 全部适用, 字段不识别时为 undefined。
  */
 
 export interface LastRunSnapshot {

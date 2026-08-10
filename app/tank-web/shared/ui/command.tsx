@@ -11,7 +11,7 @@ import { useI18n } from '@/lib/i18n';
  * Command palette (shadcn UI 风格, 基于 cmdk).
  *
  * 与 components/ui/dialog.tsx 一样, CommandDialog 使用 react portal
- * 渲染到 document.body, 并复用 flowix-fade-* / flowix-dialog-* 动画。
+ * 渲染到 document.body, 并复用 tank-fade-* / tank-dialog-* 动画。
  * 配色 token 全部走 var(--*) 以适配 light / dark / rock 三套主题。
  */
 
@@ -199,7 +199,7 @@ function CommandDialog({
         <div
           className={cn(
             'fixed inset-0 z-[1300] bg-black/50',
-            visible ? 'flowix-fade-enter' : 'flowix-fade-leave',
+            visible ? 'tank-fade-enter' : 'tank-fade-leave',
           )}
           onClick={() => onOpenChange(false)}
         />
@@ -218,7 +218,7 @@ function CommandDialog({
         <div
           className={cn(
             'relative w-full max-w-[38rem] mx-4 rounded-xl border border-[var(--border)] bg-[var(--popover)] text-[var(--popover-foreground)] shadow-[0_12px_50px_-12px_rgb(0_0_0_/_0.39)] pointer-events-auto overflow-hidden',
-            visible ? 'flowix-dialog-enter' : 'flowix-dialog-leave',
+            visible ? 'tank-dialog-enter' : 'tank-dialog-leave',
             className,
           )}
         >

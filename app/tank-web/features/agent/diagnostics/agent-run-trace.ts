@@ -1,6 +1,6 @@
 import type { AgentChunk, AgentEvent, AgentTypeKey } from '@/types/agent';
 
-const DIAGNOSTICS_STORAGE_KEY = 'flowix.agent.diagnostics';
+const DIAGNOSTICS_STORAGE_KEY = 'tank.agent.diagnostics';
 const MAX_TRACE_RECORDS = 500;
 
 type AgentRunTraceRecord =

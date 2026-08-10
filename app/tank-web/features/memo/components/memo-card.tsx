@@ -33,7 +33,6 @@ interface MemoCardProps {
   isDropdownOpen: boolean;
   onOpenDropdown: (id: string | null) => void;
   onSelect: (memo: MemoItem) => void;
-  onOpenInWindow?: (memo: MemoItem) => void;
   onFavoriteToggle: (memo: MemoItem) => void;
   onDelete: (memo: MemoItem) => void;
   onColorsChange?: (memo: MemoItem, colors: MemoColor[]) => void;
@@ -62,7 +61,6 @@ interface MemoCardShellProps {
   children: ReactNode;
   onOpenDropdown: (id: string | null) => void;
   onSelect: (memo: MemoItem) => void;
-  onOpenInWindow?: (memo: MemoItem) => void;
   onFavoriteToggle: (memo: MemoItem) => void;
   onDelete: (memo: MemoItem) => void;
   onColorsChange?: (memo: MemoItem, colors: MemoColor[]) => void;
@@ -221,7 +219,6 @@ function MemoCardShell({
   children,
   onOpenDropdown,
   onSelect,
-  onOpenInWindow,
   onFavoriteToggle,
   onDelete,
   onColorsChange,
@@ -231,7 +228,6 @@ function MemoCardShell({
       <ContextMenuTrigger asChild>
         <div
           onClick={() => onSelect(memo)}
-          onDoubleClick={() => onOpenInWindow?.(memo)}
           className={cn(
             'group memo-card relative cursor-pointer rounded-lg px-2 py-3 transition-all',
             isSelected && 'bg-[var(--accent)]',
@@ -390,7 +386,6 @@ export function MemoCardImpl({
   isDropdownOpen,
   onOpenDropdown,
   onSelect,
-  onOpenInWindow,
   onFavoriteToggle,
   onDelete,
   onColorsChange,
@@ -429,7 +424,6 @@ export function MemoCardImpl({
       moreLabel={t('document.titlebar.moreTooltip')}
       onOpenDropdown={onOpenDropdown}
       onSelect={onSelect}
-      onOpenInWindow={onOpenInWindow}
       onFavoriteToggle={onFavoriteToggle}
       onDelete={onDelete}
       onColorsChange={onColorsChange}

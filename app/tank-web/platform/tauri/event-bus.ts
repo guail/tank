@@ -2,7 +2,7 @@
  * 前端事件总线 — 统一收口 `@tauri-apps/api/event` 的 `listen<T>(name, cb)`。
  *
  * 背景: 项目里后端发了多 channel 事件 (memo-event / agent-chunk /
- * user-config-changed / agent-access-changed / flowix:open-target), 此前
+ * user-config-changed / agent-access-changed / tank:open-target), 此前
  * 每个 channel 自己写 "模块级 unlisten 单例 + 重复挂载短路" 样板
  * (client.ts 的 `streamUnlisten` / `userConfigUnlisten` / `agentAccessUnlisten`、
  * openByTarget/listener.ts 的 `unlisten`、useMemoEvents 的 `disposed` 互斥)。

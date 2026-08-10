@@ -22,8 +22,8 @@ describe("thread-titles helpers", () => {
     vi.clearAllMocks();
   });
 
-  it("isExternalAgentType returns true for non-flowix", () => {
-    expect(isExternalAgentType("flowix")).toBe(false);
+  it("isExternalAgentType returns true for non-tank", () => {
+    expect(isExternalAgentType("tank-cli")).toBe(false);
     expect(isExternalAgentType("codex")).toBe(true);
     expect(isExternalAgentType("claude")).toBe(true);
     expect(isExternalAgentType("gemini")).toBe(true);
@@ -32,7 +32,7 @@ describe("thread-titles helpers", () => {
   });
 
   it("persists every agent title in the product database", () => {
-    expect(canPersistThreadTitle("flowix")).toBe(true);
+    expect(canPersistThreadTitle("tank-cli")).toBe(true);
     expect(canPersistThreadTitle("codex")).toBe(true);
     expect(canPersistThreadTitle("claude")).toBe(true);
     expect(canPersistThreadTitle("hermes")).toBe(true);
@@ -53,7 +53,7 @@ describe("thread-titles helpers", () => {
   });
 
   it("defaultThreadTitle falls back per agent family", () => {
-    expect(defaultThreadTitle("flowix")).toBe("Untitled conversation");
+    expect(defaultThreadTitle("tank-cli")).toBe("Untitled conversation");
     expect(defaultThreadTitle("hermes")).toBe("Hermes session");
     expect(defaultThreadTitle("codex")).toBe("Codex session");
     expect(defaultThreadTitle("claude")).toBe("Claude Code session");
@@ -118,7 +118,7 @@ describe("thread-titles helpers", () => {
     };
     expect(getConversationTitleForThread(state2, "codex", "t1")).toBe("Active");
 
-    // 完全没记录: external → type default, flowix → i18n "新对话" 词条 ("Untitled conversation" 在 en-US)。
+    // 完全没记录: external → type default, tank-cli → i18n "新对话" 词条 ("Untitled conversation" 在 en-US)。
     const state3 = {
       threadLists: {} as Partial<Record<AgentTypeKey, { threadId: string; title: string; createdAt: number; updatedAt: number }[]>>,
       activeThreadIds: {} as Partial<Record<AgentTypeKey, string | undefined>>,
@@ -127,7 +127,7 @@ describe("thread-titles helpers", () => {
     expect(getConversationTitleForThread(state3, "codex", "t-missing")).toBe(
       "Codex session",
     );
-    expect(getConversationTitleForThread(state3, "flowix", "t-missing")).toBe(
+    expect(getConversationTitleForThread(state3, "tank-cli", "t-missing")).toBe(
       "New conversation",
     );
   });

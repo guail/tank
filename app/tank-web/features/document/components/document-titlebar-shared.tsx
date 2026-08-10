@@ -93,9 +93,9 @@ export interface DocumentTitlebarProps {
 }
 
 const AGENT_THREAD_CARD_FULLSCREEN_CHANGE_EVENT =
-  'flowix:agent-thread-card-fullscreen-change';
+  'tank:agent-thread-card-fullscreen-change';
 const AGENT_THREAD_CARD_REQUEST_FULLSCREEN_EVENT =
-  'flowix:agent-thread-card-request-fullscreen';
+  'tank:agent-thread-card-request-fullscreen';
 
 /**
  * Document state for the titlebar. Exactly one is active at a time:
@@ -829,7 +829,7 @@ export function MemoActions({
       const latestActiveMemoSession = useDocumentStore.getState().activeMemoSession;
       if (latestActiveMemoSession?.memoId === memo.id) {
         useDocumentStore.getState().replaceActiveMemoPath(memo.id, restored.path);
-        window.dispatchEvent(new CustomEvent('flowix:memo-version-restored', {
+        window.dispatchEvent(new CustomEvent('tank:memo-version-restored', {
           detail: {
             memoId: memo.id,
             path: restored.path,

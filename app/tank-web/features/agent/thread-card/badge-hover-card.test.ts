@@ -34,20 +34,20 @@ describe("BadgeHoverCard", () => {
       root.render(
         createElement(BadgeHoverCard, {
           sessionId: "session-1",
-          cwd: "D:\\projects\\flowix",
+          cwd: "D:\\projects\\tank",
         }),
       );
     });
 
     expect(host.textContent).toContain("CWD");
-    expect(host.textContent).toContain("D:\\projects\\flowix");
+    expect(host.textContent).toContain("D:\\projects\\tank");
 
     await act(async () => {
       root.render(createElement(BadgeHoverCard, { sessionId: "session-1" }));
     });
 
     expect(host.textContent).not.toContain("CWD");
-    expect(host.textContent).not.toContain("D:\\projects\\flowix");
+    expect(host.textContent).not.toContain("D:\\projects\\tank");
 
     await act(async () => root.unmount());
   });

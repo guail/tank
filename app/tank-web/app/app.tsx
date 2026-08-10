@@ -41,7 +41,7 @@ const AgentWindowEffects = lazy(() =>
 function AppToaster() {
   return (
     <Toaster
-      className="flowix-toaster"
+      className="tank-toaster"
       position="top-center"
       richColors={false}
       closeButton={false}

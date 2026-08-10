@@ -13,7 +13,7 @@ export type ColorFilterValue = 'any' | 'none' | MemoColor;
 
 // FilterType 增加了前端专用的 'color' 维度。后端不识别时, `loadMemos`
 // 会把它转译成 'all' 走全量, 由前端在 useMemo 里按 `colorFilter` 二次过滤。
-export type ExtendedFilterType = FilterType | 'color';
+export type ExtendedFilterType = FilterType | 'color' | 'recent';
 
 // 文档颜色标签 — 跟后端 `MemoColor` 镜像 (`#[serde(rename_all = "lowercase")]`),
 // 写入 memo index。单文档可挂多个色, 空数组即"无颜色"。色值在
@@ -75,7 +75,7 @@ function compareMemoItems(sort: SortType) {
   };
 }
 
-function memoMatchesFilter(memo: MemoItem, filter: FilterType): boolean {
+function memoMatchesFilter(memo: MemoItem, filter: ExtendedFilterType): boolean {
   const now = new Date();
   switch (filter) {
     case 'todos':
@@ -98,16 +98,26 @@ function memoMatchesFilter(memo: MemoItem, filter: FilterType): boolean {
       const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
       return memo.createdAt >= start && memo.createdAt <= now.getTime();
     }
+    case 'recent':
+      // 'recent' 不在后端 filter 范围 — 在 useMemo 里直接取全量按
+      // updatedAt 倒序的前 N 条, 这里总是放行让数据进入 store 即可。
+      return true;
+    case 'color':
+      // 'color' 在 memoMatchesFilter 的 default 分支会被放行 (后端
+      // 没返回任何数据可过滤, 这里只是 upsert 排序); 实际 UI 端会在
+      // useMemo 里按 colorFilter 二次过滤, 新建笔记不挂色会自然落选。
+      return true;
     default:
       return true;
   }
 }
 
 // 把前端的 `ExtendedFilterType` 转成后端识别的 `FilterType`。
-// 'color' 是前端专用, 在后端没有意义 → 退化成 'all' 拉全量, 由前端 store
-// 在 useMemo 里按 `colorFilter` 二次过滤。其他值原样下发。
+// 'color' 和 'recent' 都是前端专用 filter, 在后端没有意义 → 退化成 'all'
+// 拉全量, 由前端 store 在 useMemo 里按对应维度二次过滤。其他值原样下发。
 function toBackendFilter(filter: ExtendedFilterType): FilterType {
-  return filter === 'color' ? 'all' : filter;
+  if (filter === 'color' || filter === 'recent') return 'all';
+  return filter;
 }
 
 function upsertSortedMemo(
@@ -117,10 +127,7 @@ function upsertSortedMemo(
   sort: SortType
 ): MemoItem[] {
   const withoutExisting = current.filter((item) => item.id !== memo.id);
-  // 'color' 在 memoMatchesFilter 的 default 分支会被放行 (后端没返回任何
-  // 数据可过滤, 这里只是 upsert 排序); 实际 UI 端会在 useMemo 里按
-  // colorFilter 二次过滤, 新建笔记不挂色会自然落选。
-  if (!memoMatchesFilter(memo, filter as FilterType)) {
+  if (!memoMatchesFilter(memo, filter)) {
     return withoutExisting;
   }
   return [...withoutExisting, memo].sort(compareMemoItems(sort));

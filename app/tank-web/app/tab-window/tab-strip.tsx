@@ -62,7 +62,7 @@ interface TabDragPointerPayload {
   screenX: number;
 }
 
-const WINDOW_TAB_DRAG_POINTER_EVENT = 'flowix:window-tab-drag-pointer';
+const WINDOW_TAB_DRAG_POINTER_EVENT = 'tank:window-tab-drag-pointer';
 const TAB_TEAR_OFF_THRESHOLD_RATIO = 0.5;
 const TAB_LAYOUT_ANIMATION_DURATION = 180;
 const TAB_LAYOUT_ANIMATION_EASING = 'cubic-bezier(0.2, 0, 0, 1)';

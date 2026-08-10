@@ -225,19 +225,19 @@ describe('resolveSelectedTagId', () => {
     });
 
   it('keeps selectedTagId when it is a path-prefix segment (parent node)', () => {
-    // 真实 tag `Flowix/云存储` 展开出父 segment `Flowix`; 选中 `Flowix` 合法保留。
-    expect(resolveSelectedTagId('Flowix', options(['Flowix', 'Flowix/云存储']))).toBe('Flowix');
+    // 真实 tag `TANK的英雄笔记/云存储` 展开出父 segment `TANK的英雄笔记`; 选中 `TANK的英雄笔记` 合法保留。
+    expect(resolveSelectedTagId('TANK的英雄笔记', options(['TANK的英雄笔记', 'TANK的英雄笔记/云存储']))).toBe('TANK的英雄笔记');
   });
 
   it('keeps selectedTagId when it is a real (leaf) tag fullPath', () => {
-    expect(resolveSelectedTagId('Flowix/云存储', options(['Flowix', 'Flowix/云存储']))).toBe('Flowix/云存储');
+    expect(resolveSelectedTagId('TANK的英雄笔记/云存储', options(['TANK的英雄笔记', 'TANK的英雄笔记/云存储']))).toBe('TANK的英雄笔记/云存储');
   });
 
   it('clears selectedTagId when it is not a node in the tree', () => {
-    expect(resolveSelectedTagId('NonExistent', options(['Flowix', 'Flowix/云存储']))).toBeNull();
+    expect(resolveSelectedTagId('NonExistent', options(['TANK的英雄笔记', 'TANK的英雄笔记/云存储']))).toBeNull();
   });
 
   it('returns null for null selectedTagId', () => {
-    expect(resolveSelectedTagId(null, options(['Flowix']))).toBeNull();
+    expect(resolveSelectedTagId(null, options(['TANK的英雄笔记']))).toBeNull();
   });
 });

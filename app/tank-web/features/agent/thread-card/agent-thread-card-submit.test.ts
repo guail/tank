@@ -28,7 +28,7 @@ vi.mock('@features/agent/services/external-agent-runtime-service', () => ({
 vi.mock('@platform/tauri/client', () => ({
   agent: {
     createThread: vi.fn(async (title: string) => ({
-      threadId: 'flowix-thread-1',
+      threadId: 'tank-thread-1',
       title,
       createdAt: 1,
       updatedAt: 1,
@@ -69,28 +69,28 @@ describe('agent thread card submit helper', () => {
     expect(chatStoreMock.setActiveAgentThread).not.toHaveBeenCalled();
   });
 
-  it('creates and activates a Flowix thread', async () => {
+  it('creates and activates a TANK的英雄笔记 thread', async () => {
     const { agent } = await import('@platform/tauri/client');
     const { ensureAgentThreadCardThread } = await import('./agent-thread-card-submit');
 
     const result = await ensureAgentThreadCardThread({
-      prompt: 'hello flowix',
+      prompt: 'hello tank',
       fallbackTitle: 'AI',
-      typeKey: 'flowix',
+      typeKey: 'tank',
       currentThreadId: null,
       runtimeHandleId: 'handle-1',
       instanceId: 'inst-1',
       buildTitle: (prompt) => `Title: ${prompt}`,
     });
 
-    expect(agent.createThread).toHaveBeenCalledWith('Title: hello flowix');
+    expect(agent.createThread).toHaveBeenCalledWith('Title: hello tank');
     // Phase 4 (2026-08-02): 真源切到 session-store.sessionMeta.activeThreadIds.
     expect(sessionStoreMock.setSessionMeta).toHaveBeenCalled();
     expect(sessionStoreMock.loadThreadList).toHaveBeenCalled();
     expect(result).toEqual({
-      threadId: 'flowix-thread-1',
-      title: 'Title: hello flowix',
-      typeKey: 'flowix',
+      threadId: 'tank-thread-1',
+      title: 'Title: hello tank',
+      typeKey: 'tank',
     });
   });
 });

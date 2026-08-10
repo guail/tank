@@ -24,7 +24,7 @@ interface MobileDocumentDraft {
 }
 
 function draftKey(memoId: string): string {
-  return `flowix:mobile-draft:${memoId}`;
+  return `tank:mobile-draft:${memoId}`;
 }
 
 function recoverDraft(memoId: string, diskContent: string): string {
@@ -177,14 +177,14 @@ export function MobileDocumentScreen({
     // history.back() has already consumed the document entry. Keep the user on
     // the editor after a failed/conflicting save and re-arm system Back.
     if (mountedRef.current) {
-      window.history.pushState({ flowixMobileLayer: 'document' }, '');
+      window.history.pushState({ tankMobileLayer: 'document' }, '');
     }
   }, [onBack, saveLatest]);
   const handleBackRef = useRef(handleBack);
   handleBackRef.current = handleBack;
 
   useEffect(() => {
-    window.history.pushState({ flowixMobileLayer: 'document' }, '');
+    window.history.pushState({ tankMobileLayer: 'document' }, '');
     const handleSystemBack = () => void handleBackRef.current();
     window.addEventListener('popstate', handleSystemBack);
     return () => window.removeEventListener('popstate', handleSystemBack);

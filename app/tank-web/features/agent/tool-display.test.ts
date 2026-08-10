@@ -28,15 +28,15 @@ describe("Codex protocol tool summaries", () => {
       agentType: "codex",
       toolName: "web_search",
       input: {
-        query: "Flowix Codex web search",
+        query: "TANK的英雄笔记 Codex web search",
         action: {
           type: "search",
-          queries: ["Flowix Codex web search", "Flowix agent notes"],
+          queries: ["TANK的英雄笔记 Codex web search", "TANK的英雄笔记 agent notes"],
         },
       },
     });
     expect(completed).toMatchObject({
-      summary: "Flowix Codex web search",
+      summary: "TANK的英雄笔记 Codex web search",
       kind: "search",
     });
   });
@@ -62,8 +62,8 @@ describe("Codex protocol tool summaries", () => {
       agentType: "codex",
       toolName: "mcp_tool_call",
       input: {
-        server: "mcp_servers-flowix",
-        tool: "flowix_memo",
+        server: "mcp_servers-tank",
+        tool: "tank_memo",
         arguments: {
           command: "search CODEX-SMOKE --notebook nb_1 --limit 5",
           stdin: "temporary body",
@@ -71,7 +71,7 @@ describe("Codex protocol tool summaries", () => {
       },
     });
     expect(memo?.summary).toBe(
-      "flowix_memo · command: search CODEX-SMOKE --notebook nb_1 --limit 5 · stdin: temporary body",
+      "tank_memo · command: search CODEX-SMOKE --notebook nb_1 --limit 5 · stdin: temporary body",
     );
 
     const resource = createAgentToolDisplay({
@@ -189,7 +189,7 @@ describe("parseAgentCommandInput", () => {
   it("unwraps generic shell wrapper payloads", () => {
     const r = parseAgentCommandInput({
       command:
-        "/bin/zsh -lc 'ls -la /Users/rop/Desktop/flowix-main | head -5'",
+        "/bin/zsh -lc 'ls -la /Users/rop/Desktop/tank-main | head -5'",
     });
     expect(r?.items[0].command).toBe("/bin/zsh");
     expect(r?.items[0].wrapper?.label).toBe("/bin/zsh -lc");
@@ -285,10 +285,10 @@ describe("parseAgentCommandInput", () => {
     });
   });
 
-  it("normalizes Flowix shell command tools to command display", () => {
+  it("normalizes TANK的英雄笔记 shell command tools to command display", () => {
     expect(
       createAgentToolDisplay({
-        agentType: "flowix",
+        agentType: "tank-cli",
         toolName: "shell",
         input: { command: "npm run build" },
       }),

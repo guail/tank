@@ -1,5 +1,5 @@
 /**
- * Type definitions for Flowix app.
+ * Type definitions for TANK的英雄笔记 app.
  *
  * 历史: 早期版本集中维护在这里 (含 Canva 树 / Bun RPC schema 等已废弃概念),
  * 后迁移到按 feature 拆分的 *.ts 子模块 (types/agent.ts / types/memo*.ts 等)。

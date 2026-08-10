@@ -14,7 +14,7 @@ function event<K extends AgentEvent["kind"]>(
 
 const userMessage = (text: string, id: string): AgentEvent =>
   event("user_message", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId: "r1",
     timestamp: 1000,
@@ -27,7 +27,7 @@ const userMessage = (text: string, id: string): AgentEvent =>
 
 const textDelta = (text: string, messageId?: string): AgentEvent =>
   event("text_delta", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId: "r1",
     timestamp: 2000,
@@ -42,7 +42,7 @@ const textDelta = (text: string, messageId?: string): AgentEvent =>
 
 const reasoningDelta = (text: string): AgentEvent =>
   event("reasoning_delta", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId: "r1",
     timestamp: 3000,
@@ -57,7 +57,7 @@ const reasoningDelta = (text: string): AgentEvent =>
 
 const streamStart = (runId: string): AgentEvent =>
   event("stream_start", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId,
     timestamp: 0,
@@ -66,7 +66,7 @@ const streamStart = (runId: string): AgentEvent =>
 
 const streamEnd = (runId: string, reason: string | null = null): AgentEvent =>
   event("stream_end", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId,
     timestamp: 9000,
@@ -75,7 +75,7 @@ const streamEnd = (runId: string, reason: string | null = null): AgentEvent =>
 
 const errorEvent = (message: string): AgentEvent =>
   event("error", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId: "r1",
     timestamp: 9500,
@@ -84,7 +84,7 @@ const errorEvent = (message: string): AgentEvent =>
 
 const toolCall = (id: string, name: string): AgentEvent =>
   event("tool_call", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId: "r1",
     timestamp: 4000,
@@ -100,7 +100,7 @@ const toolCall = (id: string, name: string): AgentEvent =>
 
 const toolResult = (id: string, name: string): AgentEvent =>
   event("tool_result", {
-    agentType: "flowix",
+    agentType: "tank-cli",
     threadId: "t1",
     runId: "r1",
     timestamp: 5000,
@@ -251,7 +251,7 @@ describe("reduceProjection / session_resolved is a no-op", () => {
     const after = reduceProjection(
       p,
       event("session_resolved", {
-        agentType: "flowix",
+        agentType: "tank-cli",
         threadId: "t1",
         runId: "test-run",
         timestamp: 9999,
@@ -269,7 +269,7 @@ describe("reduceProjection / usage accumulates into runs", () => {
     p = reduceProjection(
       p,
       event("usage", {
-        agentType: "flowix",
+        agentType: "tank-cli",
         threadId: "t1",
         runId: "r1",
         timestamp: 8000,

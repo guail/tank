@@ -1,7 +1,7 @@
 // MemoItem 类型 — 独立文件, 供 types/memo.ts (MemoEvent 镜像) 和
 // store/memo-store.ts 共享, 避免循环引用。
 //
-// 跟后端 `flowix-core::memo_file::Memo` 镜像, 字段命名是 camelCase
+// 跟后端 `tank-core::memo_file::Memo` 镜像, 字段命名是 camelCase
 // (后端走 `#[serde(rename_all = "camelCase")]` 跨 IPC 边界)。
 
 export type MemoColor = 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'gray';

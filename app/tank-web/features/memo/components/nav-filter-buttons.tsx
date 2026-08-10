@@ -1,6 +1,6 @@
 'use client';
 
-import { StarFourIcon } from '@phosphor-icons/react';
+import { ClockClockwiseIcon, StarFourIcon } from '@phosphor-icons/react';
 import { Layers, ListTodo } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -47,6 +47,11 @@ export function NavFilterButtons({
   const handleShowTaskMemos = () => {
     setSelectedTagId(null);
     setActiveFilter('todos');
+  };
+
+  const handleShowRecentMemos = () => {
+    setSelectedTagId(null);
+    setActiveFilter('recent');
   };
 
   return (
@@ -134,6 +139,36 @@ export function NavFilterButtons({
         <span className="min-w-0 flex-1 truncate">{t("memo.list.filterTasks")}</span>
         <span className="ml-2 shrink-0 tabular-nums text-xs text-[var(--muted-foreground)]">
           {todoMemoCount}
+        </span>
+      </div>
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleShowRecentMemos}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleShowRecentMemos();
+          }
+        }}
+        className={cn(
+          'group relative flex h-8 w-full cursor-pointer select-none items-center gap-0 rounded-md pr-2 text-left text-sm transition-colors',
+          activeFilter === 'recent'
+            ? 'bg-[var(--muted)] text-[var(--foreground)]'
+            : 'text-[var(--foreground)] hover:bg-[var(--muted)]',
+        )}
+        style={{ paddingLeft: 6 }}
+        aria-pressed={activeFilter === 'recent'}
+      >
+        <span className="mr-2 shrink-0 opacity-90">
+          <ClockClockwiseIcon
+            className="h-3.5 w-3.5 text-[var(--foreground)]"
+            weight="bold"
+          />
+        </span>
+        <span className="min-w-0 flex-1 truncate">{t("memo.list.filterRecent")}</span>
+        <span className="ml-2 shrink-0 tabular-nums text-xs text-[var(--muted-foreground)]">
+          {totalMemoCount}
         </span>
       </div>
     </div>

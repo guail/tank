@@ -357,7 +357,7 @@ export function MainLayout() {
   }, [currentDocumentInstanceKey]);
 
   // 监听 Edit notebook 弹窗内「移除笔记本」按钮 — 派发
-  // `flowix:request-delete-notebook` 即可复用下方 NotebokDeleteDialog
+  // `tank:request-delete-notebook` 即可复用下方 NotebokDeleteDialog
   // 走标准的删除确认流程。 Edit 弹窗自己会先关掉, 这里只需要 set 一次。
   useEffect(() => {
     const handleRequest = (event: Event) => {
@@ -366,8 +366,8 @@ export function MainLayout() {
       if (!notebook) return;
       setNotebookToDelete(notebook);
     };
-    window.addEventListener('flowix:request-delete-notebook', handleRequest as EventListener);
-    return () => window.removeEventListener('flowix:request-delete-notebook', handleRequest as EventListener);
+    window.addEventListener('tank:request-delete-notebook', handleRequest as EventListener);
+    return () => window.removeEventListener('tank:request-delete-notebook', handleRequest as EventListener);
   }, []);
 
   const handleOpenTodos = useCallback(async () => {
@@ -404,7 +404,7 @@ export function MainLayout() {
       // StatusBar closes its dropdown before invoking this callback. Defer the
       // dialog one tick so the close transition can start first.
       setTimeout(() => {
-        window.dispatchEvent(new CustomEvent<Notebook>('flowix:open-edit-notebook', { detail: notebook }));
+        window.dispatchEvent(new CustomEvent<Notebook>('tank:open-edit-notebook', { detail: notebook }));
       }, 0);
     },
     []
@@ -456,14 +456,14 @@ export function MainLayout() {
   const handleRequestDeleteMemo = useCallback(() => {
     if (!currentMemo) return;
     window.dispatchEvent(
-      new CustomEvent<MemoItem>('flowix:request-delete-memo', { detail: currentMemo })
+      new CustomEvent<MemoItem>('tank:request-delete-memo', { detail: currentMemo })
     );
   }, [currentMemo]);
 
   const handleOpenNoteProperties = useCallback(() => {
     if (!currentMemo) return;
     window.dispatchEvent(
-      new CustomEvent('flowix:open-note-properties', { detail: { memoId: currentMemo.id } })
+      new CustomEvent('tank:open-note-properties', { detail: { memoId: currentMemo.id } })
     );
   }, [currentMemo]);
 
@@ -587,8 +587,8 @@ export function MainLayout() {
                   memoListPreviewVisible
                     ? 'fixed left-1 top-[6vh] z-[1200] flex h-[88vh] w-[280px] flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[12px_0_25px_-5px_rgb(0_0_0/_0.1)] [&>div]:pt-2 ' +
                       (memoListPreviewPhase === 'open'
-                        ? 'flowix-hover-preview-enter'
-                        : 'flowix-hover-preview-leave')
+                        ? 'tank-hover-preview-enter'
+                        : 'tank-hover-preview-leave')
                     : 'flex-1 min-h-0'
                 }
               >

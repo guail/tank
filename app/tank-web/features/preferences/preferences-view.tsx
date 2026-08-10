@@ -54,7 +54,7 @@ const TAB_GROUPS: { labelKey: I18nKey; tabs: PreferencesTabItem[] }[] = [
 	{
 		labelKey: 'preferences.groups.ai',
 		tabs: [
-			// 模型配置整段塞到 aiAgent 的 Flowix 卡片里, 不再独立成 tab。
+			// 模型配置整段塞到 aiAgent 的 TANK的英雄笔记 卡片里, 不再独立成 tab。
 			{ id: 'aiAgent', labelKey: 'preferences.tabs.aiAgent', icon: <StarFourIcon className="w-4 h-4" weight="regular" /> },
 			{ id: 'cli', labelKey: 'preferences.tabs.cli', icon: <SquareTerminal className="w-4 h-4" /> },
 			{ id: 'mcp', labelKey: 'preferences.tabs.mcp', icon: <Plug className="w-4 h-4" /> },

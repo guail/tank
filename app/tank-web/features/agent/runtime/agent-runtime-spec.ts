@@ -70,15 +70,19 @@ export function normalizeCodexPermissionMode(
     : "danger-full-access";
 }
 
+const tankRuntimeSpec: AgentRuntimeSpec = {
+  typeKey: "tank-cli",
+  emptySettings: [],
+  accessOptions: NO_ACCESS_OPTIONS,
+  buildRuntimeConfig: ({ cwd, workspacePaths }) => ({
+    tank: { cwd, workspacePaths },
+  }),
+};
+
 const AGENT_RUNTIME_SPECS: Record<AgentTypeKey, AgentRuntimeSpec> = {
-  flowix: {
-    typeKey: "flowix",
-    emptySettings: [],
-    accessOptions: NO_ACCESS_OPTIONS,
-    buildRuntimeConfig: ({ cwd, workspacePaths }) => ({
-      flowix: { cwd, workspacePaths },
-    }),
-  },
+  // UI agent key `tank` 与后端 wire 值 `tank-cli` 指向同一 spec
+  tank: tankRuntimeSpec,
+  "tank-cli": tankRuntimeSpec,
   codex: {
     typeKey: "codex",
     emptySettings: ["model", "reasoning", "permission"],

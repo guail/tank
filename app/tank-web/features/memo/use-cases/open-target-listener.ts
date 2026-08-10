@@ -1,5 +1,5 @@
 /**
- * 跨窗口单订阅者 — 监听后端 `flowix:open-target` 事件, 由 app.tsx 顶层挂。
+ * 跨窗口单订阅者 — 监听后端 `tank:open-target` 事件, 由 app.tsx 顶层挂。
  *
  * 设计:
  *   - 单 listener, 模块级 singleton unlisten (跟 `listenToAgentStream` /

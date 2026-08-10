@@ -73,7 +73,7 @@ export function ShortcutsProvider({ overrides, children }: ShortcutsProviderProp
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((window as unknown as { __flowixShortcutRecorderOpen?: boolean }).__flowixShortcutRecorderOpen) {
+      if ((window as unknown as { __tankShortcutRecorderOpen?: boolean }).__tankShortcutRecorderOpen) {
         return;
       }
 

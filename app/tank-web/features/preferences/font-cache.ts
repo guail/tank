@@ -1,7 +1,7 @@
 import { FONT_FAMILY_OPTIONS, type FontFamilyOption } from '@/lib/constants';
 import { fontCache, type CachedFontResult, type FontCacheStatus } from '@platform/tauri/client';
 
-const STYLE_ID = 'flowix-downloaded-fonts';
+const STYLE_ID = 'tank-downloaded-fonts';
 
 export function getFontOptionById(fontId: string | undefined): FontFamilyOption | undefined {
   if (!fontId) return undefined;

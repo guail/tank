@@ -75,7 +75,7 @@ export function getAgentMessageVisibleContent(
     return message.content || getAgentMessageEndTimeText(message, language);
   }
 
-  // assistant 错误消息 (flowix agent 合成的 LLM 不可用信封 / 外部 runtime 抛
+  // assistant 错误消息 (tank-cli agent 合成的 LLM 不可用信封 / 外部 runtime 抛
   // 出的错误) 可能夹带 `Raw response: {json}`, 展示前收敛成 message; 普通
   // assistant 文本没有该标记, 原样返回。
   if (message.role === "assistant") {

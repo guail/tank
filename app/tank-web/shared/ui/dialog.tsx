@@ -80,15 +80,15 @@ export function DialogContent({ children, className, showOverlay = true, showClo
 	if (!mounted) return null;
 
 	const overlayAnimationClass = visible
-		? 'flowix-fade-enter'
+		? 'tank-fade-enter'
 		: open
-			? 'flowix-fade-before-enter'
-			: 'flowix-fade-leave';
+			? 'tank-fade-before-enter'
+			: 'tank-fade-leave';
 	const contentAnimationClass = visible
-		? 'flowix-dialog-enter'
+		? 'tank-dialog-enter'
 		: open
-			? 'flowix-dialog-before-enter'
-			: 'flowix-dialog-leave';
+			? 'tank-dialog-before-enter'
+			: 'tank-dialog-leave';
 
 	return createPortal(
 		<>

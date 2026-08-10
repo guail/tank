@@ -18,7 +18,7 @@ import { mobile } from './client/mobile';
 /**
  * Compile-time capability surface for the mobile Tauri shell.
  *
- * Keep this list aligned with `flowix-mobile/src/lib.rs`. Mobile features must
+ * Keep this list aligned with `tank-mobile/src/lib.rs`. Mobile features must
  * import this facade instead of the desktop-wide `@platform/tauri/client`
  * barrel, so an unavailable desktop command cannot be called accidentally.
  */

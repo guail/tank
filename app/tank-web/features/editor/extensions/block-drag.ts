@@ -56,7 +56,7 @@ export const BlockDragExtension = Extension.create({
             return DecorationSet.create(state.doc, [
               Decoration.widget(drag.dropPos, () => {
                 const marker = document.createElement('div')
-                marker.className = 'flowix-block-drop-indicator'
+                marker.className = 'tank-block-drop-indicator'
                 marker.contentEditable = 'false'
                 return marker
               }, { side: -1 }),

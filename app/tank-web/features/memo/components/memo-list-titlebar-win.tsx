@@ -33,7 +33,7 @@ export function MemoListTitlebarWin({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Flowix menu"
+            aria-label="TANK的英雄笔记 menu"
             className="flex h-7 items-center gap-1 rounded-md pl-1 pr-2 select-none transition-colors hover:bg-[var(--muted)]"
           >
             <img
@@ -43,7 +43,7 @@ export function MemoListTitlebarWin({
               className="h-[12.6px] w-[12.6px] shrink-0 rounded [[data-theme='dark']_&]:brightness-0 [[data-theme='dark']_&]:invert [[data-theme='dark']_&]:opacity-75"
             />
             <span className="leading-none translate-y-[1px] text-[13px] font-semibold tracking-tight text-[color-mix(in_oklch,var(--foreground)_86%,transparent)]">
-              Flowix
+              TANK的英雄笔记
             </span>
           </button>
         </DropdownMenuTrigger>

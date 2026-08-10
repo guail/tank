@@ -24,7 +24,7 @@ export interface AgentSessionMeta {
 
 export const DEFAULT_AGENT_SESSION_META: AgentSessionMeta = {
   activeThreadIds: {},
-  activeAgentTypeKey: "flowix",
+  activeAgentTypeKey: "tank-cli",
   threadTypes: {},
   threadLists: {},
   currentThreadTitles: {},

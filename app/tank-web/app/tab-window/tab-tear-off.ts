@@ -27,7 +27,7 @@ export interface HorizontalTabRect {
 
 export type TabDragMode = 'disabled' | 'tear_off';
 
-export const FLOWIX_TAB_DRAG_TYPE = 'application/x-flowix-tab';
+export const FLOWIX_TAB_DRAG_TYPE = 'application/x-tank-tab';
 
 export function tabDragMode(tabCount: number): TabDragMode {
   if (tabCount < 1) return 'disabled';

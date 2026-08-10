@@ -77,7 +77,7 @@ describe('frontmatter property helpers', () => {
       null,
       'key',
       'another-id',
-    )).toThrow(/managed by Flowix/);
+    )).toThrow(/managed by TANK的英雄笔记/);
   });
 
   it('formats collections as a compact single line', () => {

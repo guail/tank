@@ -16,7 +16,7 @@ export interface ApplyOptions {
  *
  * 与 index.html boot 脚本中的字符串保持一致。
  */
-export const THEME_CACHE_KEY = 'flowix-theme';
+export const THEME_CACHE_KEY = 'tank-theme';
 
 /**
  * 纯函数: 把 themeId + 系统偏好解析后, 把结果写到给定 root。

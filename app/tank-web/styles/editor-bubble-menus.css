@@ -118,6 +118,70 @@
   opacity: 0.35;
 }
 
+.selection-bubble-palette-wrap {
+  position: relative;
+  display: inline-flex;
+  pointer-events: auto;
+}
+
+.selection-bubble-palette {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 102;
+  display: grid;
+  grid-template-columns: repeat(4, 20px);
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid color-mix(in oklch, var(--border) 86%, transparent);
+  border-radius: 10px;
+  background: color-mix(in oklch, var(--popover) 96%, transparent);
+  box-shadow: 0 10px 28px color-mix(in oklch, var(--foreground) 14%, transparent);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.selection-bubble-swatch {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.selection-bubble-swatch:hover {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.selection-bubble-swatch.is-active {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+.selection-bubble-clear {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.selection-bubble-clear:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
 .selection-bubble-divider {
   width: 1px;
   height: 18px;

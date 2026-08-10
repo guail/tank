@@ -45,7 +45,7 @@
 @tailwind utilities;
 
 :root {
-	--flowix-hand-check-mask: url("data:image/svg+xml,%3Csvg viewBox='-1 -1 16 13' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M1.15 5.9c.16-.22.44-.28.72-.16 1.32.56 2.42 1.2 3.36 2.06C6.72 5.38 9.12 2.86 12.35.88c.32-.2.72-.16.9.09.18.24.05.6-.26.84-3.45 2.76-5.56 5.4-7.1 8.23-.14.25-.41.4-.71.4-.28 0-.53-.13-.68-.35-.88-1.18-1.95-2.12-3.19-3.12-.29-.23-.38-.75-.16-1.07Z'/%3E%3C/svg%3E");
+	--tank-hand-check-mask: url("data:image/svg+xml,%3Csvg viewBox='-1 -1 16 13' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M1.15 5.9c.16-.22.44-.28.72-.16 1.32.56 2.42 1.2 3.36 2.06C6.72 5.38 9.12 2.86 12.35.88c.32-.2.72-.16.9.09.18.24.05.6-.26.84-3.45 2.76-5.56 5.4-7.1 8.23-.14.25-.41.4-.71.4-.28 0-.53-.13-.68-.35-.88-1.18-1.95-2.12-3.19-3.12-.29-.23-.38-.75-.16-1.07Z'/%3E%3C/svg%3E");
 }
 
 .flowix-hand-check {
@@ -53,7 +53,7 @@
 	width: 1rem;
 	height: 1rem;
 	background-color: currentColor;
-	mask: var(--flowix-hand-check-mask) center / contain no-repeat;
+	mask: var(--tank-hand-check-mask) center / contain no-repeat;
 }
 
 @layer base {
@@ -131,7 +131,7 @@
 
 	/* Dialog pop + slide-up + fade (替代了 tw-animate-css v4 插件,
 	 * 该插件在 Tailwind v3 下不生成任何 class)。 */
-	@keyframes flowix-dialog-in {
+	@keyframes tank-dialog-in {
 		from {
 			opacity: 0;
 			transform: translate3d(0, 16px, 0) scale(0.9);
@@ -142,7 +142,7 @@
 		}
 	}
 
-	@keyframes flowix-dialog-out {
+	@keyframes tank-dialog-out {
 		from {
 			opacity: 1;
 			transform: translate3d(0, 0, 0) scale(1);
@@ -153,18 +153,18 @@
 		}
 	}
 
-	@keyframes flowix-fade-in {
+	@keyframes tank-fade-in {
 		from { opacity: 0; }
 		to { opacity: 1; }
 	}
 
-	@keyframes flowix-fade-out {
+	@keyframes tank-fade-out {
 		from { opacity: 1; }
 		to { opacity: 0; }
 	}
 
 	.flowix-dialog-enter {
-		animation: flowix-dialog-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: tank-dialog-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 
 	.flowix-dialog-before-enter {
@@ -173,11 +173,11 @@
 	}
 
 	.flowix-dialog-leave {
-		animation: flowix-dialog-out 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: tank-dialog-out 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 
 	.flowix-fade-enter {
-		animation: flowix-fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: tank-fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 
 	.flowix-fade-before-enter {
@@ -185,14 +185,14 @@
 	}
 
 	.flowix-fade-leave {
-		animation: flowix-fade-out 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: tank-fade-out 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 
 	/* 侧栏折叠态 hover 展开按钮 1s 后弹出的笔记列表浮层 ── 进场从左侧
 	   滑入 + 轻微 scale, 出场反向滑出。 全部用 keyframe + animation, 组件
 	   只挂/卸 className, 不参与动画状态机。 timing 函数沿用仓库统一的
 	   cubic-bezier(0.16, 1, 0.3, 1)。 进场 200ms, 出场 160ms。 */
-	@keyframes flowix-hover-preview-in {
+	@keyframes tank-hover-preview-in {
 		from {
 			opacity: 0;
 			transform: translate3d(-12px, 0, 0) scale(0.98);
@@ -203,7 +203,7 @@
 		}
 	}
 
-	@keyframes flowix-hover-preview-out {
+	@keyframes tank-hover-preview-out {
 		from {
 			opacity: 1;
 			transform: translate3d(0, 0, 0) scale(1);
@@ -215,11 +215,11 @@
 	}
 
 	.flowix-hover-preview-enter {
-		animation: flowix-hover-preview-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: tank-hover-preview-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 
 	.flowix-hover-preview-leave {
-		animation: flowix-hover-preview-out 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation: tank-hover-preview-out 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 
 	.icon-btn {

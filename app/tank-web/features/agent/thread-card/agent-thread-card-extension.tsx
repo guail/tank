@@ -25,7 +25,7 @@ import {
 import { getCurrentThreadCardSource } from "@features/agent/thread-card/runtime/thread-card-source";
 
 export const SKIP_AGENT_THREAD_CARD_CLEANUP_META =
-  "flowixSkipAgentThreadCardCleanup";
+  "tankSkipAgentThreadCardCleanup";
 
 function collectAgentThreadCards(
   doc: ProseMirrorNode,

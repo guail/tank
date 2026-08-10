@@ -84,7 +84,7 @@ export { localFilePathFromAgentHref } from "@features/agent/thread-card/link-nav
 //     ── 那是一个 `position: fixed; top: 0; h-9` 的覆盖层, 实际占
 //     据 webview 内容顶部的 36px 高度。
 //   - macOS / Linux: 0px ── OS 自带的 traffic-light / GTK decoration
-//     在 webview 之外, 不占内容区。Mac 上确实有 flowix 自己的
+//     在 webview 之外, 不占内容区。Mac 上确实有 tank-cli 自己的
 //     document-titlebar-mac (h-12 = 48px), 但它属于"文档区内部的
 //     标题栏", 全屏卡片向上探出去就把它压住了 ── 不算 OS 顶部控件区。
 //
@@ -98,9 +98,9 @@ const FULLSCREEN_EXIT_FALLBACK_MAX_TOP_PX = 160;
 const FULLSCREEN_EXIT_FALLBACK_TOP_RATIO = 0.28;
 const SCROLL_DELTA_EPSILON_PX = 0.5;
 const AGENT_THREAD_CARD_FULLSCREEN_CHANGE_EVENT =
-  "flowix:agent-thread-card-fullscreen-change";
+  "tank:agent-thread-card-fullscreen-change";
 const AGENT_THREAD_CARD_REQUEST_FULLSCREEN_EVENT =
-  "flowix:agent-thread-card-request-fullscreen";
+  "tank:agent-thread-card-request-fullscreen";
 const AGENT_THREAD_CARD_FULLSCREEN_RESTORE_CLASS =
   "agent-thread-card--restoring-fullscreen";
 const AGENT_THREAD_CARD_INPUT_DRAFT_MAX_CHARS = 500;
@@ -1196,7 +1196,7 @@ export class AgentThreadCardView implements ProseMirrorNodeView {
   }
 
   // 消息链接点击委托 ── AgentThreadCard 是只读 NodeView, 不使用编辑器正文的
-  // link hover tooltip。这里本地接管点击, 保留 flowix:// 深链和普通外链打开能力。
+  // link hover tooltip。这里本地接管点击, 保留 tank:// 深链和普通外链打开能力。
   private handleBodyClick(event: MouseEvent): void {
     const target = event.target as HTMLElement | null;
     if (!target) return;
@@ -1223,7 +1223,7 @@ export class AgentThreadCardView implements ProseMirrorNodeView {
     }
     const href = normalizePlainLinkHref(rawHref);
     if (!href) return;
-    if (href.startsWith("flowix://")) {
+    if (href.startsWith("tank://")) {
       void openNoteByDeepLink(href);
       return;
     }

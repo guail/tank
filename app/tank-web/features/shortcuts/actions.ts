@@ -257,9 +257,9 @@ defineAction({
 /**
  * 打开/关闭全局搜索 / 命令面板 (GlobalSearchCommand) — toggle 语义。
  *
- * 实现: dispatch `flowix:toggle-palette` 事件, memo-list.tsx 监听后
- * `setSearchCommandOpen(prev => !prev)`。沿用仓库里 `flowix:open-create-notebook` /
- * `flowix:request-delete-memo` 的 CustomEvent 解耦模式 — 命令面板的
+ * 实现: dispatch `tank:toggle-palette` 事件, memo-list.tsx 监听后
+ * `setSearchCommandOpen(prev => !prev)`。沿用仓库里 `tank:open-create-notebook` /
+ * `tank:request-delete-memo` 的 CustomEvent 解耦模式 — 命令面板的
  * 状态留在 memo-list 内部, 任何位置都能触发。
  *
  * scope: 'window' — 应用级命令, 编辑器或输入框聚焦时也可触发。
@@ -276,7 +276,7 @@ defineAction({
     linux: 'Mod+K',
   },
   run: () => {
-    window.dispatchEvent(new CustomEvent('flowix:toggle-palette'));
+    window.dispatchEvent(new CustomEvent('tank:toggle-palette'));
   },
 });
 
@@ -309,7 +309,7 @@ defineAction({
 /**
  * 新建 Memo。
  *
- * 实现: dispatch `flowix:create-memo` 事件, memo-list.tsx 监听后调用
+ * 实现: dispatch `tank:create-memo` 事件, memo-list.tsx 监听后调用
  * `handleCreateMemo` (含 `selectedNotebook` 守卫, 无当前 notebook 时静默
  * no-op, 不弹错)。这样:
  *  - 复用 memo-list 已有逻辑, 不复制代码
@@ -328,14 +328,14 @@ defineAction({
     linux: 'Mod+N',
   },
   run: () => {
-    window.dispatchEvent(new CustomEvent('flowix:create-memo'));
+    window.dispatchEvent(new CustomEvent('tank:create-memo'));
   },
 });
 
 /**
  * 新建笔记本。
  *
- * 实现: dispatch `flowix:open-create-notebook` 事件, memo-list.tsx 监听后打开
+ * 实现: dispatch `tank:open-create-notebook` 事件, memo-list.tsx 监听后打开
  * 已有的新建笔记本弹窗。和状态栏下拉里的"新建笔记本"按钮走同一条路径。
  */
 defineAction({
@@ -350,16 +350,16 @@ defineAction({
     linux: 'Mod+Alt+N',
   },
   run: () => {
-    window.dispatchEvent(new CustomEvent('flowix:open-create-notebook'));
+    window.dispatchEvent(new CustomEvent('tank:open-create-notebook'));
   },
 });
 
 /**
  * 切换笔记本下拉面板 (StatusBar 里的 NotebookSwitcher) — toggle 语义。
  *
- * 实现: dispatch `flowix:toggle-notebook-switcher` 事件, main-layout.tsx
+ * 实现: dispatch `tank:toggle-notebook-switcher` 事件, main-layout.tsx
  * 监听后 `setNotebookPopupOpen(prev => !prev)`。沿用 `palette.search` →
- * `flowix:toggle-palette` 的同款 CustomEvent 解耦模式 — 弹层 state 留在
+ * `tank:toggle-palette` 的同款 CustomEvent 解耦模式 — 弹层 state 留在
  * main-layout 内部, 任何位置都能触发, actions.ts 不依赖 React。
  *
  * scope: 'window' — 应用级命令, 编辑器或输入框聚焦时也可触发。
@@ -376,7 +376,7 @@ defineAction({
     linux: 'Mod+Shift+N',
   },
   run: () => {
-    window.dispatchEvent(new CustomEvent('flowix:toggle-notebook-switcher'));
+    window.dispatchEvent(new CustomEvent('tank:toggle-notebook-switcher'));
   },
 });
 
@@ -451,7 +451,7 @@ defineAction({
  * scope: 'window' — 应用级视图切换, 编辑器或输入框聚焦时也可触发。
  *
  * 实现: 调 useSettingsStore.toggleMemoListVisible()。 状态在 lib/store/settings-store.ts,
- * zustand persist 到 localStorage (key: 'flowix-settings') — 关闭重开仍记住选择。
+ * zustand persist 到 localStorage (key: 'tank-settings') — 关闭重开仍记住选择。
  * `main-layout.tsx:600, 619` 观察这个字段并控制左栏挂载/卸载。
  */
 defineAction({

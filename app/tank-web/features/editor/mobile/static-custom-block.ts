@@ -54,7 +54,7 @@ function renderStaticCard(dom: HTMLElement, kind: string, attrsSource: string) {
 
   const eyebrow = document.createElement('span');
   eyebrow.className = 'mobile-static-block__eyebrow';
-  eyebrow.textContent = kind === 'agent-thread-card' ? 'Agent Thread' : 'Flowix Block';
+  eyebrow.textContent = kind === 'agent-thread-card' ? 'Agent Thread' : 'TANK的英雄笔记 Block';
 
   const title = document.createElement('strong');
   title.className = 'mobile-static-block__title';
@@ -156,7 +156,7 @@ export const StaticCustomBlock = Node.create({
       new Plugin({
         filterTransaction(transaction, state) {
           if (!transaction.docChanged) return true;
-          if (transaction.getMeta('flowixAllowStaticBlockMutation')) return true;
+          if (transaction.getMeta('tankAllowStaticBlockMutation')) return true;
           return sameSequence(
             protectedStaticBlockSequence(state.doc),
             protectedStaticBlockSequence(transaction.doc),

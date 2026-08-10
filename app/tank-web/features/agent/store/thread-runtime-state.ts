@@ -31,7 +31,7 @@ export interface ThreadState {
    * runs[runId] 在正常完成时被清理,但 lastRun 仍保留 model / usage /
    * startedAt / endedAt 等关键 metadata,供 BadgeHoverCard 等"展示"层
    * 在 run 结束后仍可读。Provider-agnostic:对 Codex / Claude / Gemini /
-   * Flowix / Hermes / OpenClaw 全部适用。
+   * TANK的英雄笔记 / Hermes / OpenClaw 全部适用。
    */
   lastRun?: LastRunSnapshot;
   /** Layer 4: 当前 in-memory messages 中最早一条的 sequence (作下一页 cursor).

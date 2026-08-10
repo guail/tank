@@ -35,7 +35,7 @@ export function MemoListTitlebarMac({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              aria-label="Flowix menu"
+              aria-label="TANK的英雄笔记 menu"
               className="w-8 h-8 flex items-center justify-center rounded-md select-none transition-colors hover:bg-[var(--muted)]"
             >
               <img

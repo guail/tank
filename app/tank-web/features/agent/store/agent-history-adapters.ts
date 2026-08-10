@@ -21,9 +21,9 @@ export interface AgentHistoryAdapter {
   ): Promise<ThreadHistoryPage>;
 }
 
-function createFlowixHistoryAdapter(): AgentHistoryAdapter {
+function createTANK的英雄笔记HistoryAdapter(): AgentHistoryAdapter {
   return {
-    typeKey: "flowix",
+    typeKey: "tank-cli",
     listThreads: () => agentClient.listThreads(),
     async getFullHistory(threadId) {
       return (await agentClient.getThread(threadId)).messages;
@@ -110,7 +110,7 @@ function createOpenCodeHistoryAdapter(): AgentHistoryAdapter {
 }
 
 const historyAdapters: Partial<Record<AgentTypeKey, AgentHistoryAdapter>> = {
-  flowix: createFlowixHistoryAdapter(),
+  tank: createTANK的英雄笔记HistoryAdapter(),
   // Codex history is materialized by the backend from compact DB snapshots.
   // The rollout transcript is a display-only fallback when DB events are empty.
   codex: createCodexHistoryAdapter(),

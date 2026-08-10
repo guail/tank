@@ -39,13 +39,13 @@ describe("agent event mapper", () => {
     });
   });
 
-  it("maps Flowix text chunks to streaming deltas", () => {
+  it("maps TANK的英雄笔记 text chunks to streaming deltas", () => {
     const event = mapAgentChunkToEvent(
       {
         kind: "text",
-        thread_id: "flowix-thread",
+        thread_id: "tank-thread",
         text: "hello",
-        agent_type: "flowix",
+        agent_type: "tank-cli",
         run_id: "run-1",
       },
       state(),
@@ -54,7 +54,7 @@ describe("agent event mapper", () => {
 
     expect(event).toMatchObject({
       kind: "text_delta",
-      threadId: "flowix-thread",
+      threadId: "tank-thread",
       runId: "run-1",
       timestamp: 123,
       text: "hello",
@@ -149,7 +149,7 @@ describe("agent event mapper", () => {
         kind: "reasoning",
         thread_id: "thread-1",
         text: "thinking",
-        agent_type: "flowix",
+        agent_type: "tank-cli",
       },
       state({
         threadStates: {

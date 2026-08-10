@@ -8,7 +8,7 @@
  *   2. localStorage cache written by applyTheme();
  *   3. system color scheme.
  *
- * Keep VALID_RESOLVED_THEMES in sync with app/flowix-web/features/theme/palette.ts,
+ * Keep VALID_RESOLVED_THEMES in sync with app/tank-web/features/theme/palette.ts,
  * excluding "system" because this script only writes resolved data-theme values.
  */
 (function () {
@@ -16,7 +16,7 @@
     var VALID_RESOLVED_THEMES = ['dark', 'light', 'rock', 'mist', 'ember'];
     var params = new URLSearchParams(window.location.search || '');
     var bootTheme = params.get('bootTheme');
-    var cached = bootTheme || localStorage.getItem('flowix-theme');
+    var cached = bootTheme || localStorage.getItem('tank-theme');
     var resolved;
 
     if (VALID_RESOLVED_THEMES.indexOf(cached) !== -1) {

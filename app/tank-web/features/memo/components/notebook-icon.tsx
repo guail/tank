@@ -9,8 +9,8 @@ export interface NotebookIconOption {
   label: string;
 }
 
-// 笔记本图标统一来源: app/flowix-web/assets/notebook-icons/。
-// 相对路径: components -> memo -> features -> flowix-web (3 个 `..`) -> assets/notebook-icons。
+// 笔记本图标统一来源: app/tank-web/assets/notebook-icons/。
+// 相对路径: components -> memo -> features -> tank-web (3 个 `..`) -> assets/notebook-icons。
 const NOTEBOOK_ICON_MODULES = import.meta.glob<string>('../../../assets/notebook-icons/*.svg', {
   eager: true,
   import: 'default',

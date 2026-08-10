@@ -1,7 +1,7 @@
 /**
  * Identifier for each settings section.
  *
- * 模型配置 (供应商 / 模型 / API Key) 现在塞在 `aiAgent` 的 Flowix 卡片
+ * 模型配置 (供应商 / 模型 / API Key) 现在塞在 `aiAgent` 的 TANK的英雄笔记 卡片
  * 里, 不再是独立 tab。 图片生成 + 视频生成合并到 `tools`。
  *
  * `imageGeneration` / `videoGeneration` / `agent` / `modelConfig` /

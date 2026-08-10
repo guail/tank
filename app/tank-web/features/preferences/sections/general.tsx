@@ -62,7 +62,7 @@ function MemoCardVariantOption({
   onSelect: () => void;
 }) {
   const isCompact = variant === 'compact';
-  const previewTitle = 'Flowix release plan';
+  const previewTitle = 'TANK的英雄笔记 release plan';
   const previewText = 'Review this week\'s scope, desktop app icon updates, and memo card display settings.';
   const previewTime = '2h ago';
 

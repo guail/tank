@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build flowix-cli (the standalone CLI sidecar) and copy the binary into
-# `app/flowix-desktop/binaries/` so Tauri's externalBin can pick it up.
+# Build tank-cli (the standalone CLI sidecar) and copy the binary into
+# `app/tank-desktop/binaries/` so Tauri's externalBin can pick it up.
 #
 # Usage:
 #   bash scripts/build-cli.sh              # release build, current host
@@ -9,7 +9,7 @@
 #   bash scripts/build-cli.sh --macos      # macOS only: aarch64 + x86_64 (本地 darwin 发版)
 #
 # Side-effect:
-# - writes `app/flowix-desktop/binaries/flowix-cli-<host-triple>` (with the right
+# - writes `app/tank-desktop/binaries/tank-cli-<host-triple>` (with the right
 #   extension on Windows, but Tauri will rename it on copy).
 # - does NOT touch the workspace `target/` (cargo decides where to put it).
 
@@ -18,7 +18,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 APP_DIR="$(cd "$SCRIPT_DIR/../app" && pwd)"
-BINARIES_DIR="$APP_DIR/flowix-desktop/binaries"
+BINARIES_DIR="$APP_DIR/tank-desktop/binaries"
 CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$REPO_ROOT/.build/cargo-target}"
 export CARGO_TARGET_DIR
 
@@ -51,7 +51,7 @@ host_triple() {
   rustc -vV | sed -n 's|host: ||p'
 }
 
-# Tauri externalBin 期待: binaries/flowix-cli (无后缀)。 Windows 上仍用
+# Tauri externalBin 期待: binaries/tank-cli (无后缀)。 Windows 上仍用
 # 同名 (Tauri 内部加 .exe), Unix 也不加后缀。
 copy_to_binaries() {
   local host="$1"
@@ -60,7 +60,7 @@ copy_to_binaries() {
   if [[ "$host" == *windows* ]]; then
     ext=".exe"
   fi
-  local dst="$BINARIES_DIR/flowix-cli-$host$ext"
+  local dst="$BINARIES_DIR/tank-cli-$host$ext"
   mkdir -p "$BINARIES_DIR"
   if [[ "$host" == *windows* ]]; then
     cp "$src" "$dst"
@@ -85,9 +85,9 @@ copy_to_binaries() {
   echo "  -> $dst"
 }
 
-# Dev-mode 入口: `binaries/flowix-cli` (无 triple / 扩展名) 是 Tauri 2 在
+# Dev-mode 入口: `binaries/tank-cli` (无 triple / 扩展名) 是 Tauri 2 在
 # `cargo tauri dev` 时的 sidecar 源文件名 (没有就走 fallback 失败)。
-# 这里在 `binaries/flowix-cli-<host>` 旁建一个同名 symlink 指向它 ──
+# 这里在 `binaries/tank-cli-<host>` 旁建一个同名 symlink 指向它 ──
 # 只在单 host build 时跑, 多 triple 模式 symlink 没法统一指向。
 #
 # Windows 上 Git Bash 在没开 Developer Mode 时建不出 symlink; 失败就
@@ -100,8 +100,8 @@ create_dev_symlink() {
   if [[ "$host" == *windows* ]]; then
     ext=".exe"
   fi
-  local target="flowix-cli-$host$ext"
-  local link="$BINARIES_DIR/flowix-cli"
+  local target="tank-cli-$host$ext"
+  local link="$BINARIES_DIR/tank-cli"
   [[ -n "$ext" ]] && link="${link}${ext}"
   # 旧的 symlink / 文件残留先清掉, ln -sf 跨平台会覆盖, 这里显式 rm 防止奇怪状态。
   rm -f "$link"
@@ -114,7 +114,7 @@ create_dev_symlink() {
 }
 
 # ── main ────────────────────────────────────────────────────────────
-echo "▸ flowix-cli build (profile=$PROFILE, mode=$BUILD_MODE)"
+echo "▸ tank-cli build (profile=$PROFILE, mode=$BUILD_MODE)"
 
 # 按 mode 决定要编哪些 triple。多 triple 走统一循环, host 模式走单 host 分支。
 case "$BUILD_MODE" in
@@ -137,10 +137,10 @@ if [ ${#TRIPLES[@]} -gt 0 ]; then
     echo "▸ build for $triple"
     cargo build \
       --manifest-path "$APP_DIR/Cargo.toml" \
-      --bin flowix-cli \
+      --bin tank-cli \
       --target "$triple" \
       --release
-    bin_path="$CARGO_TARGET_DIR/$triple/release/flowix-cli"
+    bin_path="$CARGO_TARGET_DIR/$triple/release/tank-cli"
     [[ "$triple" == *windows* ]] && bin_path="${bin_path}.exe"
     copy_to_binaries "$triple" "$bin_path"
     # 签名 ── macOS / Windows 走 codesign / signtool, Linux 跳过。
@@ -153,19 +153,19 @@ else
   echo "▸ host = $host"
   cargo build \
     --manifest-path "$APP_DIR/Cargo.toml" \
-    --bin flowix-cli \
+    --bin tank-cli \
     $([ "$PROFILE" = "release" ] && echo "--release")
-  bin_path="$CARGO_TARGET_DIR/$PROFILE/flowix-cli"
+  bin_path="$CARGO_TARGET_DIR/$PROFILE/tank-cli"
   if [ ! -f "$bin_path" ]; then
     # If callers override CARGO_TARGET_DIR or Cargo uses host-specific output,
     # keep a fallback that mirrors explicit --target builds.
-    bin_path="$CARGO_TARGET_DIR/$host/$PROFILE/flowix-cli"
+    bin_path="$CARGO_TARGET_DIR/$host/$PROFILE/tank-cli"
   fi
   copy_to_binaries "$host" "$bin_path"
   bash "$SCRIPT_DIR/sign-cli.sh" --host="$host"
 fi
 
-# Dev-mode symlink: 让 `cargo tauri dev` 能找到 `binaries/flowix-cli`。
+# Dev-mode symlink: 让 `cargo tauri dev` 能找到 `binaries/tank-cli`。
 # 多 triple 模式 (all / macos) 跳过 ── 跨 triple symlink 指向哪个都歧义,
 # 只在单 host build 时建, dev 本地用。
 if [ "$BUILD_MODE" = "host" ]; then

@@ -417,7 +417,7 @@ export function NotebookDialogs({
                   // 先关掉当前弹窗, 再派发全局事件打开删除确认。
                   onCancelEdit();
                   window.dispatchEvent(
-                    new CustomEvent<Notebook>('flowix:request-delete-notebook', { detail: target })
+                    new CustomEvent<Notebook>('tank:request-delete-notebook', { detail: target })
                   );
                 }}
                 className="h-8 px-3 text-sm rounded-lg bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--muted)] hover:text-[var(--destructive)]"

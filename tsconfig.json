@@ -10,12 +10,12 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["app/flowix-web/*"],
-      "@app/*": ["app/flowix-web/app/*"],
-      "@features/*": ["app/flowix-web/features/*"],
-      "@platform/*": ["app/flowix-web/platform/*"],
-      "@shared/*": ["app/flowix-web/shared/*"],
-      "@flowix-target-entry": ["app/flowix-web/entrypoints/desktop.tsx"]
+      "@/*": ["app/tank-web/*"],
+      "@app/*": ["app/tank-web/app/*"],
+      "@features/*": ["app/tank-web/features/*"],
+      "@platform/*": ["app/tank-web/platform/*"],
+      "@shared/*": ["app/tank-web/shared/*"],
+      "@flowix-target-entry": ["app/tank-web/entrypoints/desktop.tsx"]
     },
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -29,6 +29,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["app/flowix-web"],
+  "include": ["app/tank-web"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

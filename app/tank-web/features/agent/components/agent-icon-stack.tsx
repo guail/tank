@@ -2,7 +2,7 @@ import { MoreHorizontal } from 'lucide-react';
 import { getAgentType, type AgentTypeKey } from '@/lib/agent-types';
 import { cn } from '@/lib/utils';
 
-const STACK_ORDER: AgentTypeKey[] = ['flowix', 'hermes', 'codex', 'claude'];
+const STACK_ORDER: AgentTypeKey[] = ['tank', 'hermes', 'codex', 'claude'];
 
 /** 单个 icon 主体 20px, 图片 14px, 相邻 14px 偏移 (30% 重叠), 总宽 62px。
  *  30% 重叠 = 70% 偏移 (offset = size × 0.7), 即每个 icon 露出的"新"宽度
@@ -15,12 +15,12 @@ const STACK_WIDTH = ICON_SIZE + 3 * ICON_OFFSET; // = 62
 /**
  * 偏好设置侧栏 "AI Agent" tab 的图标 ── 4 个 agent 品牌图标并列堆叠。
  *
- * 视觉: Flowix / Hermes / Codex / Claude Code, 圆形带 1px 描边,
+ * 视觉: TANK的英雄笔记 / Hermes / Codex / Claude Code, 圆形带 1px 描边,
  * 描边色等于所在容器背景 (--card) 用来在重叠处制造"分隔感",
  * 模仿头像堆叠的视觉。每个相邻图标水平方向 50% 偏移 (即 50% 重叠)。
  *
  * 顺序与层叠 (从左到右 / 从底到顶 一一对应):
- *   Flowix (左, 底层) → Hermes → Codex → Claude (右, 顶层)
+ *   TANK的英雄笔记 (左, 底层) → Hermes → Codex → Claude (右, 顶层)
  *
  * 实现要点: 用 absolute 定位 + 固定宽度的 relative 容器, 不用
  * negative margin。 这样外层 button 的 flex 布局拿到的 icon 尺寸
@@ -49,8 +49,8 @@ export function AgentIconStack({ className }: { className?: string }) {
                 'color-mix(in oklch, var(--border) 95%, var(--muted-foreground) 5%)',
             }}
           >
-            {key === 'flowix' ? (
-              // Flowix 占位用 lucide MoreHorizontal (⋯) — 三个横点, 表
+            {key === 'tank' ? (
+              // TANK的英雄笔记 占位用 lucide MoreHorizontal (⋯) — 三个横点, 表
               // 示"更多 agent / 切换"; 颜色走 muted-foreground 跟其他
               // 品牌 icon 的彩色形成对比, 不抢戏。
               <MoreHorizontal

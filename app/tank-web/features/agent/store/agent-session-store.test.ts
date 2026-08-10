@@ -9,7 +9,7 @@ import { DEFAULT_AGENT_TYPE_KEY } from "@/lib/agent-types";
 
 const streamStart = (runId: string, threadId = "t1") => ({
   kind: "stream_start" as const,
-  agentType: "flowix" as const,
+  agentType: "tank-cli" as const,
   threadId,
   runId,
   timestamp: 0,
@@ -18,7 +18,7 @@ const streamStart = (runId: string, threadId = "t1") => ({
 
 const textDelta = (text: string, runId: string, threadId = "t1") => ({
   kind: "text_delta" as const,
-  agentType: "flowix" as const,
+  agentType: "tank-cli" as const,
   threadId,
   runId,
   timestamp: 1000,
@@ -33,7 +33,7 @@ const textDelta = (text: string, runId: string, threadId = "t1") => ({
 
 const streamEnd = (runId: string, threadId = "t1") => ({
   kind: "stream_end" as const,
-  agentType: "flowix" as const,
+  agentType: "tank-cli" as const,
   threadId,
   runId,
   timestamp: 2000,
@@ -52,7 +52,7 @@ describe("useAgentSessionStore", () => {
   it("starts with empty projections and default meta", () => {
     const s = useAgentSessionStore.getState();
     expect(s.threadProjections).toEqual({});
-    expect(s.sessionMeta.activeAgentTypeKey).toBe("flowix");
+    expect(s.sessionMeta.activeAgentTypeKey).toBe("tank-cli");
     expect(s.conversationRegistry.instances).toEqual({});
   });
 
@@ -85,7 +85,7 @@ describe("useAgentSessionStore", () => {
     const before = useAgentSessionStore.getState();
     before.dispatch({
       kind: "session_resolved",
-      agentType: "flowix",
+      agentType: "tank-cli",
       threadId: "t1",
       runId: "test-run",
       timestamp: 0,

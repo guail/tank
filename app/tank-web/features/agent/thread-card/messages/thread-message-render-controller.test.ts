@@ -62,9 +62,9 @@ function createController(typeKey: AgentTypeKey) {
 }
 
 describe("ThreadMessageRenderController empty settings", () => {
-  it("flowix empty card no longer renders runtime settings (主空间由侧边栏资料决定)", () => {
+  it("tank-cli empty card no longer renders runtime settings (主空间由侧边栏资料决定)", () => {
     const { body, controller, createExternalAgentEmptySettings } =
-      createController("flowix");
+      createController("tank-cli");
 
     controller.render({
       messages: [],
@@ -74,7 +74,7 @@ describe("ThreadMessageRenderController empty settings", () => {
       isThreadCacheLoading: false,
     });
 
-    // flowix 没有 model/permission/reasoning/files 等可配置项, supportsAgentEmptySettings
+    // tank-cli 没有 model/permission/reasoning/files 等可配置项, supportsAgentEmptySettings
     // 返回 false ── 不再渲染空设置区。
     expect(createExternalAgentEmptySettings).not.toHaveBeenCalled();
     expect(
@@ -151,7 +151,7 @@ describe("ThreadMessageRenderController empty settings", () => {
 
   it("does not render runtime settings while thread cache is loading", () => {
     const { body, controller, createExternalAgentEmptySettings } =
-      createController("flowix");
+      createController("tank-cli");
 
     controller.render({
       messages: [],
@@ -175,7 +175,7 @@ describe("ThreadMessageRenderController run-end re-parse", () => {
     });
     vi.stubGlobal("cancelAnimationFrame", () => undefined);
     try {
-      const { body, controller } = createController("flowix");
+      const { body, controller } = createController("tank-cli");
       const streaming = {
         id: "a1",
         role: "assistant" as const,

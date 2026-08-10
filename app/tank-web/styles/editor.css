@@ -473,7 +473,7 @@
   color: transparent;
   font-size: 0;
   font-weight: normal;
-  mask: var(--flowix-hand-check-mask) center / contain no-repeat;
+  mask: var(--tank-hand-check-mask) center / contain no-repeat;
 }
 
 .markdown-editor .tiptap ul[data-type="taskList"] li > div {

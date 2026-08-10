@@ -1,7 +1,7 @@
 const TAG_SEGMENT_RE = /^(?:[-_]|[^/\s\p{P}])+$/u;
 const TAG_PATH_QUERY_RE = /^(?:[-_/]|[^/\s\p{P}])*$/u;
 
-/** Keep the frontend tag grammar aligned with flowix-core's normalize_tag_path. */
+/** Keep the frontend tag grammar aligned with tank-core's normalize_tag_path. */
 export function isValidTagPath(value: string): boolean {
   if (!value || value.startsWith('/') || value.endsWith('/') || value.includes('//')) {
     return false;

@@ -127,7 +127,7 @@ describe('MobileDocumentScreen · save state machine', () => {
   });
 
   it('recovers a same-revision local draft and persists it automatically', async () => {
-    window.localStorage.setItem('flowix:mobile-draft:m1', JSON.stringify({
+    window.localStorage.setItem('tank:mobile-draft:m1', JSON.stringify({
       baseContent: '# Hello',
       content: '# Recovered draft',
     }));
@@ -141,11 +141,11 @@ describe('MobileDocumentScreen · save state machine', () => {
       content: '# Recovered draft',
       expectedContent: '# Hello',
     }));
-    expect(window.localStorage.getItem('flowix:mobile-draft:m1')).toBeNull();
+    expect(window.localStorage.getItem('tank:mobile-draft:m1')).toBeNull();
   });
 
   it('does not apply a stale or malformed draft over a newer disk revision', async () => {
-    window.localStorage.setItem('flowix:mobile-draft:m1', JSON.stringify({
+    window.localStorage.setItem('tank:mobile-draft:m1', JSON.stringify({
       baseContent: '# Old revision',
       content: '# Stale draft',
     }));
@@ -158,7 +158,7 @@ describe('MobileDocumentScreen · save state machine', () => {
     await act(async () => root.unmount());
     const malformedContainer = document.createElement('div');
     document.body.replaceChildren(malformedContainer);
-    window.localStorage.setItem('flowix:mobile-draft:m1', '{not valid json');
+    window.localStorage.setItem('tank:mobile-draft:m1', '{not valid json');
     const malformedRoot = createRoot(malformedContainer);
     root = malformedRoot;
     await act(async () => {
@@ -218,7 +218,7 @@ describe('MobileDocumentScreen · save state machine', () => {
     await act(async () => { await waitForDebounce(); });
 
     expect(saveStatus(container)).toBe('error');
-    expect(JSON.parse(window.localStorage.getItem('flowix:mobile-draft:m1') || '{}')).toEqual({
+    expect(JSON.parse(window.localStorage.getItem('tank:mobile-draft:m1') || '{}')).toEqual({
       baseContent: '# Hello',
       content: '# unsaved',
     });

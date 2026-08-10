@@ -39,7 +39,7 @@ export function buildMcpConfigSnippets(command: string, genericTitle: string): M
       id: 'claude-code',
       title: 'Claude Code',
       content: JSON.stringify(
-        { mcpServers: { flowix: { type: 'stdio', ...sharedServer } } },
+        { mcpServers: { tank: { type: 'stdio', ...sharedServer } } },
         null,
         2,
       ),
@@ -47,7 +47,7 @@ export function buildMcpConfigSnippets(command: string, genericTitle: string): M
     {
       id: 'json',
       title: 'Claude Desktop / Cursor',
-      content: JSON.stringify({ mcpServers: { flowix: sharedServer } }, null, 2),
+      content: JSON.stringify({ mcpServers: { tank: sharedServer } }, null, 2),
     },
   ];
 }
@@ -94,7 +94,7 @@ export function McpSection() {
     void refreshIfStale();
   }, [refreshIfStale]);
 
-  const command = status?.commandPath || 'flowix';
+  const command = status?.commandPath || 'tank';
   const snippets = useMemo(
     () => buildMcpConfigSnippets(command, t('preferences.mcp.generic')),
     [command, t],

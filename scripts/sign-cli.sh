@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sign-cli.sh ── 对 `scripts/build-cli.sh` 编出的 flowix-cli sidecar 走代码签名。
+# sign-cli.sh ── 对 `scripts/build-cli.sh` 编出的 tank-cli sidecar 走代码签名。
 #
 # 用法:
 #   bash scripts/sign-cli.sh --host=<triple>
@@ -28,8 +28,8 @@ set -euo pipefail
 # repo root 解析 ── 跟 `build-cli.sh` 一致, 走脚本自身位置
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-BINARIES_DIR="$REPO_ROOT/app/flowix-desktop/binaries"
-ENTITLEMENTS="$REPO_ROOT/app/flowix-desktop/entitlements.plist"
+BINARIES_DIR="$REPO_ROOT/app/tank-desktop/binaries"
+ENTITLEMENTS="$REPO_ROOT/app/tank-desktop/entitlements.plist"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -57,7 +57,7 @@ fi
 # =================== macOS ===================
 sign_macos() {
   local host="$1"
-  local bin="$BINARIES_DIR/flowix-cli-$host"
+  local bin="$BINARIES_DIR/tank-cli-$host"
   if [[ ! -f "$bin" ]]; then
     echo "[sign] skip: $bin not found (run scripts/build-cli.sh first)"
     return 0
@@ -86,7 +86,7 @@ sign_macos() {
 
 # =================== Windows ===================
 sign_windows() {
-  local bin="$BINARIES_DIR/flowix-cli-x86_64-pc-windows-msvc.exe"
+  local bin="$BINARIES_DIR/tank-cli-x86_64-pc-windows-msvc.exe"
   if [[ ! -f "$bin" ]]; then
     echo "[sign] skip: $bin not found (run scripts/build-cli.sh first)"
     return 0

@@ -31,7 +31,7 @@ interface NotebookListProps {
 }
 
 // 笔记本列表折叠 ── 全局偏好 (不分 notebook), 默认展开。值用 '1'/'0'。
-const NOTEBOOK_LIST_COLLAPSED_STORAGE_KEY = 'flowix:notebook-list-collapsed';
+const NOTEBOOK_LIST_COLLAPSED_STORAGE_KEY = 'tank:notebook-list-collapsed';
 
 function readPersistedNotebookListCollapsed(): boolean {
   try {
@@ -159,7 +159,7 @@ export function NotebookList({
   );
 
   const handleCreateNotebookClick = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('flowix:open-create-notebook'));
+    window.dispatchEvent(new CustomEvent('tank:open-create-notebook'));
   }, []);
 
   // 折叠/展开笔记本列表 ── 折叠时先选中行滚到 scroller 顶部 (保证收起后

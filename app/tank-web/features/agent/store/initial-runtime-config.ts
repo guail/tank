@@ -15,7 +15,7 @@ import { useAgentAccessStore } from "@features/agent/store/agent-access-store";
 import { useMemoStore } from "@features/memo/store/memo-store";
 
 export function buildInitialInstanceRuntimeConfig(
-  agentType: AgentTypeKey = "flowix",
+  agentType: AgentTypeKey = "tank-cli",
 ): RuntimeConfig {
   const accessState = useAgentAccessStore.getState();
   const notebookId = useMemoStore.getState().selectedNotebook?.id ?? undefined;

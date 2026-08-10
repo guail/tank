@@ -5,10 +5,10 @@ export type { AgentTypeKey };
 // Agent 图标集中管理 ─────────────────────────────────────────
 // 所有 agent 类型图标统一在此处 import, 后续要换图标只改这一个文件。
 // 实际静态资源:
-//   - flowix-agent.svg        Flowix 类型图标(正方形画布，从桌面导入)
+//   - tank-agent.svg        TANK的英雄笔记 类型图标(正方形画布，从桌面导入)
 //   - codex.svg               Codex CLI 品牌图标(从桌面导入)
 //   - icon-claude-code.svg    Claude Code 品牌图标
-import flowixAgent from '@/assets/flowix-agent.svg';
+import tankAgent from '@/assets/tank-agent.svg';
 import iconCodex from '@/assets/codex.svg';
 import iconClaudeCode from '@/assets/icon-claude-code.svg';
 import iconGeminiCli from '@/assets/icon-gemini-cli.svg';
@@ -16,7 +16,7 @@ import iconHermesAgent from '@/assets/icon-hermes-agent.svg';
 import iconOpenClaw from '@/assets/icon-openclaw.svg';
 import iconOpenCode from '@/assets/icon-opencode.svg';
 
-export const DEFAULT_AGENT_TYPE_KEY: AgentTypeKey = 'flowix';
+export const DEFAULT_AGENT_TYPE_KEY: AgentTypeKey = 'tank';
 
 const STREAMING_PROVIDER_CAPABILITIES: AgentRuntimeCapabilities = {
   supportsTextStreaming: true,
@@ -75,10 +75,10 @@ export const AGENT_TYPES: AgentType[] = [
     capabilities: STREAMING_EXTERNAL_CLI_CAPABILITIES,
   },
   {
-    key: 'flowix',
-    icon: flowixAgent,
-    name: 'Flowix Agent',
-    desc: 'Use Flowix workspace agent',
+    key: 'tank',
+    icon: tankAgent,
+    name: 'TANK的英雄笔记 Agent',
+    desc: 'Use TANK的英雄笔记 workspace agent',
     nameKey: 'agent.types.flowix.name',
     descKey: 'agent.types.flowix.desc',
     capabilities: STREAMING_PROVIDER_CAPABILITIES,

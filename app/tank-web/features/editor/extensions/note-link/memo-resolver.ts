@@ -6,7 +6,7 @@
 } from '@features/memo/use-cases/open-by-target';
 
 // 鐗╃悊璺緞绮樿创 鈫?noteReference 鍗＄墖銆?//
-// 鐢ㄦ埛浠?Finder / 缁堢澶嶅埗涓€浠?`~/Documents/flowix/<notebook>/<title>.md`
+// 鐢ㄦ埛浠?Finder / 缁堢澶嶅埗涓€浠?`~/Documents/tank/<notebook>/<title>.md`
 // 杩欑绗旇鏈唴鐨勭粷瀵硅矾寰勭矘璐村埌缂栬緫鍣? 杩欓噷璐熻矗:
 //   1. 瑙ｆ瀽璺緞鏂囦欢鍚?鈹€鈹€ v3 鍚?filename 宸茬粡鏄鐩樻枃浠跺悕 (鍚?.md),
 //      涓嶅啀甯?`#<id>` 鍚庣紑, 鎵€浠?memoId 蹇呴』浠?memo index 鍙嶆煡銆?//   2. 鎸?notebook.path 鍋氬墠缂€姣斿, 鍛戒腑鍚庣敤璇?notebook 涓?memo index

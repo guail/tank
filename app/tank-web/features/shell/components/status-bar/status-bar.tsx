@@ -53,8 +53,8 @@ export function StatusBar({
 
   useEffect(() => {
     const handleToggle = () => setNotebookPopupOpen((open) => !open);
-    window.addEventListener('flowix:toggle-notebook-switcher', handleToggle);
-    return () => window.removeEventListener('flowix:toggle-notebook-switcher', handleToggle);
+    window.addEventListener('tank:toggle-notebook-switcher', handleToggle);
+    return () => window.removeEventListener('tank:toggle-notebook-switcher', handleToggle);
   }, []);
   return (
     <div className="flex h-[26px] shrink-0 select-none items-stretch bg-[var(--statusbar-bg)] text-xs text-[var(--muted-foreground)]">

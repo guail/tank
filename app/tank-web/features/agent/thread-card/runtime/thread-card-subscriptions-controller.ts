@@ -88,7 +88,7 @@ export class AgentThreadCardSubscriptionsController {
     // Phase 5.3: 订阅 session-store.threadProjections (projection ref-stable).
     // currentThreadState() reads the same ref-stable projection cache.
     // handleThreadStateChange 内 session resolution 路径仅 codex/claude
-    // 触发, flowix 不走 -> 无循环.
+    // 触发, tank-cli 不走 -> 无循环.
     return useAgentSessionStore.subscribe(
       (state) => {
         const threadId = options.getRuntimeThreadId();

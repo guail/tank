@@ -631,7 +631,7 @@ function StaticGroups({ onClose }: StaticGroupsProps) {
     onClose();
   };
 
-  /** 新建笔记本 — memo-list 监听了 flowix:open-create-notebook 事件, 会打开
+  /** 新建笔记本 — memo-list 监听了 tank:open-create-notebook 事件, 会打开
    *  现有 Dialog 走选路径 + 命名流程. 直接 dispatch 复用. */
   const handleCreateFromTemplate = async (template: MemoTemplate) => {
     const state = useMemoStore.getState();
@@ -647,7 +647,7 @@ function StaticGroups({ onClose }: StaticGroupsProps) {
   };
 
   const handleNewNotebook = () => {
-    window.dispatchEvent(new CustomEvent('flowix:open-create-notebook'));
+    window.dispatchEvent(new CustomEvent('tank:open-create-notebook'));
     onClose();
   };
 

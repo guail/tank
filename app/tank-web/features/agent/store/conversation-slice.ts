@@ -208,7 +208,7 @@ export function createConversationSlice(
       const now = nextUpdatedAt(existing);
       const nextInstance: AgentConversationInstance = {
         instanceId,
-        agentType: patch.agentType ?? existing?.agentType ?? "flowix",
+        agentType: patch.agentType ?? existing?.agentType ?? "tank-cli",
         title:
           patch.title !== undefined
             ? normalizeTitle(patch.title)

@@ -112,7 +112,7 @@ async function loadThread(
       pending: { assistantId: null, reasoningId: null },
     }));
     if (
-      type.key !== "flowix" &&
+      type.key !== "tank-cli" &&
       type.key !== "codex" &&
       type.key !== "opencode" &&
       type.key !== "claude"
@@ -156,8 +156,8 @@ export function createThreadLifecycleSlice(
         timestamp: Date.now(),
       });
     },
-    loadThreadList: () => loadThreadList(get, "flowix", "thread"),
-    loadThread: (threadId) => loadThread(get, "flowix", threadId),
+    loadThreadList: () => loadThreadList(get, "tank-cli", "thread"),
+    loadThread: (threadId) => loadThread(get, "tank-cli", threadId),
     loadCodexThreadList: () => loadThreadList(get, "codex", "Codex"),
     loadCodexThread: (threadId) => loadThread(get, "codex", threadId),
     loadClaudeThreadList: () => loadThreadList(get, "claude", "Claude Code"),
@@ -167,12 +167,12 @@ export function createThreadLifecycleSlice(
     loadAgentThread: (typeKey, threadId) => loadThread(get, typeKey, threadId),
     loadLocalAgentThreadList: async (typeKey) => {
       const type = getAgentType(typeKey);
-      if (["flowix", "codex", "claude", "hermes"].includes(type.key)) return;
+      if (["tank-cli", "codex", "claude", "hermes"].includes(type.key)) return;
       await loadThreadList(get, type.key, type.name);
     },
     loadThreadCache: async (threadId) => {
       try {
-        await get().loadMessages("flowix", threadId);
+        await get().loadMessages("tank-cli", threadId);
       } catch (error) {
         console.error("[AgentSession] Failed to load thread cache:", error);
       }
@@ -267,7 +267,7 @@ export function createThreadLifecycleSlice(
       }));
       try {
         await agentClient.updateThreadTitle(threadId, nextTitle, type.key);
-        if (type.key === "flowix") await get().loadThreadList();
+        if (type.key === "tank-cli") await get().loadThreadList();
         else if (type.key === "codex") await get().loadCodexThreadList();
         else if (type.key === "claude") await get().loadClaudeThreadList();
         else if (type.key === "hermes") await get().loadHermesThreadList();

@@ -106,20 +106,20 @@ function buildAgentRolePromptBlockFromContent(
 }
 
 const FLOWIX_CLI_PROMPT_BLOCK = [
-  "# flowix CLI",
+  "# tank-cli CLI",
   "非交互笔记 CLI:8 个子命令(列/读/搜/改/写/建/删笔记),--json 取 JSON 输出。",
   "",
   '只在显式触发时调:用户说"搜/列/改/删/新建笔记",或给了 8 位 ID / 笔记本名要求"看/改/删"。',
   "如果上下文包含当前任务标签, 创建新笔记时必须在正文写入该 #标签。",
   "",
-  "- `flowix notebooks` — list all notebooks.",
-  "- `flowix list <notebook>` — list notes in a notebook.",
-  "- `flowix show <id>` — print a note to stdout.",
-  "- `flowix search <query> [-b <notebook>] [-l N]` — full-text search.",
-  "- `flowix edit <id> --old <text> --new <text>` — exact-string replace (always `read` first).",
-  "- `flowix write <id>` (body from stdin) — overwrite a note.",
-  "- `flowix create <notebook>` (body from stdin) — create a note.",
-  "- `flowix delete <id>` — delete a note.",
+  "- `tank-cli notebooks` — list all notebooks.",
+  "- `tank-cli list <notebook>` — list notes in a notebook.",
+  "- `tank-cli show <id>` — print a note to stdout.",
+  "- `tank-cli search <query> [-b <notebook>] [-l N]` — full-text search.",
+  "- `tank-cli edit <id> --old <text> --new <text>` — exact-string replace (always `read` first).",
+  "- `tank-cli write <id>` (body from stdin) — overwrite a note.",
+  "- `tank-cli create <notebook>` (body from stdin) — create a note.",
+  "- `tank-cli delete <id>` — delete a note.",
 ].join("\n");
 
 export function appendFirstMessageContext(
@@ -143,7 +143,7 @@ export function appendFirstMessageContext(
       blocks.push(roleBlock);
     }
   }
-  if (agentType && agentType !== "flowix") {
+  if (agentType && agentType !== "tank-cli") {
     blocks.push(FLOWIX_CLI_PROMPT_BLOCK);
   }
   return `${content}\n${blocks.join("\n\n")}`;

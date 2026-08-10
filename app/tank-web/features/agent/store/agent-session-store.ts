@@ -176,7 +176,7 @@ function ensureConversationInstanceForSession(
   if (existing) {
     const shouldUpdateTitle =
       title &&
-      (type === "flowix" || !options?.defaultTitle || title !== options.defaultTitle);
+      (type === "tank-cli" || !options?.defaultTitle || title !== options.defaultTitle);
     return session.upsertInstance(existing.instanceId, {
       agentType: type,
       ...(shouldUpdateTitle ? { title } : {}),
@@ -553,7 +553,7 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
             }
             get().dispatch({
               kind: "stream_end",
-              agentType: activeRun?.agentType ?? "flowix",
+              agentType: activeRun?.agentType ?? "tank-cli",
               threadId,
               runId: activeRunId ?? `missing-${threadId}`,
               timestamp: now,

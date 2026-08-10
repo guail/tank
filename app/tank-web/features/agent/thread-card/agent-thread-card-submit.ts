@@ -33,7 +33,7 @@ export async function ensureAgentThreadCardThread(
     .replace(/\s+/g, ' ')
     .trim() || fallbackTitle;
   const type = getAgentType(input.typeKey);
-  if (type.key !== 'flowix') {
+  if (type.key !== 'tank') {
     return {
       threadId: beginExternalAgentThreadCardRun(
         input.runtimeHandleId,

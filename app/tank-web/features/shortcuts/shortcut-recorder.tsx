@@ -79,7 +79,7 @@ export function ShortcutRecorder({
   useEffect(() => {
     if (!open) return;
 
-    (window as unknown as { __flowixShortcutRecorderOpen?: boolean }).__flowixShortcutRecorderOpen = true;
+    (window as unknown as { __tankShortcutRecorderOpen?: boolean }).__tankShortcutRecorderOpen = true;
 
     const handler = (e: KeyboardEvent) => {
       e.preventDefault();
@@ -137,7 +137,7 @@ export function ShortcutRecorder({
     window.addEventListener('keydown', handler, true);
     return () => {
       window.removeEventListener('keydown', handler, true);
-      (window as unknown as { __flowixShortcutRecorderOpen?: boolean }).__flowixShortcutRecorderOpen = false;
+      (window as unknown as { __tankShortcutRecorderOpen?: boolean }).__tankShortcutRecorderOpen = false;
     };
   }, [open, captured, onOpenChange, onSave]);
 

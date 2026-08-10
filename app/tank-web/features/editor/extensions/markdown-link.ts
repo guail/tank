@@ -13,7 +13,7 @@ interface ParsedMarkdownLink {
 
 const ASSET_URL_RE = /^(asset:\/\/|https?:\/\/asset\.localhost\/)/i;
 const MARKDOWN_LINK_RE = /!?\[([^\]\n]+)\]\(([^)\n]+)\)/g;
-const FLOWIX_MEMO_URL_RE = /^flowix:\/\/memo\/.*$/i;
+const FLOWIX_MEMO_URL_RE = /^tank:\/\/memo\/.*$/i;
 
 export const linkSelectionHighlightPluginKey = new PluginKey<DecorationSet>('linkSelectionHighlight');
 

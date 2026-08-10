@@ -201,7 +201,7 @@ async function waitForEnabledSendButton(
 }
 
 async function seedRenderableMessages(
-  _typeKey: "flowix" | "codex" | "claude" | "gemini" | "hermes" | "openclaw",
+  _typeKey: "tank-cli" | "codex" | "claude" | "gemini" | "hermes" | "openclaw",
   threadId: string,
   messages: ChatMessage[],
 ): Promise<void> {
@@ -375,7 +375,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "DOM Flow",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -387,7 +387,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     expect(card).not.toBeNull();
 
     const store = useChatStore.getState();
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({ kind: "stream_start", thread_id: threadId });
     store.dispatchAgentChunk({
       kind: "text",
@@ -484,7 +484,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     expect(openUrl).not.toHaveBeenCalled();
   });
 
-  it("routes an assistant Markdown link through the Flowix tab window", async () => {
+  it("routes an assistant Markdown link through the TANK的英雄笔记 tab window", async () => {
     const { AgentThreadCard } =
       await import("@features/agent/thread-card");
     const { useChatStore } = await import("@features/agent/store/agent-session-test-facade");
@@ -548,7 +548,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     const { useChatStore } = await import("@features/agent/store/agent-session-test-facade");
     const threadId = "thread-card-conversation-run-source";
     const instance = useAgentConversationStore.getState().createInstance({
-      agentType: "flowix",
+      agentType: "tank-cli",
       title: "Conversation Run Source",
       threadId,
       source: { kind: "thread-card" },
@@ -557,7 +557,7 @@ describe("AgentThreadCard NodeView streaming", () => {
       kind: "stream_start",
       thread_id: threadId,
       run_id: "run-conversation-source",
-      agent_type: "flowix",
+      agent_type: "tank-cli",
     });
 
     const host = document.createElement("div");
@@ -575,7 +575,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: instance.instanceId,
               threadId,
               title: "Conversation Run Source",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -612,7 +612,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     };
 
     useChatStore.setState((state) => ({
-      threadTypes: { ...state.threadTypes, [threadId]: "flowix" },
+      threadTypes: { ...state.threadTypes, [threadId]: "tank-cli" },
       threadStates: {
         ...state.threadStates,
         [threadId]: {
@@ -628,7 +628,7 @@ describe("AgentThreadCard NodeView streaming", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, [
+    await seedRenderableMessages("tank-cli", threadId, [
       firstMessage,
       streamingMessage,
     ]);
@@ -644,7 +644,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Incremental",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -674,7 +674,7 @@ describe("AgentThreadCard NodeView streaming", () => {
         },
       };
     });
-    await seedRenderableMessages("flowix", threadId, patchedMessages);
+    await seedRenderableMessages("tank-cli", threadId, patchedMessages);
 
     await flushAnimationFrame();
 
@@ -697,7 +697,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     const content = `${"A".repeat(ASSISTANT_MESSAGE_DISPLAY_MAX_CHARS + 20)}${tail}`;
 
     useChatStore.setState((state) => ({
-      threadTypes: { ...state.threadTypes, [threadId]: "flowix" },
+      threadTypes: { ...state.threadTypes, [threadId]: "tank-cli" },
       threadStates: {
         ...state.threadStates,
         [threadId]: {
@@ -713,7 +713,7 @@ describe("AgentThreadCard NodeView streaming", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, [
+    await seedRenderableMessages("tank-cli", threadId, [
       {
         id: "assistant-large",
         role: "assistant",
@@ -733,7 +733,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Display Budget",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -771,7 +771,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Editable title",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -785,7 +785,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     expect(title).not.toBeNull();
 
     const store = useChatStore.getState();
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({ kind: "stream_start", thread_id: threadId });
     store.dispatchAgentChunk({
       kind: "text",
@@ -835,7 +835,7 @@ describe("AgentThreadCard NodeView streaming", () => {
       "@features/agent/thread-card/runtime/thread-card-conversation"
     );
     const instance = useAgentConversationStore.getState().createInstance({
-      agentType: "flowix",
+      agentType: "tank-cli",
       title: "User renamed title",
       threadId: "thread-existing-title",
       source: { kind: "thread-card" },
@@ -844,7 +844,7 @@ describe("AgentThreadCard NodeView streaming", () => {
 
     const result = upsertAgentThreadCardConversationInstance({
       instanceId: instance.instanceId,
-      agentType: "flowix",
+      agentType: "tank-cli",
       title: "Prompt generated title",
       threadId: "thread-existing-title",
       source: { kind: "thread-card" },
@@ -878,7 +878,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Submit Flow",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -901,9 +901,9 @@ describe("AgentThreadCard NodeView streaming", () => {
       threadId,
       expect.objectContaining({
         content: "write a short answer",
-        agentType: "flowix",
+        agentType: "tank-cli",
         runtimeConfig: expect.objectContaining({
-          flowix: expect.any(Object),
+          tank: expect.any(Object),
         }),
       }),
     );
@@ -947,7 +947,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-card-draft",
               title: "Draft",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -994,7 +994,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-card-long-draft",
               title: "Long Draft",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               inputDraft: "short",
             },
@@ -1040,7 +1040,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Clear Draft",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               inputDraft: "send me",
             },
@@ -1233,8 +1233,8 @@ describe("AgentThreadCard NodeView streaming", () => {
       id: "mcp-display",
       name: "mcp_tool_call",
       input: {
-        server: "mcp_servers-flowix",
-        tool: "flowix_memo",
+        server: "mcp_servers-tank",
+        tool: "tank_memo",
         arguments: { command: "notebooks" },
       },
       agent_type: "codex",
@@ -1248,7 +1248,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     expect(
       tool?.querySelector(".agent-thread-card__message-tool-concrete-name")
         ?.textContent,
-    ).toBe("flowix_memo");
+    ).toBe("tank_memo");
     expect(
       tool?.querySelector(".agent-thread-card__message-tool-summary")
         ?.textContent,
@@ -1365,7 +1365,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Collapsed History",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: true,
             },
           },
@@ -1418,7 +1418,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Cached",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -1429,7 +1429,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     await flushPromises();
     await flushAnimationFrame();
 
-    await seedRenderableMessages("flowix", threadId, [
+    await seedRenderableMessages("tank-cli", threadId, [
       {
         id: "assistant-cached",
         role: "assistant",
@@ -1508,7 +1508,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Skeleton History",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -1580,7 +1580,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Fullscreen Skeleton",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: true,
             },
           },
@@ -1672,7 +1672,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Viewport History",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -1726,7 +1726,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Fullscreen History",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: true,
             },
           },
@@ -1767,7 +1767,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: "instance-fullscreen-persist",
               threadId: "thread-fullscreen-persist",
               title: "Fullscreen Persist",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: false,
             },
@@ -1806,7 +1806,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: "instance-fullscreen-first",
               threadId: "thread-fullscreen-first",
               title: "First Fullscreen",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: true,
             },
@@ -1817,7 +1817,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: "instance-fullscreen-second",
               threadId: "thread-fullscreen-second",
               title: "Second Fullscreen",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: true,
             },
@@ -1865,7 +1865,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     const { AgentThreadCard } =
       await import("@features/agent/thread-card");
     const threadId = "thread-restored-fullscreen-bottom";
-    await seedRenderableMessages("flowix", threadId, [
+    await seedRenderableMessages("tank-cli", threadId, [
       {
         id: "cached-assistant-message",
         role: "assistant",
@@ -1888,7 +1888,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: "instance-restored-fullscreen-bottom",
               threadId,
               title: "Restored Fullscreen Bottom",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: true,
             },
@@ -1927,7 +1927,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-legacy-fullscreen-restore",
               title: "Legacy Fullscreen Restore",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: true,
             },
@@ -1968,7 +1968,7 @@ describe("AgentThreadCard NodeView streaming", () => {
     });
 
     const threadId = "thread-stale-restore-frame";
-    await seedRenderableMessages("flowix", threadId, [
+    await seedRenderableMessages("tank-cli", threadId, [
       {
         id: "stale-frame-message",
         role: "assistant",
@@ -1990,7 +1990,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: "instance-stale-restore-frame",
               threadId,
               title: "Stale Restore Frame",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: true,
             },
@@ -2041,7 +2041,7 @@ describe("AgentThreadCard NodeView streaming", () => {
               instanceId: "instance-before-document-switch",
               threadId: "thread-before-document-switch",
               title: "Before Document Switch",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
               fullscreen: false,
             },
@@ -2060,7 +2060,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             instanceId: "instance-after-document-switch",
             threadId: "thread-after-document-switch",
             title: "After Document Switch",
-            typeKey: "flowix",
+            typeKey: "tank-cli",
             collapsed: false,
             fullscreen: true,
           },
@@ -2105,7 +2105,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId,
               title: "Fullscreen Selection",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2156,7 +2156,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-card-click-focus",
               title: "Click Focus",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2198,7 +2198,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-card-event-boundary",
               title: "Event Boundary",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2241,7 +2241,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-card-focus-deselect",
               title: "Focus Deselect",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2300,7 +2300,7 @@ describe("AgentThreadCard NodeView streaming", () => {
             attrs: {
               threadId: "thread-card-outside-blur",
               title: "Outside Blur",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2575,7 +2575,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Empty",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2612,7 +2612,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "History",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2625,7 +2625,7 @@ describe("AgentThreadCard input history navigation", () => {
       {
         role: "user" as const,
         content:
-          "first question\n<## CONTEXT PROMPT ##>\n当前笔记路径: hidden\n\n# flowix CLI\nhidden",
+          "first question\n<## CONTEXT PROMPT ##>\n当前笔记路径: hidden\n\n# tank-cli CLI\nhidden",
         id: "u0",
         timestamp: "t0",
       },
@@ -2654,7 +2654,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -2692,7 +2692,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Draft",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2722,7 +2722,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -2762,7 +2762,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Draft not overwritten",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2792,7 +2792,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -2849,7 +2849,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Down idle",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2878,7 +2878,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -2909,7 +2909,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Typing",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -2939,7 +2939,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -2977,7 +2977,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Caret boundaries",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -3007,7 +3007,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -3050,7 +3050,7 @@ describe("AgentThreadCard input history navigation", () => {
             attrs: {
               threadId,
               title: "Unmodified",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -3080,7 +3080,7 @@ describe("AgentThreadCard input history navigation", () => {
         },
       },
     }));
-    await seedRenderableMessages("flowix", threadId, messages);
+    await seedRenderableMessages("tank-cli", threadId, messages);
     await flushAnimationFrame();
 
     const input = host.querySelector<HTMLTextAreaElement>(
@@ -3170,7 +3170,7 @@ describe("AgentThreadCard input latency optimizations", () => {
             attrs: {
               threadId,
               title: "Lite",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -3320,7 +3320,7 @@ describe("AgentThreadCard composer during agent run", () => {
             attrs: {
               threadId,
               title: "Busy",
-              typeKey: "flowix",
+              typeKey: "tank-cli",
               collapsed: false,
             },
           },
@@ -3339,7 +3339,7 @@ describe("AgentThreadCard composer during agent run", () => {
         runs: {
           "run-1": {
             runId: "run-1",
-            agentType: "flowix",
+            agentType: "tank-cli",
             threadId,
             startedAt: Date.now(),
             status: "running",

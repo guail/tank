@@ -249,7 +249,7 @@ export function updateVisibleFrontmatterProperty(
   if (SYSTEM_FRONTMATTER_KEYS.has(nextKey)) {
     throw new FrontmatterPropertyError(
       'reserved-key',
-      'The key property is managed by Flowix',
+      'The key property is managed by TANK的英雄笔记',
     );
   }
 

@@ -4,14 +4,24 @@ import type { Editor } from '@tiptap/core';
 import { BubbleMenu } from '@tiptap/react/menus';
 import {
   CodeIcon,
+  EraserIcon,
   HighlighterIcon,
   LinkSimpleIcon,
+  PaletteIcon,
   TextBIcon,
   TextItalicIcon,
   TextStrikethroughIcon,
   TextUnderlineIcon,
 } from '@phosphor-icons/react';
-import { type ReactNode, useCallback, useEffect, useMemo, useReducer } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import type { BubbleMenuProps } from '@tiptap/react/menus';
 import { openLinkEditPopup } from '@features/editor/components/link-edit-popup';
 import { hasFormattableTextSelection } from '@features/editor/components/selection-bubble-menu-state';
@@ -28,6 +38,132 @@ interface FormatButtonProps {
   icon: ReactNode;
   label: string;
   onRun: () => void;
+}
+
+// 常用色板 —— 文字颜色 / 高亮共用同一组色。
+const TEXT_COLOR_PRESETS = [
+  { label: 'Red', value: '#ef4444' },
+  { label: 'Orange', value: '#f97316' },
+  { label: 'Yellow', value: '#eab308' },
+  { label: 'Green', value: '#22c55e' },
+  { label: 'Cyan', value: '#06b6d4' },
+  { label: 'Blue', value: '#3b82f6' },
+  { label: 'Purple', value: '#8b5cf6' },
+  { label: 'Pink', value: '#ec4899' },
+] as const;
+
+interface PaletteButtonProps {
+  active: boolean;
+  disabled?: boolean;
+  icon: ReactNode;
+  label: string;
+  /** 当前生效颜色（无则 null）。用于色板里标出正在用的色块。 */
+  currentColor: string | null;
+  clearLabel: string;
+  onPick: (value: string) => void;
+  onClear: () => void;
+}
+
+function PaletteButton({
+  active,
+  disabled = false,
+  icon,
+  label,
+  currentColor,
+  clearLabel,
+  onPick,
+  onClear,
+}: PaletteButtonProps) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocMouseDown = (event: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [open]);
+
+  return (
+    <span ref={wrapRef} className="selection-bubble-palette-wrap">
+      <Tooltip content={label}>
+        <button
+          type="button"
+          className={`selection-bubble-button${active ? ' is-active' : ''}`}
+          disabled={disabled}
+          aria-label={label}
+          aria-pressed={active}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen((value) => !value);
+          }}
+        >
+          {icon}
+        </button>
+      </Tooltip>
+      {open && (
+        <span
+          className="selection-bubble-palette"
+          role="menu"
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+        >
+          {TEXT_COLOR_PRESETS.map((color) => (
+            <button
+              key={color.value}
+              type="button"
+              role="menuitemradio"
+              aria-checked={currentColor === color.value}
+              title={color.label}
+              aria-label={color.label}
+              className={`selection-bubble-swatch${
+                currentColor === color.value ? ' is-active' : ''
+              }`}
+              style={{ background: color.value }}
+              onMouseDown={(event) => {
+                event.preventDefault();
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onPick(color.value);
+                setOpen(false);
+              }}
+            />
+          ))}
+          <button
+            type="button"
+            role="menuitem"
+            title={clearLabel}
+            aria-label={clearLabel}
+            className="selection-bubble-clear"
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onClear();
+              setOpen(false);
+            }}
+          >
+            <EraserIcon size={14} weight="bold" aria-hidden="true" />
+          </button>
+        </span>
+      )}
+    </span>
+  );
 }
 
 function FormatButton({
@@ -99,6 +235,10 @@ export function SelectionBubbleMenu({ editor }: SelectionBubbleMenuProps) {
   const linkHref = editor.isActive('link')
     ? String(editor.getAttributes('link').href ?? '')
     : '';
+  const currentTextColor =
+    (editor.getAttributes('textStyle').color as string | undefined) ?? null;
+  const highlightColor =
+    (editor.getAttributes('highlight').color as string | undefined) ?? null;
 
   return (
     <BubbleMenu
@@ -149,12 +289,25 @@ export function SelectionBubbleMenu({ editor }: SelectionBubbleMenuProps) {
         label={t('editor.bubble.inlineCode')}
         onRun={() => editor.chain().focus().toggleCode().run()}
       />
-      <FormatButton
+      <PaletteButton
         active={editor.isActive('highlight')}
         disabled={!editor.can().chain().focus().toggleHighlight().run()}
         icon={<HighlighterIcon size={17} weight="bold" aria-hidden="true" />}
         label={t('editor.bubble.highlight')}
-        onRun={() => editor.chain().focus().toggleHighlight().run()}
+        currentColor={highlightColor}
+        clearLabel={t('editor.bubble.clearColor')}
+        onPick={(color) => editor.chain().focus().toggleHighlight({ color }).run()}
+        onClear={() => editor.chain().focus().unsetHighlight().run()}
+      />
+      <PaletteButton
+        active={Boolean(currentTextColor)}
+        disabled={!editor.can().chain().focus().setColor(TEXT_COLOR_PRESETS[0].value).run()}
+        icon={<PaletteIcon size={17} weight="bold" aria-hidden="true" />}
+        label={t('editor.bubble.textColor')}
+        currentColor={currentTextColor}
+        clearLabel={t('editor.bubble.clearColor')}
+        onPick={(color) => editor.chain().focus().setColor(color).run()}
+        onClear={() => editor.chain().focus().unsetColor().run()}
       />
       <FormatButton
         active={Boolean(linkHref)}

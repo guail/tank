@@ -11,7 +11,7 @@ function getLanguage(): AppLanguage {
 }
 
 function isExternalAgentType(type: AgentTypeKey): boolean {
-  return type !== "flowix";
+  return type !== "tank-cli";
 }
 
 function defaultExternalThreadTitle(type: AgentTypeKey): string {
@@ -23,7 +23,7 @@ function defaultExternalThreadTitle(type: AgentTypeKey): string {
 }
 
 function defaultThreadTitle(type: AgentTypeKey): string {
-  if (type === "flowix")
+  if (type === "tank-cli")
     return translate(getLanguage(), "agent.chat.unnamedConversation");
   if (type === "hermes") return "Hermes session";
   return defaultExternalThreadTitle(type);
@@ -42,7 +42,7 @@ const DERIVED_TITLE_MAX_CHARS = 28;
 
 /**
  * 从一段 prompt 文本派生可显示标题: strip 系统块 → 折叠空白 → 截断。
- * 空则回退 `fallback`。首条 user 消息是跨 agent (flowix / claude / codex /
+ * 空则回退 `fallback`。首条 user 消息是跨 agent (tank-cli / claude / codex /
  * hermes / opencode) 唯一共有的标题信号, 故标题恢复统一走这条路径。
  *
  * `thread-card` 的 card 视图与 title-edit-controller 共用此实现, 避免截断
@@ -68,7 +68,7 @@ function canPersistThreadTitle(_type: AgentTypeKey): boolean {
  * 三段 fallback 拿到 thread 的可显示标题:
  * 1. 真实 threadLists 中的 title
  * 2. 若是当前 active thread, 用 currentThreadTitles 的当前标题
- * 3. external agent 的 default title / flowix 的 "新会话" i18n 文本
+ * 3. external agent 的 default title / tank-cli 的 "新会话" i18n 文本
  *
  * reconcileRunningRunsFromSnapshot 走这条路径生成 thread card 标题。
  */

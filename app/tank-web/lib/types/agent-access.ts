@@ -1,5 +1,5 @@
 /**
- * Agent 访问目录 (可访问文件夹) — 镜像后端 `app/flowix-desktop/src/agent_access.rs`
+ * Agent 访问目录 (可访问文件夹) — 镜像后端 `app/tank-desktop/src/agent_access.rs`
  * 的 `AgentAccessConfig` / `AgentAccessEntry` / `AgentAccessKind`。
  *
  * 真源在 `~/.flowix/agent-access.json` (后端 `agent_access::AgentAccessStore`),

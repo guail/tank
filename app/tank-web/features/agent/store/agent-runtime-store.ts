@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { agent, type AgentRuntimeAvailability } from '@platform/tauri/client';
+import { agent, type AgentRuntimeAvailability, type AgentRuntimeStatus } from '@platform/tauri/client';
 import type { AgentTypeKey } from '@/types/agent';
 
 const RUNTIME_STATUS_TTL_MS = 120_000;
@@ -38,8 +38,11 @@ export const useAgentRuntimeStore = create<AgentRuntimeState>((set, get) => ({
     const refreshTask = (async () => {
       const status = await agent.runtimeStatus();
       set((current) => {
-        const nextStatus: RuntimeStatusByType = type
-          ? { ...current.statusByType, [type]: status[type] }
+        // wire 值 "tank-cli" 与 UI key "tank" 是同一个 agent, 归一化后再索引
+        const statusKey: keyof AgentRuntimeStatus | undefined =
+          type === "tank-cli" ? "tank" : type;
+        const nextStatus: RuntimeStatusByType = statusKey
+          ? { ...current.statusByType, [statusKey]: status[statusKey] }
           : status;
         return {
           statusByType: nextStatus,

@@ -186,7 +186,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     );
 
     const instance = useAgentSessionStore.getState().createInstance({
-      agentType: "flowix",
+      agentType: "tank-cli",
       title: "First title",
       threadId: null,
       source: { kind: "thread-card" },
@@ -275,7 +275,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     useChatStore.getState().reconcileRunningRunsFromSnapshot({
       [threadId]: {
         runId: "run-ended-offline",
-        agentType: "flowix",
+        agentType: "tank-cli",
         startedAt: Date.now() - 10_000,
         currentTool: null,
       },
@@ -289,7 +289,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
 
     expect(useChatStore.getState().threadStates[threadId].isLoading).toBe(false);
     expect(reconcileCompletedRun).toHaveBeenCalledWith(
-      "flowix",
+      "tank-cli",
       threadId,
       "run-ended-offline",
     );
@@ -301,9 +301,9 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       "@features/agent/store/agent-session-test-facade"
     );
     const store = useChatStore.getState();
-    const threadId = "thread-card-flowix";
+    const threadId = "thread-card-tank";
 
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({ kind: "stream_start", thread_id: threadId });
     store.dispatchAgentChunk({
       kind: "text",
@@ -369,7 +369,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const store = useChatStore.getState();
     const threadId = "thread-card-optimistic-user";
 
-    await store.sendMessageToThread(threadId, "Hello from user", "flowix");
+    await store.sendMessageToThread(threadId, "Hello from user", "tank-cli");
 
     const renderMessages =
       useAgentConversationStore.getState().messageStates[threadId]?.messages ??
@@ -380,7 +380,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     });
     expect(renderMessages[0].content).toContain("Hello from user");
     expect(
-      selectRenderableThreadMessages({ typeKey: "flowix", threadId }),
+      selectRenderableThreadMessages({ typeKey: "tank-cli", threadId }),
     ).toBe(renderMessages);
   });
 
@@ -392,7 +392,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     );
     const threadId = "thread-follow-up-after-runtime-release";
 
-    useAgentConversationStore.getState().syncRenderableMessages("flowix", threadId, [
+    useAgentConversationStore.getState().syncRenderableMessages("tank-cli", threadId, [
       {
         id: "history-user",
         role: "user",
@@ -404,7 +404,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     await useChatStore.getState().sendMessageToThread(
       threadId,
       "follow up from canonical",
-      "flowix",
+      "tank-cli",
       {
         currentNoteContent: "note context should not be appended",
       },
@@ -424,8 +424,8 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const threadId = "thread-low-frequency-conversation-live";
     const toolCallId = "tool-live-state";
 
-    useChatStore.getState().bindThreadType(threadId, "flowix");
-    useAgentConversationStore.getState().syncLiveMessageState("flowix", threadId, {
+    useChatStore.getState().bindThreadType(threadId, "tank-cli");
+    useAgentConversationStore.getState().syncLiveMessageState("tank-cli", threadId, {
       messages: [
         {
           id: `tool-${toolCallId}`,
@@ -448,7 +448,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       id: toolCallId,
       name: "Read",
       result: { content: "file contents from conversation state" },
-      agent_type: "flowix",
+      agent_type: "tank-cli",
     });
 
     const message =
@@ -759,7 +759,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     );
     const threadId = "thread-buffered-conversation-live";
 
-    useChatStore.getState().bindThreadType(threadId, "flowix");
+    useChatStore.getState().bindThreadType(threadId, "tank-cli");
     // Phase 2 (2026-08-02): session-store 是真源, 直接 seed 它. mirror 会自动
     // 把同步状态写到 conv-store 与 chat-store, 断言仍走两个老 store.
     useAgentSessionStore.getState().setThreadProjection(threadId, (p) => ({
@@ -780,7 +780,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       thread_id: threadId,
       run_id: "run-buffered-live",
       text: "world",
-      agent_type: "flowix",
+      agent_type: "tank-cli",
     });
 
     await flushAnimationFrame();
@@ -805,12 +805,12 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const store = useChatStore.getState();
     const threadId = "thread-card-missed-start";
 
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({
       kind: "text",
       thread_id: threadId,
       run_id: "run-restored",
-      agent_type: "flowix",
+      agent_type: "tank-cli",
       text: "still running",
     });
 
@@ -929,14 +929,14 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     useChatStore.getState().reconcileRunningRunsFromSnapshot({
       [threadId]: {
         runId: "run-snapshot-instance-running",
-        agentType: "flowix",
+        agentType: "tank-cli",
         startedAt: 1234,
         currentTool: "shell",
       },
     });
 
     expect(useAgentConversationStore.getState().findByThreadId(threadId)).toMatchObject({
-      agentType: "flowix",
+      agentType: "tank-cli",
       title: "Snapshot restored title",
       threadId,
       source: { kind: "thread-card" },
@@ -1042,7 +1042,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const store = useChatStore.getState();
     const threadId = "thread-card-stale-running";
 
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({
       kind: "stream_start",
       thread_id: threadId,
@@ -1086,8 +1086,8 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const store = useChatStore.getState();
     const threadId = "thread-card-optimistic-run";
 
-    store.bindThreadType(threadId, "flowix");
-    await store.sendMessageToThread(threadId, "hello optimistic", "flowix");
+    store.bindThreadType(threadId, "tank-cli");
+    await store.sendMessageToThread(threadId, "hello optimistic", "tank-cli");
     expect(useChatStore.getState().threadStates[threadId].isLoading).toBe(true);
 
     store.reconcileRunningRunsFromSnapshot({});
@@ -1128,7 +1128,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
 
     // 鍒涘缓涓€涓湁 content 鐨?thread, 鐒跺悗 dispatch 涓€浜?chunk 璁?threadStates
     // 绱Н messages / runs 鈹€鈹€ 杩欐槸 deleteThread 涔嬪墠鐨勭姸鎬併€?  
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({
       kind: "stream_start",
       thread_id: threadId,
@@ -1139,7 +1139,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       thread_id: threadId,
       run_id: "run-1",
       text: "answer body that should be wiped on delete",
-      agent_type: "flowix",
+      agent_type: "tank-cli",
     });
     store.dispatchAgentChunk({
       kind: "tool_call",
@@ -1148,7 +1148,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       id: "call-x",
       name: "read",
       input: {},
-      agent_type: "flowix",
+      agent_type: "tank-cli",
     });
 
     // rAF flush 璁?text chunk 鐪熸钀藉埌 messages / pendingAssistantId 涓?    // (涓?`routes streamed assistant text` 娴嬭瘯鍚屽舰 鈹€ 绂昏繖鍧楃殑璇?text
@@ -1174,7 +1174,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
 
   it("deleteThread clears threadTypes and reverse-mapped externalSessionResolutions", async () => {
     // 淇 #7: deleteThread 涔嬪墠娌℃竻 `state.threadTypes[threadId]`, 鐣欎笅瀛ゅ効
-    // 鏉＄洰 鈹€鈹€ 鍚庣画 `get().threadTypes[threadId] ?? "flowix"` 浼氭嬁鍒版棫 type,
+    // 鏉＄洰 鈹€鈹€ 鍚庣画 `get().threadTypes[threadId] ?? "tank-cli"` 浼氭嬁鍒版棫 type,
     // 璇垽 dispatch 璺緞銆?鍚屾椂鍙嶅悜鏄犲皠 `externalSessionResolutions[local] === threadId`
     // (鍗?local id 宸茬粡琚?resolve 鍒拌繖涓鍒犵殑 thread) 涔熻娓? 鍚﹀垯 findByThreadId
     // 浼氳鍛戒腑宸插垹 id銆?  
@@ -1653,10 +1653,10 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const { useChatStore } = await import("@features/agent/store/agent-session-test-facade");
     const store = useChatStore.getState();
     const firstThreadId = "thread-card-codex";
-    const secondThreadId = "thread-card-flowix";
+    const secondThreadId = "thread-card-tank";
 
     store.bindThreadType(firstThreadId, "codex");
-    store.bindThreadType(secondThreadId, "flowix");
+    store.bindThreadType(secondThreadId, "tank-cli");
 
     const chunks: AgentChunk[] = [
       { kind: "stream_start", thread_id: firstThreadId },
@@ -1675,7 +1675,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       "Codex",
     );
     expect(state.threadStates[secondThreadId].messages[0]?.content).toBe(
-      "Flowix",
+      "TANK的英雄笔记",
     );
     expect(
       state.threadStates[firstThreadId].runs[
@@ -1686,7 +1686,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       state.threadStates[secondThreadId].runs[
         state.threadStates[secondThreadId].activeRunId ?? ""
       ]?.agentType,
-    ).toBe("flowix");
+    ).toBe("tank-cli");
   });
 
   it("loads Codex history through paged IPC", async () => {
@@ -1815,7 +1815,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
           toolName: "web_search",
           toolInput: {
             action: {
-              query: "Flowix Codex search persistence",
+              query: "TANK的英雄笔记 Codex search persistence",
             },
           },
           isLoading: false,
@@ -1833,8 +1833,8 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       role: "tool",
       toolName: "web_search",
       toolDisplay: {
-        summary: "Flowix Codex search persistence",
-        title: "Flowix Codex search persistence",
+        summary: "TANK的英雄笔记 Codex search persistence",
+        title: "TANK的英雄笔记 Codex search persistence",
         kind: "search",
       },
     });
@@ -1945,7 +1945,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const store = useChatStore.getState();
     const threadId = "thread-card-tool";
 
-    store.bindThreadType(threadId, "flowix");
+    store.bindThreadType(threadId, "tank-cli");
     store.dispatchAgentChunk({ kind: "stream_start", thread_id: threadId });
     store.dispatchAgentChunk({
       kind: "tool_call",
@@ -2142,7 +2142,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const { useChatStore } = await import("@features/agent/store/agent-session-test-facade");
     const store = useChatStore.getState();
 
-    // 鍒濆 activeAgentTypeKey (DEFAULT_AGENT_TYPE_KEY 閫氬父鏄?'flowix', 浣嗕笉渚濊禆鍏蜂綋鍊?
+    // 鍒濆 activeAgentTypeKey (DEFAULT_AGENT_TYPE_KEY 閫氬父鏄?'tank', 浣嗕笉渚濊禆鍏蜂綋鍊?
     const initialType = useChatStore.getState().activeAgentTypeKey;
 
     // 鍒囧埌 codex thread 鈹€鈹€ 浠呮洿鏂?activeThreadIds.codex, 涓嶅姩 activeAgentTypeKey銆?  
@@ -2150,9 +2150,9 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     expect(useChatStore.getState().activeThreadIds.codex).toBe("codex-thread-1");
     expect(useChatStore.getState().activeAgentTypeKey).toBe(initialType);
 
-    // 鍒囧埌 flowix thread 鈹€鈹€ 鍚屾牱涓嶅姩 activeAgentTypeKey銆?  
-    store.setActiveThreadId("flowix-thread-1");
-    expect(useChatStore.getState().activeThreadIds.flowix).toBe("flowix-thread-1");
+    // 鍒囧埌 tank-cli thread 鈹€鈹€ 鍚屾牱涓嶅姩 activeAgentTypeKey銆?  
+    store.setActiveThreadId("tank-thread-1");
+    expect(useChatStore.getState().activeThreadIds.tank).toBe("tank-thread-1");
     expect(useChatStore.getState().activeAgentTypeKey).toBe(initialType);
 
     // setActiveAgentThread 浠嶇劧鍚屾涓よ€?鈹€鈹€ 杩欐槸璺?runtime 鍒囨崲鐨勬樉寮忓叆鍙ｃ€?  
@@ -2174,13 +2174,13 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     await store.stopThreadRun("thread-stop-empty");
     expect(agent.stopChatStream).toHaveBeenCalledWith(
       "thread-stop-empty",
-      "flowix",
+      "tank-cli",
       undefined,
     );
 
     // 鈹€鈹€ 鎯呭舰 2: thread 璺戣繃浣嗗凡鑷劧缁撴潫銆?  
     const finishedThreadId = "thread-stop-already-ended";
-    store.bindThreadType(finishedThreadId, "flowix");
+    store.bindThreadType(finishedThreadId, "tank-cli");
     store.dispatchAgentChunk({
       kind: "stream_start",
       thread_id: finishedThreadId,
@@ -2200,7 +2200,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     await store.stopThreadRun(finishedThreadId);
     expect(agent.stopChatStream).toHaveBeenCalledWith(
       finishedThreadId,
-      "flowix",
+      "tank-cli",
       undefined,
     );
   });
@@ -2242,7 +2242,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const threadId = "thread-card-runtime-config-codex-workspaces";
     memoStateMock.selectedNotebook = {
       id: "nb-current",
-      path: "D:\\projects\\flowix",
+      path: "D:\\projects\\tank",
     };
     agentAccessMock.config = {
       // defaults.folders 里的每个 folder 必须在 entries 里有对应的
@@ -2250,13 +2250,13 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       // 会把它收窄掉 (防越权)。
       entries: [
         { id: "e-notes-main", kind: "folder", path: "D:\\notes\\main", name: "main", enabled: true, missing: false },
-        { id: "e-flowix", kind: "folder", path: "D:\\projects\\flowix", name: "flowix", enabled: true, missing: false },
+        { id: "e-tank", kind: "folder", path: "D:\\projects\\tank", name: "tank-cli", enabled: true, missing: false },
       ],
       defaults: {
         files: {
           "nb-current": {
-            workspace: "D:\\projects\\flowix",
-            folders: ["D:\\notes\\main", "D:\\projects\\flowix"],
+            workspace: "D:\\projects\\tank",
+            folders: ["D:\\notes\\main", "D:\\projects\\tank"],
             notebooks: [],
           },
         },
@@ -2280,8 +2280,8 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       agentType: "codex",
       runtimeConfig: {
         codex: {
-          cwd: "D:\\projects\\flowix",
-          workspacePaths: ["D:\\notes\\main", "D:\\projects\\flowix"],
+          cwd: "D:\\projects\\tank",
+          workspacePaths: ["D:\\notes\\main", "D:\\projects\\tank"],
         },
       },
     });
@@ -2293,7 +2293,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     const threadId = "thread-card-runtime-config-first-folder";
     memoStateMock.selectedNotebook = {
       id: "nb-current",
-      path: "D:\\projects\\flowix",
+      path: "D:\\projects\\tank",
     };
     agentAccessMock.config = {
       entries: [],
@@ -2301,7 +2301,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
         files: {
           "nb-current": {
             workspace: undefined,
-            folders: ["D:\\projects\\flowix"],
+            folders: ["D:\\projects\\tank"],
             notebooks: [],
           },
         },
@@ -2325,8 +2325,8 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       agentType: "codex",
       runtimeConfig: {
         codex: {
-          cwd: "D:\\projects\\flowix",
-          workspacePaths: ["D:\\projects\\flowix"],
+          cwd: "D:\\projects\\tank",
+          workspacePaths: ["D:\\projects\\tank"],
         },
       },
     });

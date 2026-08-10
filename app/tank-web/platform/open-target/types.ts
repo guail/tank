@@ -8,7 +8,7 @@
  *   openNoteByDeepLink / openNoteByPhysicalPath
  *     ↓ invoke('open_memo_by_target')
  *   backend parser → resolver → ResolvedOpenTarget
- *     ↓ emit('flowix:open-target', payload)
+ *     ↓ emit('tank:open-target', payload)
  *   main layout listener → openNoteByTarget(payload)
  *     → 切 notebook (若需要) + setSelectedMemo + openMemoDocument
  */
@@ -24,5 +24,5 @@ export interface ResolvedOpenTarget {
   memoTitle: string;
 }
 
-/** Tauri event 名 — 跟后端 `handler.rs` 的 emit("flowix:open-target", ...) 同步 */
-export const FLOWIX_OPEN_TARGET_EVENT = 'flowix:open-target';
+/** Tauri event 名 — 跟后端 `handler.rs` 的 emit("tank:open-target", ...) 同步 */
+export const FLOWIX_OPEN_TARGET_EVENT = 'tank:open-target';

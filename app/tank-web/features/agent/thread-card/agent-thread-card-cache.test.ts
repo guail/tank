@@ -23,7 +23,7 @@ const sessionStoreMock = vi.hoisted(() => ({
   >,
   sessionMeta: {
     externalSessionResolutions: {},
-    activeAgentTypeKey: "flowix",
+    activeAgentTypeKey: "tank-cli",
     threadTypes: {},
     threadLists: {},
     currentThreadTitles: {},
@@ -109,17 +109,17 @@ describe("agent thread card cache helper", () => {
       await import("./agent-thread-card-cache");
 
     const result = await loadAgentThreadCardCache({
-      threadId: "flowix-thread",
-      typeKey: "flowix",
+      threadId: "tank-thread",
+      typeKey: "tank-cli",
     });
 
     expect(sessionStoreMock.loadMessages).toHaveBeenCalledWith(
-      "flowix",
-      "flowix-thread",
+      "tank-cli",
+      "tank-thread",
     );
     expect(result).toEqual({
       resolvedSessionId: null,
-      loadedThreadId: "flowix-thread",
+      loadedThreadId: "tank-thread",
       messages: [],
     });
   });
