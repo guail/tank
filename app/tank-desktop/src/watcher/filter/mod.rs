@@ -17,9 +17,12 @@ pub mod self_write;
 
 pub use path_filter::PathFilter;
 
-/// Maximum lifetime of an expected backend-write revision that has not yet
-/// been observed by the worker.
-pub const SELF_WRITE_TTL: Duration = Duration::from_secs(30);
+/// Maximum lifetime of a backend-write mark observed by the worker.
+///
+/// This must be long enough to cover a fast-typing burst (multiple autosaves
+/// per second) and the notify settle delay (~400ms), but short enough that a
+/// genuine external edit after the user pauses is detected promptly.
+pub const SELF_WRITE_TTL: Duration = Duration::from_secs(5);
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FileRevision([u8; 32]);
 
@@ -33,7 +36,6 @@ impl FileRevision {
 #[derive(Clone, Debug)]
 pub struct SelfWriteMark {
     pub marked_at: Instant,
-    pub expected_revision: Option<FileRevision>,
 }
 
 pub type SelfWriteMap = HashMap<PathBuf, SelfWriteMark>;

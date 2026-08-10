@@ -231,7 +231,6 @@ impl MemoWatcher {
                 key,
                 SelfWriteMark {
                     marked_at: Instant::now(),
-                    expected_revision: FileRevision::read(path),
                 },
             );
         }
@@ -318,9 +317,8 @@ fn should_process_stable_event(
             let Some(revision) = FileRevision::read(&event.path) else {
                 return true;
             };
-            if crate::watcher::filter::self_write::is_exact_self_write(
+            if crate::watcher::filter::self_write::is_recent_self_write(
                 &event.path,
-                &revision,
                 recent_self_writes,
             ) {
                 // Advance the observed baseline even though the originating
@@ -340,6 +338,16 @@ fn should_process_stable_event(
             true
         }
         FsEventKind::Remove => {
+            // Rename / save-with-rename emits a Remove for the old path. That
+            // removal is backend-owned (write_document marks the old path
+            // before save_memo renames it), so suppress it like Create/Modify.
+            if crate::watcher::filter::self_write::is_recent_self_write(
+                &event.path,
+                recent_self_writes,
+            ) {
+                processed_revisions.remove(&key);
+                return false;
+            }
             processed_revisions.remove(&key);
             true
         }
@@ -399,14 +407,13 @@ mod tests {
             normalize_for_compare(path),
             SelfWriteMark {
                 marked_at: Instant::now(),
-                expected_revision: FileRevision::read(path),
             },
         );
         writes
     }
 
     #[test]
-    fn worker_passes_a_later_revision_on_the_same_self_written_path() {
+    fn worker_suppresses_a_later_revision_on_the_same_recently_self_written_path() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("memo.md");
         std::fs::write(&path, "ui revision").unwrap();
@@ -415,7 +422,8 @@ mod tests {
         let event = RawFsEvent::new(FsEventKind::Modify, path);
         let mut processed = HashMap::new();
 
-        assert!(should_process_stable_event(&event, &writes, &mut processed));
+        // 同路径 TTL 内都认领: 快打字时第二次 autosave 的回声不再误判为外部
+        assert!(!should_process_stable_event(&event, &writes, &mut processed));
     }
 
     #[test]
@@ -577,5 +585,40 @@ mod tests {
         );
         assert_eq!(normalized.file_name().unwrap(), "not-yet-created.md");
         std::fs::remove_dir_all(&tmp).ok();
+    }
+
+    #[test]
+    fn worker_suppresses_multiple_revisions_in_a_self_write_burst() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("memo.md");
+        let writes = marked_revision(&path);
+        let mut processed = HashMap::new();
+
+        // Fast typing: several autosave echoes arrive while the mark is fresh.
+        std::fs::write(&path, "revision 1").unwrap();
+        let event1 = RawFsEvent::new(FsEventKind::Modify, path.clone());
+        assert!(!should_process_stable_event(&event1, &writes, &mut processed));
+
+        std::fs::write(&path, "revision 2").unwrap();
+        let event2 = RawFsEvent::new(FsEventKind::Modify, path.clone());
+        assert!(!should_process_stable_event(&event2, &writes, &mut processed));
+
+        std::fs::write(&path, "revision 3").unwrap();
+        let event3 = RawFsEvent::new(FsEventKind::Modify, path.clone());
+        assert!(!should_process_stable_event(&event3, &writes, &mut processed));
+    }
+
+    #[test]
+    fn worker_suppresses_remove_of_recently_self_written_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("memo.md");
+        std::fs::write(&path, "content").unwrap();
+        let writes = marked_revision(&path);
+        std::fs::remove_file(&path).unwrap();
+        let event = RawFsEvent::new(FsEventKind::Remove, path);
+        let mut processed = HashMap::new();
+
+        // Rename / save-with-rename removes the old path; that must be ignored.
+        assert!(!should_process_stable_event(&event, &writes, &mut processed));
     }
 }

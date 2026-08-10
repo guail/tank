@@ -6,31 +6,40 @@
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use crate::watcher::filter::{FileRevision, SelfWriteMap, SELF_WRITE_TTL};
+use crate::watcher::filter::{SelfWriteMap, SELF_WRITE_TTL};
 
-/// Return true only when the stable on-disk revision is the exact revision
-/// captured by a backend-owned write. A path match alone is never sufficient.
-pub fn is_exact_self_write(
+/// Return true when the path was recently written by a backend-owned
+/// operation, so the stable on-disk change is the echo of that write rather
+/// than an external edit.
+///
+/// Matching is by path within `SELF_WRITE_TTL` — we deliberately do NOT
+/// require the stable revision to equal the exact revision captured at write
+/// time. Under fast typing the backend issues several autosaves per second,
+/// and the mark for an earlier autosave is overwritten by a later one before
+/// its echo is processed; a strict revision compare would then mislabel the
+/// echo as an external edit (spurious "external modification" reloads / list
+/// flicker). Claiming any write to a recently backend-written path — the
+/// immediate echo — suppresses those false positives.
+///
+/// The mark is *not* consumed on a hit: while the user keeps editing, each
+/// autosave refreshes `marked_at`, so every echo in the burst is suppressed.
+/// A genuine external edit that lands after editing pauses (once the TTL
+/// lapses) is still treated as external.
+pub fn is_recent_self_write(
     path: &Path,
-    current_revision: &FileRevision,
     recent_self_writes: &Arc<Mutex<SelfWriteMap>>,
 ) -> bool {
     let key = crate::watcher::path::normalize_for_compare(path);
     let Ok(mut map) = recent_self_writes.lock() else {
         return false;
     };
-    // 顺手�?��过老条�?��SELF_WRITE_TTL (2s) 覆盖 IPC 命令结束 �?notify
-    // 回调到达的间�? FSEvents 双触�?(macOS 把一�?fs::write 拆成
-    // Keep both Metadata and Data events suppressed during the TTL, then
-    // prune expired entries so the table stays bounded.
+    // Prune expired entries so the table stays bounded. The TTL is short
+    // enough that a genuine external edit after the user stops typing is
+    // detected once the mark expires.
     map.retain(|_, mark| mark.marked_at.elapsed() < SELF_WRITE_TTL);
 
-    // Keep the entry after an exact hit so duplicate FSEvents for the same
-    // write are suppressed. A different revision invalidates it below.
-    let suppress = map
-        .get(&key)
-        .is_some_and(|mark| mark.expected_revision.as_ref() == Some(current_revision));
-    if suppress {
+    let hit = map.get(&key).is_some();
+    if hit {
         tracing::debug!(
             "[SelfWriteSuppressor] HIT path={} key={} table_size={}",
             path.display(),
@@ -45,16 +54,17 @@ pub fn is_exact_self_write(
             map.len(),
         );
     }
-    // A stable revision resolves the expectation either way. Duplicate
-    // notify events are handled by the worker's processed-revision map.
-    map.remove(&key);
-    suppress
+    // Intentionally keep the entry: during a fast-typing burst the same path
+    // may emit multiple notify echoes (Metadata + Data on macOS, rapid
+    // autosaves on all platforms). The worker's processed-revisions map
+    // handles exact duplicate stable revisions; the TTL handles expiration.
+    hit
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::watcher::filter::{FileRevision, SelfWriteMap, SelfWriteMark};
+    use crate::watcher::filter::{SelfWriteMap, SelfWriteMark};
     use std::time::Instant;
 
     fn marked_writes(path: &std::path::Path) -> Arc<Mutex<SelfWriteMap>> {
@@ -63,34 +73,40 @@ mod tests {
             crate::watcher::path::normalize_for_compare(path),
             SelfWriteMark {
                 marked_at: Instant::now(),
-                expected_revision: FileRevision::read(path),
             },
         );
         writes
     }
 
     #[test]
-    fn suppresses_only_the_exact_marked_content_revision() {
+    fn suppresses_a_recently_self_written_path() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("memo.md");
         std::fs::write(&path, "first revision").unwrap();
         let writes = marked_writes(&path);
-        let revision = FileRevision::read(&path).unwrap();
 
-        assert!(is_exact_self_write(&path, &revision, &writes));
-        assert!(writes.lock().unwrap().is_empty());
+        assert!(is_recent_self_write(&path, &writes));
     }
 
     #[test]
-    fn passes_a_new_revision_written_to_the_same_marked_path() {
+    fn suppresses_a_new_revision_on_the_same_recently_self_written_path() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("memo.md");
         std::fs::write(&path, "ui revision").unwrap();
         let writes = marked_writes(&path);
         std::fs::write(&path, "agent revision").unwrap();
-        let revision = FileRevision::read(&path).unwrap();
 
-        assert!(!is_exact_self_write(&path, &revision, &writes));
-        assert!(writes.lock().unwrap().is_empty());
+        // 即使 revision 变了, 只要路径在 TTL 内被后端写过就认领 (快打字场景)
+        assert!(is_recent_self_write(&path, &writes));
+    }
+
+    #[test]
+    fn passes_a_path_with_no_recent_self_write() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("memo.md");
+        std::fs::write(&path, "external revision").unwrap();
+        let writes = Arc::new(Mutex::new(SelfWriteMap::new()));
+
+        assert!(!is_recent_self_write(&path, &writes));
     }
 }
