@@ -5,6 +5,7 @@ export interface MainWindowMemoEventActions {
   getSelectedNotebookId: () => string | null;
   invalidateMentionCaches: () => void;
   openNoteTab: (memoId: string) => Promise<void>;
+  isMemoOpenInCurrentWindow: (memoId: string) => boolean;
   reportOpenFailure: (error: unknown) => void;
   handleMemoCreated: (memo: MemoItem) => void;
   handleMemoUpdated: (memo: MemoItem) => void;
@@ -58,7 +59,13 @@ export function handleMainWindowMemoEvent(
     || (!!selectedNotebookId && selectedNotebookId !== event.notebookId)
   );
   if (shouldOpenCreatedNote) {
-    void actions.openNoteTab(event.memo.id).catch(actions.reportOpenFailure);
+    // 当前 webview 已经在编辑这篇 → 不再弹新窗口。否则同一篇会同时开在
+    // 「主窗口编辑器」和「自动弹出的 tab 窗口」两份, 两边各自的 save-queue
+    // 用不同的 CAS 基线互相拒绝, 报"同步错误"。已存在则聚焦: 主窗口本就
+    // 在显示它; 若开在别的窗口, Rust route_tab 的 find_tab 会聚焦那个窗口。
+    if (!actions.isMemoOpenInCurrentWindow(event.memo.id)) {
+      void actions.openNoteTab(event.memo.id).catch(actions.reportOpenFailure);
+    }
   }
 
   if (!selectedNotebookId || selectedNotebookId !== event.notebookId) {
@@ -67,6 +74,15 @@ export function handleMainWindowMemoEvent(
     }
     return;
   }
+
+  // 自己正在编辑的 memo 被快打字 autosave 误标成 external_tool 时, 不重拉
+  // 列表元数据 (tags / todo count), 避免列表频繁闪烁 —— 内容已由
+  // handleMemoUpdated 就地更新。这是 self-write 抑制的前端等价 (后端
+  // watcher 的 self_write 表只覆盖外部 Markdown 文件, 不覆盖内部 memo)。
+  const isSelfEditedUpdate =
+    event.kind === 'updated'
+    && event.source === 'external_tool'
+    && actions.isMemoOpenInCurrentWindow(event.id);
 
   if (event.kind === 'created') {
     actions.handleMemoCreated(event.memo);
@@ -77,5 +93,7 @@ export function handleMainWindowMemoEvent(
     actions.handleMemoDeleted(event.id);
   }
 
-  actions.refreshSelectedNotebookMetadata(event);
+  if (!isSelfEditedUpdate) {
+    actions.refreshSelectedNotebookMetadata(event);
+  }
 }

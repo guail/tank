@@ -25,6 +25,7 @@ describe('memo dispatcher window isolation', () => {
         getSelectedNotebookId: () => 'notebook-a',
         invalidateMentionCaches: vi.fn(),
         openNoteTab,
+        isMemoOpenInCurrentWindow: vi.fn(() => false),
         reportOpenFailure: vi.fn(),
         handleMemoCreated: vi.fn(),
         handleMemoUpdated: vi.fn(),

@@ -77,6 +77,8 @@ export function MainWindowEffects() {
             invalidateMentionTags();
           },
           openNoteTab: windows.openNoteTab,
+          isMemoOpenInCurrentWindow: (memoId) =>
+            useDocumentStore.getState().activeMemoSession?.memoId === memoId,
           reportOpenFailure: (error) => {
             logger.warn('open created note window failed', { error });
             toast.error(error instanceof Error ? error.message : String(error));

@@ -38,6 +38,7 @@ function createActions(selectedNotebookId = 'notebook-a'): MainWindowMemoEventAc
     getSelectedNotebookId: vi.fn(() => selectedNotebookId),
     invalidateMentionCaches: vi.fn(),
     openNoteTab: vi.fn().mockResolvedValue(undefined),
+    isMemoOpenInCurrentWindow: vi.fn(() => false),
     reportOpenFailure: vi.fn(),
     handleMemoCreated: vi.fn(),
     handleMemoUpdated: vi.fn(),
@@ -132,6 +133,38 @@ describe('handleMainWindowMemoEvent', () => {
     expect(actions.handleMemoUpdated).toHaveBeenCalledWith(event.memo);
     expect(actions.replaceActiveMemoPath).toHaveBeenCalledWith(memo.id, event.path);
     expect(actions.openNoteTab).not.toHaveBeenCalled();
+  });
+
+  it('does not auto-open a created note already open in the current window', () => {
+    const actions = createActions('notebook-a');
+    vi.mocked(actions.isMemoOpenInCurrentWindow).mockReturnValue(true);
+
+    handleMainWindowMemoEvent(createdEvent(), actions);
+
+    expect(actions.openNoteTab).not.toHaveBeenCalled();
+    expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
+  });
+
+  it('does not refresh metadata for a self-edited update of the open memo', () => {
+    const actions = createActions('notebook-b');
+    vi.mocked(actions.isMemoOpenInCurrentWindow).mockImplementation(
+      (id) => id === memo.id,
+    );
+    const event: MemoEvent = {
+      kind: 'updated',
+      id: memo.id,
+      path: '/notebook-b/Renamed.md',
+      memo: { ...memo, filename: 'Renamed.md' },
+      notebookId: 'notebook-b',
+      derivedChanged: { tags: true, todos: true, agents: true },
+      source: 'external_tool',
+    };
+
+    handleMainWindowMemoEvent(event, actions);
+
+    expect(actions.handleMemoUpdated).toHaveBeenCalledWith(event.memo);
+    // 自己正在编辑 → 不重拉 tags/todo count, 避免快打字列表闪烁
+    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
   });
 
   it('reports automatic window-open failures', async () => {
