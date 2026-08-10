@@ -5,6 +5,7 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { useShallow } from 'zustand/react/shallow';
 import { useShortcutScope, pushHandler } from '@features/shortcuts';
 import { SquarePen, Search, ChevronDown, Check, ChevronRight, Loader2, LayoutTemplate } from 'lucide-react';
+import { ClockClockwiseIcon } from '@phosphor-icons/react';
 import { useDocumentStore } from '@features/document';
 import {
   type AgentConversationInstance,
@@ -604,6 +605,11 @@ export function MemoList() {
     setActiveFilter(filter);
   };
 
+  const handleShowRecent = useCallback(() => {
+    setSelectedTagId(null);
+    setActiveFilter('recent');
+  }, [setActiveFilter, setSelectedTagId]);
+
   // 颜色二级弹窗的选中回调: 同步 activeFilter='color' + colorFilter, 同时
   // 显式关掉父 dropdown (子菜单 onMouseDown 阻止了冒泡, 父 dropdown
   // setOpen 不会自动触发, 需要手动 setNotebookDropdownOpen(false))。
@@ -1001,6 +1007,17 @@ export function MemoList() {
               aria-label={t("memo.templateCenter.title")}
             >
               <LayoutTemplate className="w-4 h-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip content={t("memo.list.filterRecent")}>
+            <Button
+              size="icon"
+              variant="outline"
+              className={cn(HEADER_ICON_BTN_CLASS, activeFilter === 'recent' && 'bg-[var(--muted)]')}
+              onClick={handleShowRecent}
+              aria-label={t("memo.list.filterRecent")}
+            >
+              <ClockClockwiseIcon className="w-4 h-4" weight="bold" />
             </Button>
           </Tooltip>
         </div>
