@@ -295,9 +295,17 @@ fn reject_stdin(stdin: Option<&str>) -> Result<(), CliError> {
 
 fn tool_result(data: Value, is_error: bool) -> Value {
     let text = serde_json::to_string_pretty(&data).unwrap_or_else(|_| data.to_string());
+    // The MCP spec requires `structuredContent` to be a JSON object. Some commands
+    // (notebooks, list) return a top-level array; wrap those in `{"data": [...]}` so the
+    // client's schema validation accepts the result instead of erroring on a non-object
+    // structuredContent. Object-returning commands (search, show, create, ...) pass through.
+    let structured = match &data {
+        Value::Object(_) => data.clone(),
+        _ => json!({ "data": data }),
+    };
     json!({
         "content": [{"type": "text", "text": text}],
-        "structuredContent": data,
+        "structuredContent": structured,
         "isError": is_error
     })
 }
