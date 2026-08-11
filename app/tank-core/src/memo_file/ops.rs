@@ -33,9 +33,9 @@ use super::notebook::sqlite_to_io;
 use super::types::{DeleteTagReport, Memo, MoveTagReport, ReconcileReport};
 use super::MemoFile;
 
-/// title 派生 fallback: 空 body / 不可见首行时用 `untitled-YYYY-MM-DD`。
-fn fallback_filename(now: chrono::DateTime<chrono::Local>) -> String {
-    format!("{}.md", now.format("untitled-%Y-%m-%d"))
+/// title 派生 fallback: 空 title 时用默认标题。
+fn fallback_filename() -> String {
+    "还没有出发的英雄笔记".to_string()
 }
 
 fn validate_document_frontmatter(content: &str) -> std::io::Result<()> {
@@ -63,12 +63,12 @@ pub fn sanitize_filename_component(title: &str) -> String {
     sanitized.trim().to_string()
 }
 
-/// 算基准 filename (不含冲突后缀): `<sanitized>.md`。
-/// 空 title 时用 `untitled-YYYY-MM-DD.md` 兜底。
+/// 算基准 filename (不含 `.md` 冲突后缀)。
+/// 空 title 时用 `还没有出发的英雄笔记` 兜底。
 pub fn base_filename(title: &str) -> String {
     let sanitized = sanitize_filename_component(title);
     if sanitized.is_empty() {
-        fallback_filename(chrono::Local::now())
+        fallback_filename()
     } else {
         sanitized
     }

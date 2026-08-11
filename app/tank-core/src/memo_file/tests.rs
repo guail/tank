@@ -540,10 +540,9 @@ fn sanitize_truncates_to_200_chars() {
 }
 
 #[test]
-fn base_filename_falls_back_to_untitled_date() {
+fn base_filename_falls_back_to_default_title() {
     let s = base_filename("");
-    assert!(s.starts_with("untitled-"), "got: {s}");
-    assert!(s.ends_with(".md"), "should end with .md: {s}");
+    assert_eq!(s, "还没有出发的英雄笔记");
 }
 
 #[test]
@@ -739,15 +738,10 @@ fn create_memo_sanitizes_title_for_filesystem() {
 }
 
 #[test]
-fn create_memo_empty_title_uses_untitled_date() {
+fn create_memo_empty_title_uses_default_title() {
     let (mf, _base) = fresh_memo_file();
     let memo = mf.create_memo("", "body", None).unwrap();
-    assert!(
-        memo.filename.starts_with("untitled-"),
-        "got: {}",
-        memo.filename
-    );
-    // ends_with .md 已在 fallback_filename 保证
+    assert_eq!(memo.filename, "还没有出发的英雄笔记.md");
 }
 
 // =====================================================================
@@ -930,33 +924,33 @@ fn write_rename_keeps_key_in_frontmatter() {
 }
 
 #[test]
-fn write_rename_empty_body_uses_untitled_memo() {
+fn write_rename_empty_body_uses_default_title() {
     let (mf, base) = fresh_memo_file();
     let memo = mf.create_memo("Keep", "body\n", None).unwrap();
     let updated = mf
         .write_memo_renaming_on_title_change(&memo.id, "")
         .expect("write ok");
 
-    assert_eq!(updated.filename, "Untitled Memo.md");
+    assert_eq!(updated.filename, "还没有出发的英雄笔记.md");
     assert!(!base.join("Keep.md").exists());
-    assert!(base.join("Untitled Memo.md").exists());
+    assert!(base.join("还没有出发的英雄笔记.md").exists());
     let queried = mf.read_memo(&memo.id).expect("still in list");
-    assert_eq!(queried.filename, "Untitled Memo.md");
+    assert_eq!(queried.filename, "还没有出发的英雄笔记.md");
     assert_eq!(queried.preview, "");
 }
 
 #[test]
-fn write_rename_empty_body_uses_untitled_memo_dash_suffix_on_conflict() {
+fn write_rename_empty_body_uses_default_title_dash_suffix_on_conflict() {
     let (mf, base) = fresh_memo_file();
-    let _existing = mf.create_memo("Untitled Memo", "existing\n", None).unwrap();
+    let _existing = mf.create_memo("还没有出发的英雄笔记", "existing\n", None).unwrap();
     let memo = mf.create_memo("Keep", "body\n", None).unwrap();
     let updated = mf
         .write_memo_renaming_on_title_change(&memo.id, "")
         .expect("write ok");
 
-    assert_eq!(updated.filename, "Untitled Memo-1.md");
-    assert!(base.join("Untitled Memo.md").exists());
-    assert!(base.join("Untitled Memo-1.md").exists());
+    assert_eq!(updated.filename, "还没有出发的英雄笔记-1.md");
+    assert!(base.join("还没有出发的英雄笔记.md").exists());
+    assert!(base.join("还没有出发的英雄笔记-1.md").exists());
 }
 
 // =====================================================================

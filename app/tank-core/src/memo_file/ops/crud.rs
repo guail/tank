@@ -276,7 +276,7 @@ impl MemoFile {
         let final_content = fs::read_to_string(&path).unwrap_or_default();
         let (derived_title, _) = extract_title_and_preview(&final_content);
         let derived_title = if derived_title.is_empty() {
-            "Untitled Memo"
+            "还没有出发的英雄笔记"
         } else {
             derived_title.as_str()
         };
@@ -361,7 +361,7 @@ impl MemoFile {
         let final_content = fs::read_to_string(&path).unwrap_or_default();
         let (derived_title, _) = extract_title_and_preview(&final_content);
         let derived_title = if derived_title.is_empty() {
-            "Untitled Memo"
+            "还没有出发的英雄笔记"
         } else {
             derived_title.as_str()
         };

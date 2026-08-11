@@ -642,7 +642,7 @@ fn derive_title(body: &str) -> String {
         .map(|line| line.trim_start_matches('#').trim())
         .filter(|line| !line.is_empty())
         .map(|line| line.chars().take(80).collect())
-        .unwrap_or_else(|| "untitled".to_string())
+        .unwrap_or_else(|| "还没有出发的英雄笔记".to_string())
 }
 
 #[cfg(test)]
@@ -725,7 +725,7 @@ mod tests {
         assert_eq!(created.memo.filename, "Imported title.md");
 
         let saved = service.save_memo(&created.memo.id, "").unwrap();
-        assert_eq!(saved.memo.unwrap().filename, "Untitled Memo.md");
+        assert_eq!(saved.memo.unwrap().filename, "还没有出发的英雄笔记.md");
 
         let mut metadata = service.memo_metadata(&created.memo.id).unwrap();
         metadata.favorited = true;
