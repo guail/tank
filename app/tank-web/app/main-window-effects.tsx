@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useI18n } from "@/lib/i18n";
-import { windows } from "@platform/tauri/client";
 import { useDocumentStore } from "@features/document/store/document-store";
 import { useMemoStore } from "@features/memo/store/memo-store";
 import { useTagStore } from "@features/memo/store/tag-store";
@@ -14,7 +13,6 @@ import {
   setNotebookIdProvider,
 } from "@features/editor/extensions/tag-mention";
 import { rebaseSelectedTagId } from "@features/memo/services/memo-list-metadata-service";
-import { toast } from "@/lib/toast";
 import { handleMainWindowMemoEvent } from "./main-window-memo-event-handler";
 import type { MemoEvent } from "@/types/memo";
 import {
@@ -22,9 +20,6 @@ import {
   unmountOpenTargetListener,
 } from "@features/memo/use-cases/open-target-listener";
 import { restorePersistedMemoSession } from '@features/memo/use-cases/open-memo-session';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('main-window-effects');
 
 export function MainWindowEffects() {
   const { t } = useI18n();
@@ -76,22 +71,8 @@ export function MainWindowEffects() {
             invalidateMentionNotes();
             invalidateMentionTags();
           },
-          openNoteTab: windows.openNoteTab,
-          isMemoOpenInCurrentWindow: (memoId) =>
-            useDocumentStore.getState().activeMemoSession?.memoId === memoId,
-          reportOpenFailure: (error) => {
-            logger.warn('open created note window failed', { error });
-            toast.error(error instanceof Error ? error.message : String(error));
-          },
-          handleMemoCreated: (memo) => useMemoStore.getState().handleMemoCreated(memo),
-          handleMemoUpdated: (memo) => useMemoStore.getState().handleMemoUpdated(memo),
-          handleMemoDeleted: (memoId) => useMemoStore.getState().handleMemoDeleted(memoId),
           handleTagsRenamed,
           handleTagsDeleted,
-          replaceActiveMemoPath: (memoId, path) => {
-            useDocumentStore.getState().replaceActiveMemoPath(memoId, path);
-          },
-          refreshSelectedNotebookMetadata,
           refreshBackgroundTodoCount: (notebookId) => {
             void useTodoCountStore.getState().loadTodoCount(notebookId);
           },
@@ -113,21 +94,6 @@ export function MainWindowEffects() {
   }, []);
 
   return null;
-}
-
-function refreshSelectedNotebookMetadata(event: MemoEvent): void {
-  // tags_renamed / tags_deleted 不走这条路径 (handler 早返回了), 但函
-  // 数类型是 MemoEvent 联合, 需要在这里收窄 ── 这两个 kind 没有
-  // derivedChanged 字段。
-  if (event.kind === 'tags_renamed' || event.kind === 'tags_deleted') return;
-  const { notebookId, derivedChanged } = event;
-  if (derivedChanged.tags || derivedChanged.agents || derivedChanged.todos) {
-    void useTagStore.getState().loadTags(notebookId);
-    useTagStore.getState().triggerMetadataRefresh();
-  }
-  if (derivedChanged.todos) {
-    void useTodoCountStore.getState().loadTodoCount(notebookId);
-  }
 }
 
 /**

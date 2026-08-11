@@ -22,168 +22,82 @@ const memo: MemoItem = {
   properties: {},
 };
 
-function createdEvent(overrides: Partial<Extract<MemoEvent, { kind: 'created' }>> = {}): MemoEvent {
-  return {
-    kind: 'created',
-    memo,
-    notebookId: 'notebook-b',
-    derivedChanged: { tags: false, todos: false, agents: false },
-    source: 'external_tool',
-    ...overrides,
-  };
-}
-
 function createActions(selectedNotebookId = 'notebook-a'): MainWindowMemoEventActions {
   return {
     getSelectedNotebookId: vi.fn(() => selectedNotebookId),
     invalidateMentionCaches: vi.fn(),
-    openNoteTab: vi.fn().mockResolvedValue(undefined),
-    isMemoOpenInCurrentWindow: vi.fn(() => false),
-    reportOpenFailure: vi.fn(),
-    handleMemoCreated: vi.fn(),
-    handleMemoUpdated: vi.fn(),
-    handleMemoDeleted: vi.fn(),
     handleTagsRenamed: vi.fn(),
     handleTagsDeleted: vi.fn(),
-    replaceActiveMemoPath: vi.fn(),
-    refreshSelectedNotebookMetadata: vi.fn(),
     refreshBackgroundTodoCount: vi.fn(),
   };
 }
 
-describe('handleMainWindowMemoEvent', () => {
-  it('opens an externally created note from another notebook without changing the current list', () => {
-    const actions = createActions('notebook-a');
-
-    handleMainWindowMemoEvent(createdEvent(), actions);
-
-    expect(actions.openNoteTab).toHaveBeenCalledWith('memo-b');
-    expect(actions.handleMemoCreated).not.toHaveBeenCalled();
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
-    expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
-  });
-
-  it('opens an externally created note before notebook hydration without touching the list', () => {
-    const actions = createActions('');
-
-    handleMainWindowMemoEvent(createdEvent(), actions);
-
-    expect(actions.openNoteTab).toHaveBeenCalledWith('memo-b');
-    expect(actions.handleMemoCreated).not.toHaveBeenCalled();
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
-  });
-
-  it('refreshes only the notebook-keyed todo count for a background notebook', () => {
-    const actions = createActions('notebook-a');
-    const event = createdEvent({
-      derivedChanged: { tags: true, todos: true, agents: true },
-    });
-
-    handleMainWindowMemoEvent(event, actions);
-
-    expect(actions.refreshBackgroundTodoCount).toHaveBeenCalledWith('notebook-b');
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
-  });
-
-  it('updates the current notebook but does not auto-open user-created notes', () => {
-    const actions = createActions('notebook-b');
-    const event = createdEvent({ source: 'user_new' });
-
-    handleMainWindowMemoEvent(event, actions);
-
-    expect(actions.openNoteTab).not.toHaveBeenCalled();
-    expect(actions.handleMemoCreated).toHaveBeenCalledWith(memo);
-    expect(actions.refreshSelectedNotebookMetadata).toHaveBeenCalledWith(event);
-  });
-
-  it('opens a user-created note when it belongs to a background notebook', () => {
-    const actions = createActions('notebook-a');
-    const event = createdEvent({ source: 'user_new' });
-
-    handleMainWindowMemoEvent(event, actions);
-
-    expect(actions.openNoteTab).toHaveBeenCalledWith('memo-b');
-    expect(actions.handleMemoCreated).not.toHaveBeenCalled();
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
-  });
-
-  it('opens an imported note when it belongs to a background notebook', () => {
-    const actions = createActions('notebook-a');
-    const event = createdEvent({ source: 'user_import' });
-
-    handleMainWindowMemoEvent(event, actions);
-
-    expect(actions.openNoteTab).toHaveBeenCalledWith('memo-b');
-  });
-
-  it('updates metadata and the active path for a current-notebook update', () => {
-    const actions = createActions('notebook-b');
-    const event: MemoEvent = {
+function createMemoEvent(kind: 'created' | 'updated' | 'deleted', source: string): MemoEvent {
+  if (kind === 'created') {
+    return {
+      kind: 'created',
+      memo,
+      notebookId: 'notebook-b',
+      derivedChanged: { tags: false, todos: true, agents: false },
+      source: source as MemoEvent & { kind: 'created' } extends { source: infer S } ? S : never,
+    };
+  }
+  if (kind === 'updated') {
+    return {
       kind: 'updated',
       id: memo.id,
       path: '/notebook-b/Renamed.md',
       memo: { ...memo, filename: 'Renamed.md' },
       notebookId: 'notebook-b',
       derivedChanged: { tags: false, todos: false, agents: false },
-      source: 'external_tool',
+      source: source as MemoEvent & { kind: 'updated' } extends { source: infer S } ? S : never,
     };
+  }
+  return {
+    kind: 'deleted',
+    id: memo.id,
+    path: '/notebook-b/Created.md',
+    notebookId: 'notebook-b',
+    derivedChanged: { tags: false, todos: false, agents: false },
+    source: source as MemoEvent & { kind: 'deleted' } extends { source: infer S } ? S : never,
+  };
+}
 
-    handleMainWindowMemoEvent(event, actions);
-
-    expect(actions.handleMemoUpdated).toHaveBeenCalledWith(event.memo);
-    expect(actions.replaceActiveMemoPath).toHaveBeenCalledWith(memo.id, event.path);
-    expect(actions.openNoteTab).not.toHaveBeenCalled();
-  });
-
-  it('does not auto-open a created note already open in the current window', () => {
+describe('handleMainWindowMemoEvent', () => {
+  it('does not auto-open or update UI for created events', () => {
     const actions = createActions('notebook-a');
-    vi.mocked(actions.isMemoOpenInCurrentWindow).mockReturnValue(true);
 
-    handleMainWindowMemoEvent(createdEvent(), actions);
+    handleMainWindowMemoEvent(createMemoEvent('created', 'external_tool'), actions);
 
-    expect(actions.openNoteTab).not.toHaveBeenCalled();
+    expect(actions.handleTagsRenamed).not.toHaveBeenCalled();
+    expect(actions.handleTagsDeleted).not.toHaveBeenCalled();
+    expect(actions.refreshBackgroundTodoCount).toHaveBeenCalledWith('notebook-b');
     expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
   });
 
-  it('does not refresh metadata for a self-edited update of the open memo', () => {
+  it('does not update UI for updated events', () => {
     const actions = createActions('notebook-b');
-    vi.mocked(actions.isMemoOpenInCurrentWindow).mockImplementation(
-      (id) => id === memo.id,
-    );
-    const event: MemoEvent = {
-      kind: 'updated',
-      id: memo.id,
-      path: '/notebook-b/Renamed.md',
-      memo: { ...memo, filename: 'Renamed.md' },
-      notebookId: 'notebook-b',
-      derivedChanged: { tags: true, todos: true, agents: true },
-      source: 'external_tool',
-    };
 
-    handleMainWindowMemoEvent(event, actions);
+    handleMainWindowMemoEvent(createMemoEvent('updated', 'external_tool'), actions);
 
-    expect(actions.handleMemoUpdated).toHaveBeenCalledWith(event.memo);
-    // 自己正在编辑 → 不重拉 tags/todo count, 避免快打字列表闪烁
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
+    expect(actions.handleTagsRenamed).not.toHaveBeenCalled();
+    expect(actions.handleTagsDeleted).not.toHaveBeenCalled();
+    expect(actions.refreshBackgroundTodoCount).not.toHaveBeenCalled();
+    expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
   });
 
-  it('reports automatic window-open failures', async () => {
-    const error = new Error('window unavailable');
-    const actions = createActions('notebook-a');
-    vi.mocked(actions.openNoteTab).mockRejectedValue(error);
+  it('does not update UI for deleted events', () => {
+    const actions = createActions('notebook-b');
 
-    handleMainWindowMemoEvent(createdEvent(), actions);
+    handleMainWindowMemoEvent(createMemoEvent('deleted', 'external_tool'), actions);
 
-    await vi.waitFor(() => expect(actions.reportOpenFailure).toHaveBeenCalledWith(error));
+    expect(actions.handleTagsRenamed).not.toHaveBeenCalled();
+    expect(actions.handleTagsDeleted).not.toHaveBeenCalled();
+    expect(actions.refreshBackgroundTodoCount).not.toHaveBeenCalled();
+    expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
   });
 
   it('routes tags_renamed to handleTagsRenamed and bypasses memo/replace/refresh paths', () => {
-    // tags_renamed 是 metadata 事件, 不是单条 memo 写入 ── 即使
-    // notebookId 跟当前选中 notebook 匹配, 也**不**走 handleMemoUpdated /
-    // replaceActiveMemoPath / refreshSelectedNotebookMetadata, 避免触发
-    // loadData + loadMemos 全量重拉 (选中与重命名无关的标签时, 列表
-    // 也会闪烁)。 同样, notebookId 失配也不应该丢到 background todo
-    // count 路径 (rename 不改 todos)。
     const actions = createActions('notebook-b');
     const event: MemoEvent = {
       kind: 'tags_renamed',
@@ -195,20 +109,12 @@ describe('handleMainWindowMemoEvent', () => {
     handleMainWindowMemoEvent(event, actions);
 
     expect(actions.handleTagsRenamed).toHaveBeenCalledWith(event);
-    expect(actions.handleMemoUpdated).not.toHaveBeenCalled();
-    expect(actions.handleMemoCreated).not.toHaveBeenCalled();
-    expect(actions.handleMemoDeleted).not.toHaveBeenCalled();
-    expect(actions.replaceActiveMemoPath).not.toHaveBeenCalled();
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
+    expect(actions.handleTagsDeleted).not.toHaveBeenCalled();
     expect(actions.refreshBackgroundTodoCount).not.toHaveBeenCalled();
-    expect(actions.openNoteTab).not.toHaveBeenCalled();
     expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
   });
 
   it('routes tags_renamed to handleTagsRenamed even for background notebooks', () => {
-    // 即使用户选中的 notebook 跟事件 notebookId 不匹配, 也照样 patch
-    // memos 数组 (切回时不能看到 stale tag token)。 但不调 background
-    // todo count ── rename 不改 todos。
     const actions = createActions('notebook-a');
     const event: MemoEvent = {
       kind: 'tags_renamed',
@@ -225,9 +131,6 @@ describe('handleMainWindowMemoEvent', () => {
   });
 
   it('routes tags_deleted to handleTagsDeleted and bypasses memo/replace/refresh paths', () => {
-    // tags_deleted 是 metadata 事件, 跟 tags_renamed 同形 ── 直接走
-    // handleTagsDeleted, 不走 handleMemoUpdated / replaceActiveMemoPath
-    // / refreshSelectedNotebookMetadata / refreshBackgroundTodoCount。
     const actions = createActions('notebook-b');
     const event: MemoEvent = {
       kind: 'tags_deleted',
@@ -239,13 +142,8 @@ describe('handleMainWindowMemoEvent', () => {
     handleMainWindowMemoEvent(event, actions);
 
     expect(actions.handleTagsDeleted).toHaveBeenCalledWith(event);
-    expect(actions.handleMemoUpdated).not.toHaveBeenCalled();
-    expect(actions.handleMemoCreated).not.toHaveBeenCalled();
-    expect(actions.handleMemoDeleted).not.toHaveBeenCalled();
-    expect(actions.replaceActiveMemoPath).not.toHaveBeenCalled();
-    expect(actions.refreshSelectedNotebookMetadata).not.toHaveBeenCalled();
+    expect(actions.handleTagsRenamed).not.toHaveBeenCalled();
     expect(actions.refreshBackgroundTodoCount).not.toHaveBeenCalled();
-    expect(actions.openNoteTab).not.toHaveBeenCalled();
     expect(actions.invalidateMentionCaches).toHaveBeenCalledOnce();
   });
 

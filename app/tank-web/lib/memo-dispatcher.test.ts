@@ -17,24 +17,16 @@ describe('memo dispatcher window isolation', () => {
     expect(memoDispatcher.size()).toBe(0);
   });
 
-  it('routes a backend external-created event through the bridge to the main window opener', async () => {
+  it('routes a backend external-created event through the bridge without auto-opening', async () => {
     const { memoDispatcher } = await import('./memo-dispatcher');
-    const openNoteTab = vi.fn().mockResolvedValue(undefined);
+    const refreshBackgroundTodoCount = vi.fn();
     const unsubscribe = memoDispatcher.subscribe((event) => {
       handleMainWindowMemoEvent(event, {
         getSelectedNotebookId: () => 'notebook-a',
         invalidateMentionCaches: vi.fn(),
-        openNoteTab,
-        isMemoOpenInCurrentWindow: vi.fn(() => false),
-        reportOpenFailure: vi.fn(),
-        handleMemoCreated: vi.fn(),
-        handleMemoUpdated: vi.fn(),
-        handleMemoDeleted: vi.fn(),
         handleTagsRenamed: vi.fn(),
         handleTagsDeleted: vi.fn(),
-        replaceActiveMemoPath: vi.fn(),
-        refreshSelectedNotebookMetadata: vi.fn(),
-        refreshBackgroundTodoCount: vi.fn(),
+        refreshBackgroundTodoCount,
       });
     });
     const bridge = subscribeMock.mock.calls[0]?.[1] as ((event: MemoEvent) => void) | undefined;
@@ -61,7 +53,7 @@ describe('memo dispatcher window isolation', () => {
       source: 'external_tool',
     });
 
-    expect(openNoteTab).toHaveBeenCalledWith('memo-external');
+    expect(refreshBackgroundTodoCount).not.toHaveBeenCalled();
     unsubscribe();
   });
 });

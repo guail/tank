@@ -141,8 +141,10 @@ export function useDocumentAutosave({
           void writtenContent;
         },
         onCasRefused: (writtenContent) => {
-          // 后端已经吸收 Tiptap/frontmatter 的轻量语义差异; 走到这里
-          // 就按真实外部修改处理。
+          // 2026-08-11: 禁用"保存失败：文档已被外部修改"toast。快打字时
+          // autosave echo / rename 会被误识别为外部修改，导致恶性弹窗。
+          // 这里只静默刷新 CAS 基线，让用户继续编辑；真实外部修改不再
+          // 由 watcher 自动刷新当前文档（用户已要求关闭该自动功能）。
           console.warn('[writeDocument] CAS refused — diagnostic dump:', {
             path,
             bufLen: buf.content.length,
@@ -152,8 +154,6 @@ export function useDocumentAutosave({
             callerHead: writtenContent.slice(0, 200),
             lastSavedHead: buf.lastSavedContent.slice(0, 200),
           });
-          // 简化策略: 不做前端语义自愈, 不覆盖用户当前编辑内容。
-          // 只主动读一次磁盘刷新 CAS 基线, 然后提示冲突。
           if (!isMountedRef.current) {
             return;
           }
@@ -166,8 +166,6 @@ export function useDocumentAutosave({
             if (onDisk !== null) {
               buf.lastSavedContent = onDisk;
             }
-            const language = useUserSettingsStore.getState().settings.language;
-            toast.error(translate(language, 'document.save.casRefused'), { duration: 5000 });
           })();
           void writtenContent;
         },
