@@ -182,6 +182,30 @@ impl MemoFile {
             "#,
         )
         .map_err(sqlite_to_io)?;
+
+        // FlowState 融合: memo_todos 增加 reminder / category_id / sub_tasks 列。
+        // 幂等 — 仅当列不存在时才 ALTER, 已迁移过的库直接跳过。
+        {
+            let existing: Vec<String> = conn
+                .prepare("PRAGMA table_info(memo_todos)")
+                .map_err(sqlite_to_io)?
+                .query_map([], |row| row.get::<_, String>(1))
+                .map_err(sqlite_to_io)?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(sqlite_to_io)?;
+            let defaults = [("reminder", "''"), ("category_id", "''"), ("sub_tasks", "'[]'")];
+            for (col, default) in defaults {
+                if !existing.iter().any(|c| c == col) {
+                    conn.execute(
+                        &format!(
+                            "ALTER TABLE memo_todos ADD COLUMN {col} TEXT NOT NULL DEFAULT {default}"
+                        ),
+                        [],
+                    )
+                    .map_err(sqlite_to_io)?;
+                }
+            }
+        }
         Ok(())
     }
 

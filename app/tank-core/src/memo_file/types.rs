@@ -74,10 +74,36 @@ pub struct Memo {
     pub properties: Value,
 }
 
+/// 单条待办。从笔记正文 checkbox 派生, 经 IPC 边界传给前端 (camelCase)。
+///
+/// 富字段 (priority / timeRange / owner / assignee / reminder /
+/// categoryId / subTasks) 由 `extract_todos_from_body` 从增强 checkbox
+/// 语法解析; 全部 `#[serde(default)]`, 老数据 / 纯 `- [ ] x` 仍兼容。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TodoItem {
     pub content: String,
     pub status: String,
+    /// 优先级: `high` / `medium` / `low` / `none` (空串=未设)。
+    #[serde(default)]
+    pub priority: String,
+    /// 截止日期/时间区间, 自由文本 (如 `2026-08-20` / `2026-08-20T14:00`)。
+    #[serde(rename = "timeRange", default)]
+    pub time_range: String,
+    /// 负责人 (协作场景, 单人默认空)。
+    #[serde(default)]
+    pub owner: String,
+    /// 指派给 (协作场景, 单人默认空)。
+    #[serde(default)]
+    pub assignee: String,
+    /// 提醒时间, 自由文本 (如 `09:00` / `2026-08-20 09:00`)。
+    #[serde(default)]
+    pub reminder: String,
+    /// 分类 id / 名称。
+    #[serde(rename = "categoryId", default)]
+    pub category_id: String,
+    /// 子任务 (由缩进 checkbox 解析, 仅一级)。
+    #[serde(default)]
+    pub sub_tasks: Vec<TodoItem>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

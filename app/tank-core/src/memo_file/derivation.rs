@@ -649,25 +649,106 @@ fn strip_code_regions(body: &str) -> String {
 /// content 走 [`decode_html_entities`] 后再判 blank ── 让 `&nbsp;` /
 /// `&#160;` 等空白类实体被正确折叠为空, 不会作为空白条目泄漏到结果数组。
 /// 实体解码也保证存储的 content 与 title/preview 流水线语义一致。
+/// 从 body 抽 `- [ ]` / `- [x]` 复选框条目 (todo items), 支持 FlowState 富字段
+/// 标记与缩进子任务。
+///
+/// 增强 checkbox 语法 (标记均可选, 顺序任意, 可省):
+/// - 优先级: `[!high]` `[!medium]`(或 `[!med]`) `[!low]` `[!none]`
+/// - 截止:   `[📅2026-08-20]` 或 `[due:2026-08-20]` (可带时间 `[📅2026-08-20 14:00]`)
+/// - 提醒:   `[⏰09:00]` 或 `[remind:09:00]`
+/// - 分类:   `[🏷work]` 或 `[cat:work]`
+/// - 子任务: 缩进 (≥2 空格) 的 checkbox 归入上一级 todo 的 `sub_tasks`
+///
+/// content 走 [`decode_html_entities`] 后判 blank ── 与 title/preview 流水线
+/// 语义一致。
 pub fn extract_todos_from_body(content: &str) -> Vec<TodoItem> {
-    static TODO_RE: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"(?m)^\s*-\s*\[([ xX])\]\s*(.+)$").unwrap());
+    static CHECKBOX_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"(?m)^(\s*)-\s*\[([ xX])\]\s*(.*)$").unwrap());
+    static PRIORITY_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\[!(high|medium|med|low|none)\]").unwrap());
+    static DUE_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\[📅([^\]]+)\]|\[due:([^\]]+)\]").unwrap());
+    static REMIND_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\[⏰([^\]]+)\]|\[remind:([^\]]+)\]").unwrap());
+    static CAT_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\[🏷([^\]]+)\]|\[cat:([^\]]+)\]").unwrap());
 
-    TODO_RE
-        .captures_iter(extract_body_content(content))
-        .filter_map(|captures| {
-            let content = decode_html_entities(captures.get(2)?.as_str().trim());
-            if content.trim().is_empty() {
-                return None;
+    let body = extract_body_content(content);
+    let mut todos: Vec<TodoItem> = Vec::new();
+
+    for line in body.lines() {
+        let Some(caps) = CHECKBOX_RE.captures(line) else {
+            continue;
+        };
+        let indent = caps.get(1).map(|m| m.as_str().len()).unwrap_or(0);
+        let checked = caps
+            .get(2)
+            .map(|m| m.as_str())
+            .unwrap_or(" ")
+            .eq_ignore_ascii_case("x");
+        let raw = caps.get(3).map(|m| m.as_str()).unwrap_or("");
+
+        let (priority, rest) = strip_todo_marker(&PRIORITY_RE, raw);
+        let priority = normalize_todo_priority(&priority);
+        let (time_range, rest) = strip_todo_marker(&DUE_RE, &rest);
+        let (reminder, rest) = strip_todo_marker(&REMIND_RE, &rest);
+        let (category_id, rest) = strip_todo_marker(&CAT_RE, &rest);
+        let text = decode_html_entities(rest.trim());
+
+        if text.trim().is_empty() {
+            continue;
+        }
+
+        let item = TodoItem {
+            content: text,
+            status: if checked { "completed" } else { "pending" }.to_string(),
+            priority,
+            time_range,
+            owner: String::new(),
+            assignee: String::new(),
+            reminder,
+            category_id,
+            sub_tasks: Vec::new(),
+        };
+
+        if indent >= 2 {
+            if let Some(parent) = todos.last_mut() {
+                parent.sub_tasks.push(item);
+                continue;
             }
+            // 孤儿子任务 (前无顶级 todo): 退化为顶级
+        }
+        todos.push(item);
+    }
 
-            let checked = captures.get(1)?.as_str().eq_ignore_ascii_case("x");
-            Some(TodoItem {
-                content,
-                status: if checked { "completed" } else { "pending" }.to_string(),
-            })
-        })
-        .collect()
+    todos
+}
+
+/// 从 `text` 中抽走首个匹配 `re` 的标记, 返回 (匹配值, 去标记后的文本)。
+/// 取值取最后一个非空捕获组 (兼容 `[a:x]|[b:x]` 这类多选一正则)。
+fn strip_todo_marker(re: &Regex, text: &str) -> (String, String) {
+    match re.captures(text) {
+        Some(caps) => {
+            let value = (1..=caps.len())
+                .rev()
+                .find_map(|g| caps.get(g).map(|m| m.as_str().trim().to_string()))
+                .unwrap_or_default();
+            let cleaned = re.replace(text, "").to_string();
+            (value, cleaned)
+        }
+        None => (String::new(), text.to_string()),
+    }
+}
+
+/// 归一化优先级标记 → `high` / `medium` / `low` / `none` (空串=未设)。
+fn normalize_todo_priority(raw: &str) -> String {
+    match raw.to_ascii_lowercase().as_str() {
+        "high" => "high".to_string(),
+        "medium" | "med" => "medium".to_string(),
+        "low" => "low".to_string(),
+        "none" => "none".to_string(),
+        _ => String::new(),
+    }
 }
 
 pub fn extract_agent_threads_from_body(content: &str) -> Vec<AgentThreadItem> {

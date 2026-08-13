@@ -13,13 +13,27 @@ export interface AgentThreadItem {
   agentType: string;
 }
 
+/// 单条待办。与后端 `tank_core::memo_file::TodoItem` 镜像 (camelCase)。
+/// 富字段由增强 checkbox 语法派生, 均为可选/可空, 兼容纯 `- [ ] x`。
+export interface TodoItem {
+  content: string;
+  status: string;
+  priority?: string;
+  timeRange?: string;
+  owner?: string;
+  assignee?: string;
+  reminder?: string;
+  categoryId?: string;
+  subTasks?: TodoItem[];
+}
+
 export interface MemoItem {
   id: string;
   filename: string;
   preview: string;
   thumbnail?: string | null;
   tags: string[];
-  todos: { content: string; status: string }[];
+  todos: TodoItem[];
   agents: AgentThreadItem[];
   createdAt: number;
   updatedAt: number;

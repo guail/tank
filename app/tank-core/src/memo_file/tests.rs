@@ -487,6 +487,13 @@ fn write_index_persists_to_memos_table() {
             todos: vec![super::types::TodoItem {
                 content: "todo".to_string(),
                 status: "pending".to_string(),
+                priority: String::new(),
+                time_range: String::new(),
+                owner: String::new(),
+                assignee: String::new(),
+                reminder: String::new(),
+                category_id: String::new(),
+                sub_tasks: vec![],
             }],
             agents: vec![],
             created_at: 1,

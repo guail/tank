@@ -130,17 +130,21 @@ impl MemoFile {
             tx.execute(
                 r#"
                 INSERT OR REPLACE INTO memo_todos
-                    (memo_id, content, status, priority, time_range, owner, assignee, created_at, updated_at, position)
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+                    (memo_id, content, status, priority, time_range, owner, assignee,
+                     reminder, category_id, sub_tasks, created_at, updated_at, position)
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)
                 "#,
                 params![
                     entry.id,
                     todo.content,
                     todo.status,
-                    existing.map(|entry| entry.priority.as_str()).unwrap_or(""),
-                    existing.map(|entry| entry.time_range.as_str()).unwrap_or(""),
-                    existing.map(|entry| entry.owner.as_str()).unwrap_or(""),
-                    existing.map(|entry| entry.assignee.as_str()).unwrap_or(""),
+                    todo.priority,
+                    todo.time_range,
+                    todo.owner,
+                    todo.assignee,
+                    todo.reminder,
+                    todo.category_id,
+                    serde_json::to_string(&todo.sub_tasks).unwrap_or_else(|_| "[]".to_string()),
                     created_at,
                     updated_at,
                     position as i64,
@@ -482,7 +486,9 @@ impl MemoFile {
     ) -> std::io::Result<Vec<TodoItem>> {
         let mut stmt = conn
             .prepare(
-                "SELECT content, status FROM memo_todos WHERE memo_id = ?1 ORDER BY position ASC",
+                "SELECT content, status, priority, time_range, owner, assignee, \
+                 reminder, category_id, sub_tasks \
+                 FROM memo_todos WHERE memo_id = ?1 ORDER BY position ASC",
             )
             .map_err(sqlite_to_io)?;
         let rows = stmt
@@ -490,6 +496,17 @@ impl MemoFile {
                 Ok(TodoItem {
                     content: row.get(0)?,
                     status: row.get(1)?,
+                    priority: row.get(2)?,
+                    time_range: row.get(3)?,
+                    owner: row.get(4)?,
+                    assignee: row.get(5)?,
+                    reminder: row.get(6)?,
+                    category_id: row.get(7)?,
+                    sub_tasks: row
+                        .get::<_, String>(8)
+                        .ok()
+                        .and_then(|s| serde_json::from_str(&s).ok())
+                        .unwrap_or_default(),
                 })
             })
             .map_err(sqlite_to_io)?;

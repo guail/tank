@@ -528,6 +528,65 @@ fn todos_parse_checked_and_unchecked() {
     assert_eq!(v[1].status, "completed");
 }
 
+/// FlowState 富字段标记: 优先级 / 截止 / 提醒 / 分类。
+#[test]
+fn todos_parse_rich_markers() {
+    let v = extract_todos_from_body(
+        "- [ ] [!high] [📅2026-08-20] [⏰09:00] [🏷work] 写周报\n",
+    );
+    assert_eq!(v.len(), 1);
+    let t = &v[0];
+    assert_eq!(t.content, "写周报");
+    assert_eq!(t.status, "pending");
+    assert_eq!(t.priority, "high");
+    assert_eq!(t.time_range, "2026-08-20");
+    assert_eq!(t.reminder, "09:00");
+    assert_eq!(t.category_id, "work");
+}
+
+/// 标记别名: `[!med]` → medium, `[due:]` / `[remind:]` 形式。
+#[test]
+fn todos_parse_marker_aliases() {
+    let v = extract_todos_from_body("- [ ] [!med] [due:2026-09-01] [remind:18:30] 备货\n");
+    assert_eq!(v.len(), 1);
+    let t = &v[0];
+    assert_eq!(t.priority, "medium");
+    assert_eq!(t.time_range, "2026-09-01");
+    assert_eq!(t.reminder, "18:30");
+    assert_eq!(t.content, "备货");
+}
+
+/// 缩进 (≥2 空格) 的 checkbox 归入上一级 todo 的 sub_tasks。
+#[test]
+fn todos_parse_nested_subtasks() {
+    let v = extract_todos_from_body(
+        "- [ ] 发布 v1\n  - [ ] 写 changelog\n  - [x] 打 tag\n- [ ] 单独任务\n",
+    );
+    assert_eq!(v.len(), 2);
+    assert_eq!(v[0].content, "发布 v1");
+    assert_eq!(v[0].sub_tasks.len(), 2);
+    assert_eq!(v[0].sub_tasks[0].content, "写 changelog");
+    assert_eq!(v[0].sub_tasks[0].status, "pending");
+    assert_eq!(v[0].sub_tasks[1].content, "打 tag");
+    assert_eq!(v[0].sub_tasks[1].status, "completed");
+    assert_eq!(v[1].content, "单独任务");
+    assert!(v[1].sub_tasks.is_empty());
+}
+
+/// 纯 checkbox (无标记) 富字段保持空, 向后兼容。
+#[test]
+fn todos_parse_plain_keeps_fields_empty() {
+    let v = extract_todos_from_body("- [ ] 普通任务\n");
+    assert_eq!(v.len(), 1);
+    let t = &v[0];
+    assert_eq!(t.content, "普通任务");
+    assert_eq!(t.priority, "");
+    assert_eq!(t.time_range, "");
+    assert_eq!(t.reminder, "");
+    assert_eq!(t.category_id, "");
+    assert!(t.sub_tasks.is_empty());
+}
+
 // ============== HTML 实体解码 (title / preview 派生) ==============
 
 /// 行内 `&nbsp;` 不应作为实体字符串泄漏到 title ── 应被解码成 NBSP 后由
