@@ -4,6 +4,9 @@ import App from "@app/app";
 import "@/styles/index.css";
 import "sonner/dist/styles.css";
 import { initTauriClient } from "@platform/tauri/client";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("desktop entry");
 
 const isMac = navigator.platform.toUpperCase().includes("MAC");
 document.documentElement.dataset.platform = isMac ? "mac" : "non-mac";
@@ -13,7 +16,7 @@ document.documentElement.dataset.platform = isMac ? "mac" : "non-mac";
 try {
   initTauriClient();
 } catch (error) {
-  console.error("[desktop entry] Failed to initialize Tauri:", error);
+  log.error("Failed to initialize Tauri", { error });
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

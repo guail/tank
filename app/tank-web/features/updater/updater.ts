@@ -1,5 +1,5 @@
-import { check, type Update } from '@tauri-apps/plugin-updater';
-import { relaunch } from '@tauri-apps/plugin-process';
+import { check, type Update } from '@platform/tauri/updater';
+import { relaunch } from '@platform/tauri/process';
 
 export interface UpdateDownloadProgress {
   /** 已下载字节数 */
