@@ -105,5 +105,5 @@ jobs:
             [CHANGELOG]: ../../CHANGELOG.md
           releaseDraft: false
           prerelease: false
-          includeUpdaterArtifacts: true
+          includeUpdaterJson: true
           args: --target ${{ matrix.target }}
