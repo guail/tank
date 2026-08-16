@@ -325,7 +325,7 @@ mod tests {
     fn display_width_ascii() {
         assert_eq!(display_width(""), 0);
         assert_eq!(display_width("hello"), 5);
-        assert_eq!(display_width("TANK的英雄笔记 0.1"), 10);
+        assert_eq!(display_width("TANK的英雄笔记 0.1"), 18);
     }
 
     #[test]

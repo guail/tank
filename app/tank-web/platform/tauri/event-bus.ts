@@ -75,7 +75,7 @@ function nextListenerGeneration(event: string): number {
 function clearRetryTimer(event: string): void {
   const timer = retryTimers.get(event);
   if (timer === undefined) return;
-  window.clearTimeout(timer);
+  globalThis.clearTimeout(timer);
   retryTimers.delete(event);
 }
 
@@ -92,7 +92,7 @@ function scheduleListenerRetry(event: string): void {
     LISTENER_RETRY_MAX_DELAY_MS,
   );
   retryAttempts.set(event, attempt + 1);
-  const timer = window.setTimeout(() => {
+  const timer = globalThis.setTimeout(() => {
     retryTimers.delete(event);
     ensureTauriListener(event);
   }, delay);
@@ -252,7 +252,7 @@ export function _resetForTests(): void {
   listenerReadyHandlers.clear();
   tauriUnlistens.clear();
   listenerGenerations.clear();
-  for (const timer of retryTimers.values()) window.clearTimeout(timer);
+  for (const timer of retryTimers.values()) globalThis.clearTimeout(timer);
   retryTimers.clear();
   retryAttempts.clear();
 }
