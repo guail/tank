@@ -1,5 +1,5 @@
 import type { AgentTypeKey } from "@/types/agent";
-import { getAgentType } from "@/lib/agent-types";
+import { canonicalAgentTypeKey, getAgentType } from "@/lib/agent-types";
 import { agentClient } from "@features/agent/store/agent-client";
 import type { AgentChunk } from "@/types/agent";
 import type { ConversationSlice } from "@features/agent/store/conversation-slice";
@@ -69,9 +69,11 @@ async function loadThreadList(
   const type = getAgentType(typeKey);
   try {
     const threads = await listHistoryThreads(type.key);
+    // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+    const mapKey = canonicalAgentTypeKey(type.key);
     get().setSessionMeta((meta) => ({
       ...meta,
-      threadLists: { ...meta.threadLists, [type.key]: threads },
+      threadLists: { ...meta.threadLists, [mapKey]: threads },
     }));
   } catch (error) {
     console.error(`Failed to load ${errorLabel} thread list:`, error);
@@ -84,6 +86,10 @@ async function loadThread(
   threadId: string,
 ): Promise<void> {
   const type = getAgentType(typeKey);
+  // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+  // 后端 IPC (listHistoryThreads / findHistoryThreadInfo / replayExternalEvents
+  // / loadMessages) 仍走 wire 值 type.key。
+  const mapKey = canonicalAgentTypeKey(type.key);
   try {
     get().invalidateThread(threadId);
     get().activateThread(threadId);
@@ -92,19 +98,20 @@ async function loadThread(
     const threadInfo = await findHistoryThreadInfo(
       type.key,
       threadId,
-      meta.threadLists[type.key] ?? [],
+      meta.threadLists[mapKey] ?? [],
     );
     get().setSessionMeta((current) => ({
       ...current,
-      activeAgentTypeKey: type.key,
-      activeThreadIds: { ...current.activeThreadIds, [type.key]: threadId },
+      activeAgentTypeKey: mapKey,
+      activeThreadIds: { ...current.activeThreadIds, [mapKey]: threadId },
       threadTypes: {
         ...current.threadTypes,
+        // threadTypes 存 wire 值, 供 dispatch 解析 run.agentType (tank-cli)。
         [threadId]: current.threadTypes[threadId] ?? type.key,
       },
       currentThreadTitles: {
         ...current.currentThreadTitles,
-        [type.key]: threadInfo?.title ?? defaultThreadTitle(type.key),
+        [mapKey]: threadInfo?.title ?? defaultThreadTitle(type.key),
       },
     }));
     get().setThreadProjection(threadId, (projection) => ({
@@ -203,25 +210,29 @@ export function createThreadLifecycleSlice(
               ...state.sessionMeta,
               threadTypes,
               externalSessionResolutions,
+              // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
               ...(type
                 ? {
                     threadLists: {
                       ...state.sessionMeta.threadLists,
-                      [type]: (state.sessionMeta.threadLists[type] ?? []).filter(
-                        (item) => item.threadId !== threadId,
-                      ),
+                      [canonicalAgentTypeKey(type)]: (
+                        state.sessionMeta.threadLists[canonicalAgentTypeKey(type)] ??
+                        []
+                      ).filter((item) => item.threadId !== threadId),
                     },
                   }
                 : {}),
-              ...(type && state.sessionMeta.activeThreadIds[type] === threadId
+              ...(type &&
+                state.sessionMeta.activeThreadIds[canonicalAgentTypeKey(type)] ===
+                  threadId
                 ? {
                     activeThreadIds: {
                       ...state.sessionMeta.activeThreadIds,
-                      [type]: undefined,
+                      [canonicalAgentTypeKey(type)]: undefined,
                     },
                     currentThreadTitles: {
                       ...state.sessionMeta.currentThreadTitles,
-                      [type]: undefined,
+                      [canonicalAgentTypeKey(type)]: undefined,
                     },
                   }
                 : {}),
@@ -247,20 +258,23 @@ export function createThreadLifecycleSlice(
       const type = getAgentType(
         typeKey ?? before.threadTypes[threadId] ?? before.activeAgentTypeKey,
       );
-      const previousListTitle = (before.threadLists[type.key] ?? []).find(
+      // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+      // threadTypes / agentClient 调用仍走 wire 值 type.key。
+      const mapKey = canonicalAgentTypeKey(type.key);
+      const previousListTitle = (before.threadLists[mapKey] ?? []).find(
         (item) => item.threadId === threadId,
       )?.title;
-      const previousActiveTitle = before.currentThreadTitles[type.key];
+      const previousActiveTitle = before.currentThreadTitles[mapKey];
       get().setSessionMeta((meta) => ({
         ...meta,
         threadTypes: { ...meta.threadTypes, [threadId]: type.key },
         currentThreadTitles: {
           ...meta.currentThreadTitles,
-          [type.key]: nextTitle,
+          [mapKey]: nextTitle,
         },
         threadLists: {
           ...meta.threadLists,
-          [type.key]: (meta.threadLists[type.key] ?? []).map((item) =>
+          [mapKey]: (meta.threadLists[mapKey] ?? []).map((item) =>
             item.threadId === threadId ? { ...item, title: nextTitle } : item,
           ),
         },
@@ -277,11 +291,11 @@ export function createThreadLifecycleSlice(
           ...meta,
           currentThreadTitles: {
             ...meta.currentThreadTitles,
-            [type.key]: previousActiveTitle,
+            [mapKey]: previousActiveTitle,
           },
           threadLists: {
             ...meta.threadLists,
-            [type.key]: (meta.threadLists[type.key] ?? []).map((item) =>
+            [mapKey]: (meta.threadLists[mapKey] ?? []).map((item) =>
               item.threadId === threadId && previousListTitle !== undefined
                 ? { ...item, title: previousListTitle }
                 : item,

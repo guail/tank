@@ -46,7 +46,7 @@ import {
   selectRunningAgentConversations,
   useConversationRunIndex,
 } from '@features/agent/store/conversation-run-index';
-import { getAgentType } from '@/lib/agent-types';
+import { canonicalAgentTypeKey, getAgentType } from '@/lib/agent-types';
 import {
   memos,
   tags,
@@ -358,13 +358,15 @@ function RunningAgentConversationsGroup({ onClose }: RunningAgentConversationsGr
     if (threadId) {
       // Phase 4 (2026-08-02): session-store.sessionMeta.activeThreadIds 是真源.
       const session = useAgentSessionStore.getState();
+      // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+      const mapKey = canonicalAgentTypeKey(instance.agentType);
       session.setSessionMeta((meta) => ({
         ...meta,
         activeThreadIds: {
           ...meta.activeThreadIds,
-          [instance.agentType]: threadId,
+          [mapKey]: threadId,
         },
-        activeAgentTypeKey: instance.agentType,
+        activeAgentTypeKey: mapKey,
       }));
     }
 

@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { LayoutGrid, X } from 'lucide-react';
 import type { AgentTypeKey } from '@/types/agent';
-import { AGENT_TYPES, getAgentType, isAgentTypeComingSoon } from '@/lib/agent-types';
+import {
+  AGENT_TYPES,
+  canonicalAgentTypeKey,
+  getAgentType,
+  isAgentTypeComingSoon,
+} from '@/lib/agent-types';
 import { cn } from '@/lib/utils';
 import { Kbd } from '@shared/ui/shortcut-kbd';
 import {
@@ -77,13 +82,15 @@ export function AgentConversationOverlay({
     if (instance.threadId) {
       // Keep the active-thread pointer in canonical session metadata.
       const session = useAgentSessionStore.getState();
+      // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+      const mapKey = canonicalAgentTypeKey(instance.agentType);
       session.setSessionMeta((meta) => ({
         ...meta,
         activeThreadIds: {
           ...meta.activeThreadIds,
-          [instance.agentType]: instance.threadId,
+          [mapKey]: instance.threadId,
         },
-        activeAgentTypeKey: instance.agentType,
+        activeAgentTypeKey: mapKey,
       }));
     }
     if (source.memoId) {

@@ -1,4 +1,5 @@
 import type { AgentTypeKey } from "@/types/agent";
+import { canonicalAgentTypeKey } from "@/lib/agent-types";
 import { useAgentSessionStore } from "@features/agent/store/agent-session-store";
 import { useAgentRuntimeStore } from "@features/agent/store/agent-runtime-store";
 import type { ThreadProjection } from "@features/agent/store/session-reducer";
@@ -52,8 +53,9 @@ export class AgentThreadCardSubscriptionsController {
     const options = this.options;
     return useAgentSessionStore.subscribe(
       (state) => {
-        const threadId = options.getRenderThreadId();
-        const typeKey = options.getTypeKey();
+      const threadId = options.getRenderThreadId();
+      // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+      const typeKey = canonicalAgentTypeKey(options.getTypeKey());
         // Read canonical metadata directly.
         const meta = state.sessionMeta;
         return {

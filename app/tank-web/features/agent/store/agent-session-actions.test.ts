@@ -1662,9 +1662,9 @@ describe("chat-store Agent Thread Card streaming flow", () => {
       { kind: "stream_start", thread_id: firstThreadId },
       { kind: "stream_start", thread_id: secondThreadId },
       { kind: "text", thread_id: firstThreadId, text: "Cod" },
-      { kind: "text", thread_id: secondThreadId, text: "Flo" },
+      { kind: "text", thread_id: secondThreadId, text: "TANK的" },
       { kind: "text", thread_id: firstThreadId, text: "ex" },
-      { kind: "text", thread_id: secondThreadId, text: "wix" },
+      { kind: "text", thread_id: secondThreadId, text: "英雄笔记" },
     ];
 
     chunks.forEach((chunk) => store.dispatchAgentChunk(chunk));

@@ -137,6 +137,23 @@ export function normalizeAgentTypeKey(typeKey: string | null | undefined): Agent
   return getAgentType(typeKey).key;
 }
 
+/**
+ * 用于「per-type session map」索引的规范 key: 把后端 wire 值 `tank-cli` 归一到
+ * UI key `tank`。所有 per-type session map (activeThreadIds / threadLists /
+ * currentThreadTitles / activeAgentTypeKey) 都以 UI key 为索引 —— 与
+ * setThreadList 的约定一致。而 instance / run 的 `agentType` 字段、以及后端
+ * IPC 调用仍使用 wire 值 `tank-cli` (见 agent-runtime-spec.ts)。
+ *
+ * fork 重名把 `tank-cli` 同时当成了 UI key 与 wire 值, 导致同一 agent 的 map
+ * 有时按 `tank` 写、有时按 `tank-cli` 写, 互相查不到。统一走此函数即可根治。
+ */
+export function canonicalAgentTypeKey(
+  typeKey: string | null | undefined,
+): AgentTypeKey {
+  const key = getAgentType(typeKey).key;
+  return key === "tank-cli" ? DEFAULT_AGENT_TYPE_KEY : key;
+}
+
 export function supportsTextStreaming(typeKey: string | null | undefined): boolean {
   return getAgentType(typeKey).capabilities.supportsTextStreaming;
 }

@@ -28,6 +28,7 @@ import type { AgentConversationInstance } from "@features/agent/store/agent-conv
 import { type ThreadProjection } from "@features/agent/store/session-reducer";
 import { STORAGE_KEYS } from "@/lib/constants";
 import {
+  canonicalAgentTypeKey,
   DEFAULT_AGENT_TYPE_KEY,
   getAgentType,
   isAgentTypeSelectable,
@@ -332,11 +333,11 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
               ...meta,
               currentThreadTitles: {
                 ...meta.currentThreadTitles,
-                [type.key]: conversationTitle,
+                [canonicalAgentTypeKey(type.key)]: conversationTitle,
               },
               threadLists: {
                 ...meta.threadLists,
-                [type.key]: (meta.threadLists[type.key] ?? []).map((item) =>
+                [canonicalAgentTypeKey(type.key)]: (meta.threadLists[canonicalAgentTypeKey(type.key)] ?? []).map((item) =>
                   item.threadId === threadId
                     ? { ...item, title: conversationTitle }
                     : item,
@@ -415,7 +416,7 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
         stopStream: async () => {
           const meta = get().sessionMeta;
           const type = getAgentType(meta.activeAgentTypeKey);
-          const activeId = meta.activeThreadIds[type.key];
+          const activeId = meta.activeThreadIds[canonicalAgentTypeKey(type.key)];
           if (activeId) await get().stopThreadRun(activeId);
         },
         stopThreadRun: async (threadId, runId) => {

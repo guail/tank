@@ -9,6 +9,7 @@ import {
   DEFAULT_AGENT_SESSION_META,
   type AgentSessionMeta,
 } from "@features/agent/store/session-state";
+import { DEFAULT_AGENT_TYPE_KEY } from "@/lib/agent-types";
 
 type SessionMetaContext = SessionMetaSlice & {
   activateThread(threadId: string): void;
@@ -77,7 +78,11 @@ export function createSessionMetaSlice(
           threadLists: { ...state.sessionMeta.threadLists, tank: list },
         },
       })),
-    setActiveThreadId: (threadId) => setActiveThread("tank-cli", threadId, false),
+    // tank agent 的 map key 用 UI key `tank` (DEFAULT_AGENT_TYPE_KEY), 不是
+    // wire 值 `tank-cli` ── 见 canonicalAgentTypeKey。否则 activeThreadIds 会
+    // 按 `tank-cli` 写、按 `tank` 读, 互相查不到。
+    setActiveThreadId: (threadId) =>
+      setActiveThread(DEFAULT_AGENT_TYPE_KEY, threadId, false),
     setActiveCodexThreadId: (threadId) =>
       setActiveThread("codex", threadId, false),
     setActiveClaudeThreadId: (threadId) =>

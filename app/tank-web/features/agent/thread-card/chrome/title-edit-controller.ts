@@ -1,7 +1,7 @@
 import { useAgentSessionStore } from "@features/agent/store/agent-session-store";
 import { deriveThreadTitleFromPrompt } from "@features/agent/store/thread-titles";
 import type { AgentTypeKey } from "@/types/agent";
-import { normalizeAgentTypeKey } from "@/lib/agent-types";
+import { canonicalAgentTypeKey } from "@/lib/agent-types";
 import { focusWithoutScroll } from "@features/agent/thread-card/agent-thread-card-dom";
 
 export interface AgentThreadCardTitleEditControllerOptions {
@@ -62,7 +62,8 @@ export class AgentThreadCardTitleEditController {
    */
   private explicitTitle(): string {
     const attrTitle = (this.getAttrTitle() ?? "").trim();
-    const attrTypeKey = normalizeAgentTypeKey(this.getAttrTypeKey());
+    // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+    const attrTypeKey = canonicalAgentTypeKey(this.getAttrTypeKey());
     const threadId = this.getThreadId();
     if (threadId) {
       const meta = useAgentSessionStore.getState().sessionMeta;

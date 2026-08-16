@@ -1,6 +1,6 @@
 import type { AgentTypeKey } from "@/types/agent";
 import type { ThreadListItem } from "@/types";
-import { getAgentType } from "@/lib/agent-types";
+import { canonicalAgentTypeKey, getAgentType } from "@/lib/agent-types";
 import { translate, type AppLanguage } from "@/lib/i18n";
 import { stripSystemBlock } from "@features/agent/message";
 import { useUserSettingsStore } from "@features/preferences/store/user-settings-store";
@@ -81,12 +81,14 @@ function getConversationTitleForThread(
   type: AgentTypeKey,
   threadId: string,
 ): string {
-  const list = state.threadLists[type] ?? [];
+  // map key 用 UI key (tank), 不是 wire 值 (tank-cli) ── 见 canonicalAgentTypeKey。
+  const key = canonicalAgentTypeKey(type);
+  const list = state.threadLists[key] ?? [];
   const fromList = list.find((item) => item.threadId === threadId)?.title;
   if (fromList !== undefined) return fromList;
   const fromActive =
-    state.activeThreadIds[type] === threadId
-      ? state.currentThreadTitles[type]
+    state.activeThreadIds[key] === threadId
+      ? state.currentThreadTitles[key]
       : undefined;
   if (fromActive !== undefined) return fromActive;
   return isExternalAgentType(type)
