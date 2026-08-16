@@ -45,7 +45,7 @@ const listenerReadyHandlers = new Map<string, Set<() => void>>();
 /** 模块级 Tauri unlisten 句柄 — 每个 event 1 份, set 空了才真卸。 */
 const tauriUnlistens = new Map<string, UnlistenFn>();
 const listenerGenerations = new Map<string, number>();
-const retryTimers = new Map<string, number>();
+const retryTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const retryAttempts = new Map<string, number>();
 const LISTENER_RETRY_BASE_DELAY_MS = 1000;
 const LISTENER_RETRY_MAX_DELAY_MS = 30_000;
