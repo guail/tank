@@ -105,6 +105,6 @@ jobs:
             See the [CHANGELOG] for the full set of changes.
 
             [CHANGELOG]: ../../CHANGELOG.md
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: --target ${{ matrix.target }}

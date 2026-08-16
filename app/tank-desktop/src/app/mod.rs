@@ -1,6 +1,7 @@
 pub mod bootstrap;
 pub mod panic;
 pub mod paths;
+pub mod reminder_scheduler;
 pub mod search_index;
 pub mod state;
 pub mod watchdog;

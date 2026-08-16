@@ -46,6 +46,7 @@ interface MemoCardBodyProps {
   timeLabel: string;
   hasAgents: boolean;
   hasTodos: boolean;
+  allCompleted: boolean;
   runningAgentType?: AgentTypeKey;
   thumbnail: string | null;
   thumbnailFailed: boolean;
@@ -320,6 +321,7 @@ function DetailedMemoCardBody({
   title,
   timeLabel,
   hasTodos,
+  allCompleted,
   runningAgentType,
   thumbnail,
   thumbnailFailed,
@@ -354,7 +356,12 @@ function DetailedMemoCardBody({
             />
           </div>
         ) : null}
-        <p className="line-clamp-2 text-sm text-[var(--foreground)] opacity-50">
+        <p
+          className={cn(
+            'line-clamp-2 text-sm text-[var(--foreground)]',
+            allCompleted ? 'opacity-50' : 'opacity-100',
+          )}
+        >
           {memo.preview || emptyPreviewLabel}
         </p>
       </div>
@@ -419,6 +426,7 @@ export function MemoCardImpl({
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const hasAgents = (memo.agents?.length ?? 0) > 0;
   const hasTodos = (memo.todos?.length ?? 0) > 0;
+  const allCompleted = hasTodos && memo.todos.every((todo) => todo.status === 'completed');
   const timeLabel = formatTimeAgo(memo.updatedAt || memo.createdAt, t);
   const title = displayTitleFromFilename(memo.filename) || t('memo.untitled');
   const bodyProps: MemoCardBodyProps = {
@@ -428,6 +436,7 @@ export function MemoCardImpl({
     timeLabel,
     hasAgents,
     hasTodos,
+    allCompleted,
     runningAgentType,
     thumbnail,
     thumbnailFailed,

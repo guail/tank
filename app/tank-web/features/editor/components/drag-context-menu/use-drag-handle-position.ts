@@ -45,9 +45,16 @@ export function useDragHandlePosition(
 
   useEffect(() => {
     // editor 可能被销毁后这条 effect 还触发 (e.g. 切换文档/语言时父组件
-    // 先卸载, store 又 dispatch 了一次新引用)。访问 editor.view.dom 会
-    // 触发 "editor view is not available"。
-    if (!editor?.view?.dom || editor.view.isDestroyed) return
+    // 先卸载, store 又 dispatch 了一次新引用)。Tiptap 在 view 未创建时把
+    // editor.view.dom 访问器设为抛错，optional chaining 无法吞掉 getter 异常，
+    // 所以必须用 try-catch 防御。
+    let editorDom: HTMLElement | null = null;
+    try {
+      if (!editor?.view?.dom || editor.view.isDestroyed) return;
+      editorDom = editor.view.dom as HTMLElement;
+    } catch {
+      return;
+    }
 
     let mounted = true
 
@@ -89,7 +96,6 @@ export function useDragHandlePosition(
       }, 80)
     }
 
-    const editorDom = editor.view.dom as HTMLElement
     if (editor.view.isDestroyed) return
     const scrollContainer = editorDom.closest('.markdown-editor') as HTMLElement | null
     const scrollTarget = scrollContainer || editorDom

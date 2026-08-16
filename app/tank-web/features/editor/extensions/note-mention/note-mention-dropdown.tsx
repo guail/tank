@@ -1,9 +1,9 @@
 import { type MouseEvent } from 'react';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Link2, CornerDownLeft } from 'lucide-react';
 import { useSelectedItemScroll } from '@features/editor/extensions/shared/use-selected-item-scroll';
 import { OverlayScrollbar } from '@shared/ui/overlay-scrollbar';
 import type { MentionNoteItem } from '@features/editor/extensions/note-mention/note-mention-data';
-import { useI18n } from '@/lib/i18n';
+import { useI18n, type I18nKey } from '@/lib/i18n';
 
 export interface NoteMentionDropdownProps {
   items: MentionNoteItem[];
@@ -14,6 +14,11 @@ export interface NoteMentionDropdownProps {
   onSelect: (item: MentionNoteItem) => void;
   onHover: (index: number) => void;
   onLoadMore: () => void;
+  /** i18n keys; defaults to the `@` mention copy. Wikilink reuses this list. */
+  headerKey?: I18nKey;
+  emptyKey?: I18nKey;
+  loadingKey?: I18nKey;
+  loadMoreKey?: I18nKey;
 }
 
 export function NoteMentionDropdown({
@@ -25,6 +30,10 @@ export function NoteMentionDropdown({
   onSelect,
   onHover,
   onLoadMore,
+  headerKey = 'editor.noteMention.header',
+  emptyKey = 'editor.noteMention.empty',
+  loadingKey = 'editor.noteMention.loading',
+  loadMoreKey = 'editor.noteMention.loadMore',
 }: NoteMentionDropdownProps) {
   const { t } = useI18n();
   const { scrollerRef, itemRefs } = useSelectedItemScroll({
@@ -43,7 +52,7 @@ export function NoteMentionDropdown({
   return (
     <div className="mention-note-dropdown" role="listbox" aria-label="Notes">
       <div className="mention-note-header" aria-label="Mention type">
-        <span>{t('editor.noteMention.header')}</span>
+        <span>{t(headerKey)}</span>
         {loading && (
           <LoaderCircle
             className="mention-note-header-spinner"
@@ -64,10 +73,10 @@ export function NoteMentionDropdown({
       >
           {loading && items.length === 0 ? (
             <div className="mention-note-empty mention-note-empty--loading">
-              <span className="mention-note-loading-title">{t('editor.noteMention.loading')}</span>
+              <span className="mention-note-loading-title">{t(loadingKey)}</span>
             </div>
           ) : items.length === 0 ? (
-            <div className="mention-note-empty">{t('editor.noteMention.empty')}</div>
+            <div className="mention-note-empty">{t(emptyKey)}</div>
           ) : (
             items.map((item, index) => {
               const selected = index === selectedIndex;
@@ -87,9 +96,21 @@ export function NoteMentionDropdown({
                     onSelect(item);
                   }}
                 >
-                  <span className="mention-note-title">{item.title}</span>
+                  <span className="mention-note-title">
+                    <Link2
+                      className="mention-note-link-icon h-3.5 w-3.5 text-[var(--document-link)]"
+                      aria-hidden="true"
+                    />
+                    {item.title}
+                  </span>
                   <span className="mention-note-notebook mention-note-notebook-name">
                     {item.notebookName}
+                    {selected && (
+                      <CornerDownLeft
+                        className="mention-note-insert-hint h-3 w-3 ml-1 inline align-[-0.125em] text-[var(--document-link)]"
+                        aria-hidden="true"
+                      />
+                    )}
                   </span>
                 </button>
               );
@@ -104,7 +125,7 @@ export function NoteMentionDropdown({
                 onLoadMore();
               }}
             >
-              {t('editor.noteMention.loadMore')}
+              {t(loadMoreKey)}
             </button>
           )}
       </OverlayScrollbar>

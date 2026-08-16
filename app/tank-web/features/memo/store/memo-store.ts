@@ -13,7 +13,7 @@ export type ColorFilterValue = 'any' | 'none' | MemoColor;
 
 // FilterType 增加了前端专用的 'color' 维度。后端不识别时, `loadMemos`
 // 会把它转译成 'all' 走全量, 由前端在 useMemo 里按 `colorFilter` 二次过滤。
-export type ExtendedFilterType = FilterType | 'color' | 'recent';
+export type ExtendedFilterType = FilterType | 'color' | 'recent' | 'calendar' | 'habits' | 'trash';
 
 // 文档颜色标签 — 跟后端 `MemoColor` 镜像 (`#[serde(rename_all = "lowercase")]`),
 // 写入 memo index。单文档可挂多个色, 空数组即"无颜色"。色值在
@@ -116,7 +116,14 @@ function memoMatchesFilter(memo: MemoItem, filter: ExtendedFilterType): boolean 
 // 'color' 和 'recent' 都是前端专用 filter, 在后端没有意义 → 退化成 'all'
 // 拉全量, 由前端 store 在 useMemo 里按对应维度二次过滤。其他值原样下发。
 function toBackendFilter(filter: ExtendedFilterType): FilterType {
-  if (filter === 'color' || filter === 'recent') return 'all';
+  if (
+    filter === 'color' ||
+    filter === 'recent' ||
+    filter === 'calendar' ||
+    filter === 'habits' ||
+    filter === 'trash'
+  )
+    return 'all';
   return filter;
 }
 
@@ -352,6 +359,9 @@ export const useMemoStore = create<MemoStore>()(
             memos: state.memos.filter(m => m.id !== id),
             selectedMemo: state.selectedMemo?.id === id ? null : state.selectedMemo,
           });
+          // 删除会改变 全部/待办 计数 (来自独立的 getUsedTagIds 查询),
+          // 必须重新拉取, 否则侧栏计数不更新。
+          useTagStore.getState().triggerMetadataRefresh();
         }
         return success;
       },
@@ -403,6 +413,11 @@ export const useMemoStore = create<MemoStore>()(
         if (get().activeFilter === 'tagged') {
           get().triggerRefresh();
         }
+        // 新建会同步写 SQLite 索引 (后端 try_index_upsert), 但侧栏计数
+        // (全部/待办/对话) 来自独立的 getUsedTagIds 查询, 不会随 memos 数组
+        // 乐观更新而刷新。bump metadata 版本让 TagTree 重新拉计数, 否则
+        // 要退出重进计数才变。
+        useTagStore.getState().triggerMetadataRefresh();
       },
 
       handleMemoUpdated: (memo) => {
@@ -426,7 +441,9 @@ export const useMemoStore = create<MemoStore>()(
           selectedMemo:
             state.selectedMemo?.id === id ? null : state.selectedMemo,
         }));
-        // Deleted 不 bump refreshTrigger — 列表已经同步, 没有需要重拉的派生字段
+        // 删除会改变 全部/待办 计数 (来自独立的 getUsedTagIds 查询),
+        // 必须重新拉取, 否则侧栏计数不更新。
+        useTagStore.getState().triggerMetadataRefresh();
       },
     }),
     {

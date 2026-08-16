@@ -672,6 +672,12 @@ pub fn extract_todos_from_body(content: &str) -> Vec<TodoItem> {
         Lazy::new(|| Regex::new(r"\[⏰([^\]]+)\]|\[remind:([^\]]+)\]").unwrap());
     static CAT_RE: Lazy<Regex> =
         Lazy::new(|| Regex::new(r"\[🏷([^\]]+)\]|\[cat:([^\]]+)\]").unwrap());
+    /// 收件箱: 等待他人 — `[wait:Alice]` / `[waiting:Alice]` (捕获等待对象)。
+    static WAIT_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\[(?:wait|waiting):([^\]]+)\]").unwrap());
+    /// 收件箱: 将来也许 — `[someday]` / `[maybe]`。
+    static SOMEDAY_RE: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\[(?:someday|maybe)\]").unwrap());
 
     let body = extract_body_content(content);
     let mut todos: Vec<TodoItem> = Vec::new();
@@ -693,6 +699,18 @@ pub fn extract_todos_from_body(content: &str) -> Vec<TodoItem> {
         let (time_range, rest) = strip_todo_marker(&DUE_RE, &rest);
         let (reminder, rest) = strip_todo_marker(&REMIND_RE, &rest);
         let (category_id, rest) = strip_todo_marker(&CAT_RE, &rest);
+        let (waiting_for, mut rest) = strip_todo_marker(&WAIT_RE, &rest);
+        let disposition = if !waiting_for.trim().is_empty() {
+            "waiting".to_string()
+        } else {
+            let (_, someday_cleaned) = strip_todo_marker(&SOMEDAY_RE, &rest);
+            if someday_cleaned.trim() != rest.trim() {
+                rest = someday_cleaned;
+                "someday".to_string()
+            } else {
+                String::new()
+            }
+        };
         let text = decode_html_entities(rest.trim());
 
         if text.trim().is_empty() {
@@ -708,6 +726,8 @@ pub fn extract_todos_from_body(content: &str) -> Vec<TodoItem> {
             assignee: String::new(),
             reminder,
             category_id,
+            disposition,
+            waiting_for: waiting_for.trim().to_string(),
             sub_tasks: Vec::new(),
         };
 

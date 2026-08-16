@@ -77,3 +77,6 @@ mod repository;
 mod schema;
 mod tags;
 mod todos;
+mod trash;
+
+pub use trash::TrashedMemo;

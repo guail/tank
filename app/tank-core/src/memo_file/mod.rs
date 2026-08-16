@@ -45,8 +45,11 @@ pub const MEMO_ID_LENGTH: usize = 8;
 mod content;
 mod derivation;
 pub(crate) mod frontmatter;
+pub mod inbox;
 mod index_store;
 mod notebook;
+pub mod reminder;
+pub mod habits;
 mod onboarding;
 mod ops;
 mod registration;
@@ -64,7 +67,7 @@ pub use frontmatter::{
     extract_frontmatter_properties, merge_frontmatter, normalize_document_tags,
     replace_frontmatter_tags, DocumentMetadata, FrontmatterMetadataError, MergeOverrides,
 };
-pub use index_store::{MemoContentCommit, MemoContentRevision};
+pub use index_store::{MemoContentCommit, MemoContentRevision, TrashedMemo};
 pub use ops::{
     atomic_write_bytes, base_filename, resolve_filename_conflict, sanitize_filename_component, IsMd,
 };
@@ -107,6 +110,10 @@ pub struct MemoFile {
     index_cache: std::sync::RwLock<Option<MemoIndexFile>>,
     /// Notebook registry 最近读取镜像。`None` = 未加载。
     notebook_configs_cache: std::sync::RwLock<Option<Vec<NotebookConfig>>>,
+    /// 回收站目录。`None` 时删除为永久删除（主要用于测试）。
+    trash_dir: Option<PathBuf>,
+    /// 回收站保留天数，默认 30 天。
+    trash_retention_days: u32,
 }
 
 pub(crate) struct CrossProcessWriteGuard {
@@ -127,9 +134,13 @@ impl Default for MemoFile {
             current_index_io: std::sync::Mutex::new(()),
             index_cache: std::sync::RwLock::new(None),
             notebook_configs_cache: std::sync::RwLock::new(None),
+            trash_dir: None,
+            trash_retention_days: 30,
         }
     }
 }
+
+const DEFAULT_TRASH_RETENTION_DAYS: u32 = 30;
 
 impl MemoFile {
     pub fn new(config_dir: PathBuf) -> Self {
@@ -139,7 +150,23 @@ impl MemoFile {
             current_index_io: std::sync::Mutex::new(()),
             index_cache: std::sync::RwLock::new(None),
             notebook_configs_cache: std::sync::RwLock::new(None),
+            trash_dir: None,
+            trash_retention_days: DEFAULT_TRASH_RETENTION_DAYS,
         }
+    }
+
+    /// 启用回收站。删除的笔记会被移动到该目录，并在 `trashed_memos` 表中记录，
+    /// 保留指定天数（默认 30 天）后可恢复。
+    pub fn with_trash_dir(mut self, dir: impl Into<PathBuf>) -> Self {
+        self.trash_dir = Some(dir.into());
+        self.trash_retention_days = DEFAULT_TRASH_RETENTION_DAYS;
+        self
+    }
+
+    /// 设置回收站保留天数。默认 30 天。
+    pub fn with_trash_retention_days(mut self, days: u32) -> Self {
+        self.trash_retention_days = days;
+        self
     }
 
     pub(crate) fn acquire_cross_process_write_lock(&self) -> io::Result<CrossProcessWriteGuard> {

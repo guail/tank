@@ -196,7 +196,10 @@ pub fn get_memo_todo_metadata(
 
 #[tauri::command]
 pub fn get_memo_todo_count(notebook_id: Option<String>, state: State<AppState>) -> usize {
-    get_memo_todo_metadata(notebook_id, None, state).len()
+    get_memo_todo_metadata(notebook_id, None, state)
+        .iter()
+        .filter(|t| t.status != "completed")
+        .count()
 }
 
 #[tauri::command]

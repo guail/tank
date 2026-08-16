@@ -20,7 +20,7 @@ impl MemoFile {
         let sql = format!(
             r#"
             SELECT t.content, t.status, t.memo_id, t.priority, t.time_range, t.owner, t.assignee,
-                   t.created_at, t.updated_at
+                   t.disposition, t.waiting_for, t.reminder, t.category_id, t.created_at, t.updated_at
             FROM memo_todos t
             JOIN memos m ON m.id = t.memo_id
             WHERE m.notebook_id = ?1
@@ -38,8 +38,45 @@ impl MemoFile {
                     time_range: row.get(4)?,
                     owner: row.get(5)?,
                     assignee: row.get(6)?,
-                    created_at: row.get(7)?,
-                    updated_at: row.get(8)?,
+                    disposition: row.get(7)?,
+                    waiting_for: row.get(8)?,
+                    reminder: row.get(9)?,
+                    category_id: row.get(10)?,
+                    created_at: row.get(11)?,
+                    updated_at: row.get(12)?,
+                })
+            })
+            .map_err(sqlite_to_io)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(sqlite_to_io)
+    }
+
+    /// 全库扫描所有任务 (跨笔记本), 供提醒引擎等使用。
+    pub fn read_all_todo_metadata_entries(&self) -> std::io::Result<Vec<MemoTodoEntry>> {
+        let conn = self.open_memo_index_db()?;
+        let sql = r#"
+            SELECT t.content, t.status, t.memo_id, t.priority, t.time_range, t.owner, t.assignee,
+                   t.disposition, t.waiting_for, t.reminder, t.category_id, t.created_at, t.updated_at
+            FROM memo_todos t
+            JOIN memos m ON m.id = t.memo_id
+            ORDER BY t.created_at DESC
+            "#;
+        let mut stmt = conn.prepare(sql).map_err(sqlite_to_io)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(MemoTodoEntry {
+                    content: row.get(0)?,
+                    status: row.get(1)?,
+                    memo_id: row.get(2)?,
+                    priority: row.get(3)?,
+                    time_range: row.get(4)?,
+                    owner: row.get(5)?,
+                    assignee: row.get(6)?,
+                    disposition: row.get(7)?,
+                    waiting_for: row.get(8)?,
+                    reminder: row.get(9)?,
+                    category_id: row.get(10)?,
+                    created_at: row.get(11)?,
+                    updated_at: row.get(12)?,
                 })
             })
             .map_err(sqlite_to_io)?;

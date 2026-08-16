@@ -43,3 +43,22 @@ export interface MemoItem {
   properties: Record<string, unknown>;
   isOpen?: boolean;
 }
+
+/// 跨笔记的任务元数据 (与后端 `tank_core::memo_file::MemoTodoEntry` 镜像,
+/// camelCase)。日历视图用它把任务按截止日期 (timeRange) 落到月历上。
+export interface MemoTodoEntry {
+  content: string;
+  status: string;
+  memoId: string;
+  priority: string;
+  /// 截止日期/时间, 自由文本 (如 `2026-08-20` / `2026-08-20 14:00`)。
+  timeRange: string;
+  owner: string;
+  assignee: string;
+  disposition: string;
+  waitingFor: string;
+  reminder: string;
+  categoryId: string;
+  createdAt: number;
+  updatedAt: number;
+}

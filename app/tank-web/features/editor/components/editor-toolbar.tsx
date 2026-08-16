@@ -1,7 +1,7 @@
 'use client';
 
 import { Editor } from '@tiptap/core';
-import { ChevronDown, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
 import { TextHOneIcon, TextHTwoIcon, TextHThreeIcon, TextHFourIcon, TextTIcon, ListBulletsIcon, CheckSquareIcon, TextBIcon, TextUnderlineIcon, TextItalicIcon, TextStrikethroughIcon, HighlighterIcon, CodeIcon, PaperclipIcon, LinkSimpleIcon, CaretDownIcon, CaretUpIcon } from '@phosphor-icons/react';
 import { useEffect, useState, useRef } from 'react';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@shared/ui/dropdown-menu';
 import { Tooltip } from '@shared/ui/tooltip';
 import { openLinkEditPopup } from '@features/editor/components/link-edit-popup';
+import { openSlashMenuFromEditor } from '@features/editor/extensions/slash-menu';
 import { useI18n } from '@/lib/i18n';
 
 interface EditorToolbarProps {
@@ -240,6 +241,17 @@ export function EditorToolbar({ editor, collapsed, onCollapsedChange }: EditorTo
             style={iconButtonStyle}
           >
             <LinkSimpleIcon size={18} weight="bold" />
+          </button>
+        </Tooltip>
+        <Tooltip content={t('editor.toolbar.openBlockMenu')}>
+          <button
+            className="toolbar-button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => openSlashMenuFromEditor(editor)}
+            type="button"
+            style={iconButtonStyle}
+          >
+            <Plus size={18} />
           </button>
         </Tooltip>
 

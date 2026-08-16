@@ -13,6 +13,7 @@ import {
   type DocumentIdentity,
 } from '@features/document';
 import { translate } from '@/lib/i18n';
+import { useTagStore } from '@features/memo/store/tag-store';
 import { useUserSettingsStore } from '@features/preferences/store/user-settings-store';
 import { toast } from '@/lib/toast';
 import { formatDateTime } from '@/lib/utils';
@@ -138,6 +139,13 @@ export function useDocumentAutosave({
           // 写盘后派生同步由后端 `write_document` 单点保证 (含
           // `write_memo_renaming_on_title_change` 派生 title 改名),
           // 前端不再需要二次同步 IPC。
+          //
+          // 但侧栏 全部/待办/对话 计数来自独立的 getUsedTagIds 查询, watcher
+          // 又会抑制自写事件, 当前窗口编辑后不会收到 memo-event 刷新; 所以
+          // 在保存成功这一侧主动 bump metadata 版本, 让 TagTree 重新拉计数。
+          if (!isExternalDocument && memoId) {
+            useTagStore.getState().triggerMetadataRefresh();
+          }
           void writtenContent;
         },
         onCasRefused: (writtenContent) => {

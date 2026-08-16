@@ -111,10 +111,10 @@ impl MemoFile {
         let todo_memo_count = conn
             .query_row(
                 r#"
-                SELECT COUNT(DISTINCT mt.memo_id)
+                SELECT COUNT(*)
                 FROM memo_todos mt
                 JOIN memos m ON m.id = mt.memo_id
-                WHERE m.notebook_id = ?1
+                WHERE m.notebook_id = ?1 AND mt.status != 'completed'
                 "#,
                 params![notebook_id],
                 |row| row.get::<_, i64>(0),

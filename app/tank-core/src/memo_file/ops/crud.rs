@@ -446,6 +446,10 @@ impl MemoFile {
     }
 
     pub fn delete_memo_result_global(&self, id: &str) -> std::io::Result<bool> {
+        if self.trash_dir.is_some() {
+            return self.delete_memo_to_trash_global(id);
+        }
+
         let _index_io_guard = self.current_index_io.lock().expect("index_io poisoned");
         let Some(location) = self.resolve_memo_location(id)? else {
             return Ok(false);
@@ -459,7 +463,11 @@ impl MemoFile {
             true
         };
         if removed {
-            MemoFile::sync_index_on_delete_for_notebook_id_locked(self, &location.notebook.id, id)?;
+            MemoFile::sync_index_on_delete_for_notebook_id_locked(
+                self,
+                &location.notebook.id,
+                id,
+            )?;
         }
         Ok(removed)
     }

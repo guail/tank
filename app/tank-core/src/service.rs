@@ -11,7 +11,7 @@ use thiserror::Error;
 
 use crate::memo_file::{
     base_filename, resolve_filename_conflict, Memo, MemoFile, MemoIndexEntry, MemoTodoEntry,
-    MemoVersionMeta, MemoVersionSource, NotebookConfig,
+    MemoVersionMeta, MemoVersionSource, NotebookConfig, TrashedMemo,
 };
 use crate::search::{self, NotebookSearchResults};
 use crate::embed::{EmbeddingProvider, SearchMode};
@@ -432,6 +432,34 @@ impl<'a> MemoService<'a> {
             path: resolved.path,
             file_removed,
         })
+    }
+
+    pub fn list_trashed_memos(&mut self) -> Result<Vec<TrashedMemo>, TankError> {
+        self.memo_file.list_trashed_memos().map_err(TankError::Io)
+    }
+
+    pub fn restore_trashed_memo(&mut self, memo_id: &str) -> Result<bool, TankError> {
+        let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
+        self.memo_file
+            .restore_trashed_memo(memo_id)
+            .map_err(TankError::Io)
+    }
+
+    pub fn permanently_delete_trashed_memo(&mut self, memo_id: &str) -> Result<bool, TankError> {
+        let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
+        self.memo_file
+            .permanently_delete_trashed_memo(memo_id)
+            .map_err(TankError::Io)
+    }
+
+    pub fn empty_trash(&mut self) -> Result<(), TankError> {
+        let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
+        self.memo_file.empty_trash().map_err(TankError::Io)
+    }
+
+    pub fn cleanup_expired_trash(&mut self) -> Result<usize, TankError> {
+        let _write_guard = self.memo_file.acquire_cross_process_write_lock()?;
+        self.memo_file.cleanup_expired_trash().map_err(TankError::Io)
     }
 
     pub fn tag_usage_summary(

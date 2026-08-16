@@ -131,8 +131,9 @@ impl MemoFile {
                 r#"
                 INSERT OR REPLACE INTO memo_todos
                     (memo_id, content, status, priority, time_range, owner, assignee,
-                     reminder, category_id, sub_tasks, created_at, updated_at, position)
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)
+                     reminder, category_id, sub_tasks, disposition, waiting_for,
+                     created_at, updated_at, position)
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)
                 "#,
                 params![
                     entry.id,
@@ -145,6 +146,8 @@ impl MemoFile {
                     todo.reminder,
                     todo.category_id,
                     serde_json::to_string(&todo.sub_tasks).unwrap_or_else(|_| "[]".to_string()),
+                    todo.disposition,
+                    todo.waiting_for,
                     created_at,
                     updated_at,
                     position as i64,
@@ -179,7 +182,7 @@ impl MemoFile {
         let mut stmt = tx
             .prepare(
                 r#"
-                SELECT content, status, memo_id, priority, time_range, owner, assignee, created_at, updated_at
+                SELECT content, status, memo_id, priority, time_range, owner, assignee, disposition, waiting_for, created_at, updated_at, reminder, category_id
                 FROM memo_todos
                 WHERE memo_id = ?1
                 "#,
@@ -195,8 +198,12 @@ impl MemoFile {
                     time_range: row.get(4)?,
                     owner: row.get(5)?,
                     assignee: row.get(6)?,
-                    created_at: row.get(7)?,
-                    updated_at: row.get(8)?,
+                    disposition: row.get(7)?,
+                    waiting_for: row.get(8)?,
+                    created_at: row.get(9)?,
+                    updated_at: row.get(10)?,
+                    reminder: row.get(11)?,
+                    category_id: row.get(12)?,
                 })
             })
             .map_err(sqlite_to_io)?;
@@ -487,7 +494,7 @@ impl MemoFile {
         let mut stmt = conn
             .prepare(
                 "SELECT content, status, priority, time_range, owner, assignee, \
-                 reminder, category_id, sub_tasks \
+                 reminder, category_id, sub_tasks, disposition, waiting_for \
                  FROM memo_todos WHERE memo_id = ?1 ORDER BY position ASC",
             )
             .map_err(sqlite_to_io)?;
@@ -507,6 +514,8 @@ impl MemoFile {
                         .ok()
                         .and_then(|s| serde_json::from_str(&s).ok())
                         .unwrap_or_default(),
+                    disposition: row.get(9).unwrap_or_default(),
+                    waiting_for: row.get(10).unwrap_or_default(),
                 })
             })
             .map_err(sqlite_to_io)?;

@@ -79,5 +79,16 @@
     "resources": {
       "resources/skills/.system/**/*": "skills/.system/"
     }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/guail/tank/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ1QTYyMDAwMzVBNjVGOUMKUldTY1g2WTFBQ0NtUlhlY25ValJFSDR1TUFROWd2QmxDWXlpV3FTZ0o3QXdCYW5SdHhBTm9BNXcK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

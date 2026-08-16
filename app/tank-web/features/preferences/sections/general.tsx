@@ -15,6 +15,7 @@ import { Button } from '@shared/ui/button';
 import { Tooltip } from '@shared/ui/tooltip';
 import { useComposingValue } from '@shared/hooks/use-composing-value';
 import { product, type ProductInfo, type ProductUpdateNotice } from '@platform/tauri/client';
+import { checkForAppUpdate, downloadAndInstallUpdate, relaunchApp } from '@features/updater/updater';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import {
@@ -219,6 +220,17 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
   const handleCheckProductUpdates = async () => {
     setCheckingUpdates(true);
     try {
+      // 1) 优先走 Tauri 原生更新器：下载 + 安装 + 重启（真正的在线更新）。
+      const update = await checkForAppUpdate();
+      if (update) {
+        toast.info(
+          t('preferences.general.productUpdates.downloading', { version: update.version }),
+        );
+        await downloadAndInstallUpdate(update);
+        await relaunchApp();
+        return; // 已触发重启，后续不再执行
+      }
+      // 2) 无内嵌更新 → 退回旧公告机制（what's-new 横幅）。
       const notice = await product.checkUpdateNotice(language, region);
       setManualNotice(notice);
       await updateSettings({ productUpdates: { lastCheckedAt: Date.now() } });
@@ -228,7 +240,19 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
           : t('preferences.general.productUpdates.none'),
       );
     } catch {
-      toast.error(t('preferences.general.productUpdates.failed'));
+      // 插件未配置（dev / 无端点）→ 再退回公告检查，保证按钮在开发期也有反馈。
+      try {
+        const notice = await product.checkUpdateNotice(language, region);
+        setManualNotice(notice);
+        await updateSettings({ productUpdates: { lastCheckedAt: Date.now() } });
+        toast.info(
+          notice
+            ? t('preferences.general.productUpdates.found')
+            : t('preferences.general.productUpdates.none'),
+        );
+      } catch {
+        toast.error(t('preferences.general.productUpdates.failed'));
+      }
     } finally {
       setCheckingUpdates(false);
     }

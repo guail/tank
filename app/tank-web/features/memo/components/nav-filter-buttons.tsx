@@ -46,7 +46,7 @@ export function NavFilterButtons({
 
   const handleShowTaskMemos = () => {
     setSelectedTagId(null);
-    setActiveFilter('todos');
+    setActiveFilter(activeFilter === 'todos' ? 'all' : 'todos');
   };
 
   const handleShowRecentMemos = () => {

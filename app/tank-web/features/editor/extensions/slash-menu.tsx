@@ -609,6 +609,24 @@ function refreshMenuFromEditor(view: EditorView) {
   renderMenu(view);
 }
 
+/**
+ * Programmatic entry point for the slash / block menu. Used by the editor
+ * toolbar's "插入块" button so the menu is reachable without remembering to
+ * type `/` at the start of an empty line. Inserts `/` at the current block
+ * start (where the trigger is valid) and opens the menu there.
+ */
+export function openSlashMenuFromEditor(editor: Editor): boolean {
+  if (!editor.isEditable || !editor.state.selection.empty) return false;
+
+  const { $from } = editor.state.selection;
+  if (!$from.parent.isTextblock) return false;
+
+  const blockStart = $from.before($from.depth);
+  editor.chain().focus().insertContentAt(blockStart, '/').run();
+  openMenu(editor.view, editor, blockStart, blockStart);
+  return true;
+}
+
 export const SlashMenu = Extension.create({
   name: 'slashMenu',
 

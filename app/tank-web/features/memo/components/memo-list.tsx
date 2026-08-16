@@ -4,7 +4,7 @@ import { displayTitleFromFilename } from '@/lib/utils';
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useShortcutScope, pushHandler } from '@features/shortcuts';
-import { SquarePen, Search, ChevronDown, Check, ChevronRight, Loader2, LayoutTemplate } from 'lucide-react';
+import { SquarePen, Search, ChevronDown, Check, ChevronRight, Loader2, LayoutTemplate, ListPlus, Calendar as CalendarIcon, Flame, Trash2 } from 'lucide-react';
 import { ClockClockwiseIcon } from '@phosphor-icons/react';
 import { useDocumentStore } from '@features/document';
 import {
@@ -33,6 +33,7 @@ import {
   cloud,
   listenToCloudStateChanges,
   windows as tauriWindows,
+  memos as memosClient,
   type CloudNotebook,
 } from '@platform/tauri/client';
 import { useMemoInsertAnimation } from '@features/memo/hooks/use-memo-insert-animation';
@@ -61,6 +62,10 @@ import {
 import { Kbd } from '@shared/ui/kbd';
 import { LazyGlobalSearchCommand } from '@features/memo/components/lazy-global-search-command';
 import { openMemoSession } from '@features/memo/components/open-memo-session';
+import { createQuickTodo } from '@features/memo/use-cases/create-quick-todo';
+import { CalendarView } from '@features/memo/components/calendar-view';
+import { HabitView } from '@features/memo/components/habit-view';
+import { TrashView } from '@features/memo/components/trash-view';
 import {
   getMemoListQueryKey,
   shouldShowMemoListLoading,
@@ -233,6 +238,8 @@ export function MemoList() {
   );
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [deleteMemo, setDeleteMemo] = useState<MemoItem | null>(null);
+  // 弹窗关闭动画期间 deleteMemo 会被清空，用 ref 保持标题不闪成空字符串。
+  const deletingMemoRef = useRef<MemoItem | null>(null);
   const [createNotebookOpen, setCreateNotebookOpen] = useState(false);
   const [notebookDropdownOpen, setNotebookDropdownOpen] = useState(false);
   const [searchCommandOpen, setSearchCommandOpen] = useState(false);
@@ -337,19 +344,37 @@ export function MemoList() {
     };
   }, []);
 
+  // 弹窗关闭动画期间仍用最后一次要删除的 memo 显示标题。
+  useEffect(() => {
+    if (deleteMemo) {
+      deletingMemoRef.current = deleteMemo;
+    }
+  }, [deleteMemo]);
+
   // Shared delete path for both the dialog button and Enter shortcut.
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!deleteMemo) return;
     const memo = deleteMemo;
     setDeleteMemo(null);
-    void memoRepository.delete(memo.id).then(() => {
+    try {
+      const ok = await memoRepository.delete(memo.id);
+      if (!ok) {
+        toast.error(t('memo.delete.failed'));
+        return;
+      }
       if (selectedMemo?.id === memo.id) {
         setSelectedMemo(null);
         useDocumentStore.getState().clearDocument();
       }
       triggerRefresh();
-    });
-  }, [deleteMemo, selectedMemo, setSelectedMemo, triggerRefresh]);
+      // 删除会改变侧栏 全部/待办 计数 (来自独立 getUsedTagIds 查询), 主动
+      // bump metadata 版本让 TagTree 重新拉取, 否则计数不会即时更新。
+      useTagStore.getState().triggerMetadataRefresh();
+    } catch (error) {
+      console.error('[MemoList] delete failed', error);
+      toast.error(t('memo.delete.failed'));
+    }
+  }, [deleteMemo, selectedMemo, setSelectedMemo, t, triggerRefresh]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteMemo(null);
@@ -526,6 +551,9 @@ export function MemoList() {
     if (activeFilter === 'thisWeek') parts.push(t('memo.list.filterThisWeek'));
     if (activeFilter === 'thisMonth') parts.push(t('memo.list.filterThisMonth'));
     if (activeFilter === 'recent') parts.push(t('memo.list.filterRecent'));
+    if (activeFilter === 'calendar') parts.push(t('memo.list.filterCalendar'));
+    if (activeFilter === 'habits') parts.push(t('memo.list.filterHabits'));
+    if (activeFilter === 'trash') parts.push('回收站');
     return parts.length > 0
       ? { headerLabel: parts.join(' '), hasActiveFilter: true }
       : { headerLabel: t('memo.list.filterAll'), hasActiveFilter: false };
@@ -583,6 +611,16 @@ export function MemoList() {
   };
   const handleSelectMemo = useCallback((memo: MemoItem) => {
     openMemoSession(memo, useMemoStore.getState().selectedNotebook);
+  }, []);
+
+  // 日历视图只持有 memoId, 这里按 id 拉全文后复用同一套打开逻辑。
+  const handleOpenMemoById = useCallback(async (id: string) => {
+    try {
+      const memo = await memosClient.readMemo(id);
+      if (memo) openMemoSession(memo, useMemoStore.getState().selectedNotebook);
+    } catch {
+      /* 拉取失败静默忽略, 日历仅作导航辅助 */
+    }
   }, []);
 
   const handleFavoriteToggle = useCallback(async (memo: MemoItem) => {
@@ -933,6 +971,13 @@ export function MemoList() {
               <span>{t('memo.list.filterThisMonth')}</span>
               {activeFilter === 'thisMonth' && <Check className="w-4 h-4 text-[var(--primary)]" />}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleFilterChange('calendar')}
+              className="flex items-center justify-between cursor-pointer rounded-md px-2 hover:bg-[var(--muted)]"
+            >
+              <span>{t('memo.list.filterCalendar')}</span>
+              {activeFilter === 'calendar' && <Check className="w-4 h-4 text-[var(--primary)]" />}
+            </DropdownMenuItem>
 
             {/* Separator between Filter and Sort, matching the titlebar dropdown dividers */}
             <hr className="mx-2 border-t border-[var(--border)] opacity-50" />
@@ -977,49 +1022,97 @@ export function MemoList() {
           onSelect={handleColorSubmenuSelect}
         />
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Tooltip content={t("memo.list.searchTooltip")} shortcut="palette.search">
-            <Button
-              size="icon"
-              variant="outline"
-              className={cn(HEADER_ICON_BTN_CLASS, 'bg-[var(--card)]')}
-              onClick={() => setSearchCommandOpen(true)}
-              aria-label={t("memo.list.search")}
-            >
-              <Search className="w-4 h-4" />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t("memo.list.newMemoTooltip")} shortcut="memo.create">
-            <Button
-              size="icon"
-              className="h-8 w-8 justify-center bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 rounded-full p-0 border border-transparent"
-              onClick={handleCreateMemo}
-            >
-              <SquarePen className="w-4 h-4 text-[var(--primary-foreground)]" />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t("memo.templateCenter.title")}>
-            <Button
-              size="icon"
-              variant="outline"
-              className={cn(HEADER_ICON_BTN_CLASS, 'bg-[var(--card)]')}
-              onClick={() => setTemplateCenterOpen(true)}
-              aria-label={t("memo.templateCenter.title")}
-            >
-              <LayoutTemplate className="w-4 h-4" />
-            </Button>
-          </Tooltip>
-          <Tooltip content={t("memo.list.filterRecent")}>
-            <Button
-              size="icon"
-              variant="outline"
-              className={cn(HEADER_ICON_BTN_CLASS, activeFilter === 'recent' && 'bg-[var(--muted)]')}
-              onClick={handleShowRecent}
-              aria-label={t("memo.list.filterRecent")}
-            >
-              <ClockClockwiseIcon className="w-4 h-4" weight="bold" />
-            </Button>
-          </Tooltip>
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <Tooltip content={t("memo.list.searchTooltip")} shortcut="palette.search">
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, 'bg-[var(--card)]')}
+                onClick={() => setSearchCommandOpen(true)}
+                aria-label={t("memo.list.search")}
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t("memo.list.newMemoTooltip")} shortcut="memo.create">
+              <Button
+                size="icon"
+                className="h-8 w-8 justify-center bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 rounded-full p-0 border border-transparent"
+                onClick={handleCreateMemo}
+              >
+                <SquarePen className="w-4 h-4 text-[var(--primary-foreground)]" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="新增待办">
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, 'bg-[var(--card)]')}
+                onClick={() => void createQuickTodo(selectedNotebook)}
+                aria-label="新增待办"
+              >
+                <ListPlus className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t("memo.templateCenter.title")}>
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, 'bg-[var(--card)]')}
+                onClick={() => setTemplateCenterOpen(true)}
+                aria-label={t("memo.templateCenter.title")}
+              >
+                <LayoutTemplate className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Tooltip content={t("memo.list.filterRecent")}>
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, activeFilter === 'recent' && 'bg-[var(--muted)]')}
+                onClick={handleShowRecent}
+                aria-label={t("memo.list.filterRecent")}
+              >
+                <ClockClockwiseIcon className="w-4 h-4" weight="bold" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t("memo.list.filterCalendar")}>
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, activeFilter === 'calendar' && 'bg-[var(--muted)]')}
+                onClick={() => handleFilterChange('calendar')}
+                aria-label={t("memo.list.filterCalendar")}
+              >
+                <CalendarIcon className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+            <Tooltip content={t("memo.list.filterHabits")}>
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, activeFilter === 'habits' && 'bg-[var(--muted)]')}
+                onClick={() => handleFilterChange('habits')}
+                aria-label={t("memo.list.filterHabits")}
+              >
+                <Flame className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="回收站">
+              <Button
+                size="icon"
+                variant="outline"
+                className={cn(HEADER_ICON_BTN_CLASS, activeFilter === 'trash' && 'bg-[var(--muted)]')}
+                onClick={() => handleFilterChange('trash')}
+                aria-label="回收站"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+          </div>
         </div>
       </div>
       </>
@@ -1030,7 +1123,13 @@ export function MemoList() {
         scrollerRef={listContainerRef}
         onScroll={handleMemoListScroll}
       >
-        {memos.length > 0 ? (
+        {activeFilter === 'calendar' ? (
+          <CalendarView notebookId={selectedNotebookId} onOpenMemo={handleOpenMemoById} />
+        ) : activeFilter === 'habits' ? (
+          <HabitView />
+        ) : activeFilter === 'trash' ? (
+          <TrashView onRestored={triggerRefresh} />
+        ) : memos.length > 0 ? (
           activeFilter === 'recent' ? (
             // 最近编辑: 按 updatedAt 倒序取前 N 条 (见上方 recentGridMemos),
             // 网格卡片预览 ── 响应式 2/3/4/5 列, 卡片使用 grid 变体(图标+标题垂直居中)。
@@ -1109,7 +1208,7 @@ export function MemoList() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('memo.delete.title')}</DialogTitle>
-            <DialogDescription>{t('memo.delete.description', { name: displayTitleFromFilename(deleteMemo?.filename) } satisfies I18nParams)}</DialogDescription>
+            <DialogDescription>{t('memo.delete.description', { name: displayTitleFromFilename((deleteMemo ?? deletingMemoRef.current)?.filename) } satisfies I18nParams)}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
             <button

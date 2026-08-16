@@ -27,6 +27,7 @@ import { useDocumentFinalize } from '@features/document/components/session/use-d
 import { useExternalDocumentChangeWatch } from '@features/document/components/session/use-external-document-change-watch';
 import { useMemoDocumentChangeWatch } from '@features/document/components/session/use-memo-document-change-watch';
 import { LazyDocumentEditor } from '@features/document/components/lazy-document-editor';
+import { BacklinksPanel } from '@features/document/components/backlinks-panel';
 import { NotePropertiesDialog } from '@features/document/components/note-properties-dialog';
 import type { MarkdownEditorHandle } from '@features/editor/markdown-editor';
 import backgroundImage from '@/assets/bg.document.png';
@@ -362,6 +363,9 @@ export function DocumentContainer({
           />
         )}
       </div>
+      {!isExternalDocument && memoId && (
+        <BacklinksPanel memoId={memoId} />
+      )}
       {!isExternalDocument && memoId && (
         <NotePropertiesDialog
           open={propertiesOpen}

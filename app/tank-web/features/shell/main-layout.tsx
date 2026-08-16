@@ -29,6 +29,7 @@ import { useMacosTrackpadSwipe, type MacosTrackpadSwipeDirection } from '@featur
 import backgroundImage from '@/assets/bg.document.png';
 import { useI18n } from '@/lib/i18n';
 import { createLogger } from '@/lib/logger';
+import { useAppUpdateAutoCheck } from '@features/updater/use-app-update-auto-check';
 
 const NOTE_NAVIGATION_PANEL_WIDTH = 192;
 const NOTE_NAVIGATION_PANEL_MIN_WIDTH = 180;
@@ -75,6 +76,8 @@ function resolvePanelSwipeTransition(
 
 export function MainLayout() {
   const { t } = useI18n();
+  // 启动后静默检查一次在线更新（仅提示，不自动下载/重启）。
+  useAppUpdateAutoCheck();
   // 切片订阅：每个 useStore 只取真正用到的字段，setter 走 useShallow 聚合。
   // 替代原来的 `useMemoStore()` / `useDocumentStore()` / `useSettingsStore()`
   // 全量订阅 —— 任何 set 都会让 MainLayout 整树重渲，跨菜单栏 / 状态栏 /
@@ -84,6 +87,7 @@ export function MainLayout() {
   const notebooks = useMemoStore((s) => s.notebooks);
   const selectedMemo = useMemoStore((s) => s.selectedMemo);
   const selectedNotebook = useMemoStore((s) => s.selectedNotebook);
+  const activeFilter = useMemoStore((s) => s.activeFilter);
   const activeSort = useMemoStore((s) => s.activeSort);
 
   const memoActions = useMemoStore(
@@ -372,13 +376,14 @@ export function MainLayout() {
 
   const handleOpenTodos = useCallback(async () => {
     setMemoListVisible(true);
-    setActiveFilter('todos');
+    const nextFilter = activeFilter === 'todos' ? 'all' : 'todos';
+    setActiveFilter(nextFilter);
     await loadMemos({
       notebookId: selectedNotebook?.id,
-      filter: 'todos',
+      filter: nextFilter,
       sort: activeSort,
     });
-  }, [activeSort, loadMemos, selectedNotebook?.id, setActiveFilter, setMemoListVisible]);
+  }, [activeFilter, activeSort, loadMemos, selectedNotebook?.id, setActiveFilter, setMemoListVisible]);
 
   const handleNavigateBack = useCallback(() => {
     void navigateDocumentHistory('back');
@@ -390,10 +395,13 @@ export function MainLayout() {
 
   const handleSelectNotebook = useCallback(
     (notebook: Notebook) => {
-      if (selectedNotebook?.id === notebook.id) return;
+      const isSameNotebook = selectedNotebook?.id === notebook.id;
+      // store 的 setSelectedNotebook 会同步把 activeFilter 重置为 'all'。
       setSelectedNotebook(notebook);
-      setSelectedMemo(null);
-      clearDocument();
+      if (!isSameNotebook) {
+        setSelectedMemo(null);
+        clearDocument();
+      }
       triggerRefresh();
     },
     [clearDocument, selectedNotebook?.id, setSelectedMemo, setSelectedNotebook, triggerRefresh]

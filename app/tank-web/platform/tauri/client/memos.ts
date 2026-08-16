@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { MemoColor, MemoItem } from '@/types/memo-item';
+import type { MemoColor, MemoItem, MemoTodoEntry } from '@/types/memo-item';
 import type { MemoContentCommit } from '@/types/memo';
 import type { AgentRoleMemoItem } from './general';
 
@@ -31,6 +31,18 @@ export interface MentionNoteSearchItem {
   notebookName: string;
   notebookPath: string;
   originalPath: string | null;
+}
+
+export interface BacklinkItem {
+  id: string;
+  filename: string;
+  title: string;
+  updatedAt: number;
+  notebookId: string;
+  notebookName: string;
+  notebookPath: string;
+  originalPath: string | null;
+  snippet: string;
 }
 
 type MemoVersionSource = 'auto' | 'manual' | 'restore_backup';
@@ -71,6 +83,8 @@ export const memos = {
       query,
       limit,
     }),
+  listMemoBacklinks: (memoId: string) =>
+    invoke<BacklinkItem[]>('list_memo_backlinks', { memoId }),
   listAgentRoleMemos: () =>
     invoke<AgentRoleMemoItem[]>('list_agent_role_memos'),
   getUsedTagIds: (notebookId?: string) =>
@@ -83,6 +97,12 @@ export const memos = {
     }>('get_used_memo_tag_ids', { notebookId }),
   getTodoCount: (notebookId?: string) =>
     invoke<number>('get_memo_todo_count', { notebookId }),
+  /// 跨笔记任务元数据, 供日历视图按截止日期 (timeRange) 落点。
+  getTodoMetadata: (notebookId?: string | null, sort?: string) =>
+    invoke<MemoTodoEntry[]>('get_memo_todo_metadata', {
+      notebookId: notebookId ?? null,
+      sort: sort ?? null,
+    }),
   readMemo: (id: string) => invoke<MemoItem | null>('read_memo', { id }),
   openMemoSession: (id: string) =>
     invoke<OpenMemoSession | null>('open_memo_session', { id }),

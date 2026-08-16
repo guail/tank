@@ -154,6 +154,39 @@ impl MemoFile {
             );
             CREATE INDEX IF NOT EXISTS idx_memo_agents_memo_id
                 ON memo_agents(memo_id);
+            CREATE TABLE IF NOT EXISTS habits (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL DEFAULT '',
+                emoji TEXT NOT NULL DEFAULT '',
+                color TEXT NOT NULL DEFAULT '#f97316',
+                frequency TEXT NOT NULL DEFAULT 'daily',
+                target_per_week INTEGER NOT NULL DEFAULT 7,
+                created_at INTEGER NOT NULL,
+                archived INTEGER NOT NULL DEFAULT 0,
+                position INTEGER NOT NULL DEFAULT 0,
+                reminder_time TEXT NOT NULL DEFAULT ''
+            );
+            CREATE TABLE IF NOT EXISTS habit_checkins (
+                habit_id TEXT NOT NULL,
+                checkin_date TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                note TEXT NOT NULL DEFAULT '',
+                PRIMARY KEY(habit_id, checkin_date),
+                FOREIGN KEY(habit_id) REFERENCES habits(id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_habit_checkins_habit
+                ON habit_checkins(habit_id, checkin_date);
+            CREATE TABLE IF NOT EXISTS trashed_memos (
+                id TEXT PRIMARY KEY,
+                notebook_id TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                preview TEXT NOT NULL DEFAULT '',
+                deleted_at INTEGER NOT NULL,
+                FOREIGN KEY(notebook_id) REFERENCES notebooks(id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_trashed_memos_deleted
+                ON trashed_memos(deleted_at DESC);
             "#,
         )
         .map_err(sqlite_to_io)?;
@@ -193,7 +226,13 @@ impl MemoFile {
                 .map_err(sqlite_to_io)?
                 .collect::<Result<Vec<_>, _>>()
                 .map_err(sqlite_to_io)?;
-            let defaults = [("reminder", "''"), ("category_id", "''"), ("sub_tasks", "'[]'")];
+            let defaults = [
+                ("reminder", "''"),
+                ("category_id", "''"),
+                ("sub_tasks", "'[]'"),
+                ("disposition", "''"),
+                ("waiting_for", "''"),
+            ];
             for (col, default) in defaults {
                 if !existing.iter().any(|c| c == col) {
                     conn.execute(
@@ -204,6 +243,23 @@ impl MemoFile {
                     )
                     .map_err(sqlite_to_io)?;
                 }
+            }
+        }
+        // 习惯表增加 reminder_time 列 (每日提醒时间), 幂等迁移。
+        {
+            let existing: Vec<String> = conn
+                .prepare("PRAGMA table_info(habits)")
+                .map_err(sqlite_to_io)?
+                .query_map([], |row| row.get::<_, String>(1))
+                .map_err(sqlite_to_io)?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(sqlite_to_io)?;
+            if !existing.iter().any(|c| c == "reminder_time") {
+                conn.execute(
+                    "ALTER TABLE habits ADD COLUMN reminder_time TEXT NOT NULL DEFAULT ''",
+                    [],
+                )
+                .map_err(sqlite_to_io)?;
             }
         }
         Ok(())

@@ -436,8 +436,21 @@ export function createSuggestionExtension<TItem>(config: SuggestionMenuConfig<TI
               }, 0);
             };
 
-            view.dom.addEventListener('compositionstart', handleCompositionStart);
-            view.dom.addEventListener('compositionend', handleCompositionEnd);
+            // plugin.view() 可能在 editor view 尚未 mount 到 DOM 时被调用
+            // (Tiptap strict mode / 重建时序)，访问 view.dom 会抛错。加 try-catch
+            // 并在失败时返回空 lifecycle 对象，避免整棵 editor 树被 ErrorBoundary 吞掉。
+            let dom: Element | null = null;
+            try {
+              dom = view.dom;
+            } catch {
+              return {
+                update() {},
+                destroy() { closeMenu(); },
+              };
+            }
+
+            dom.addEventListener('compositionstart', handleCompositionStart);
+            dom.addEventListener('compositionend', handleCompositionEnd);
 
             return {
               update(updatedView) {
@@ -448,9 +461,13 @@ export function createSuggestionExtension<TItem>(config: SuggestionMenuConfig<TI
               destroy() {
                 // view 可能已经被所属 Editor 销毁 (e.g. 语言切换触发重建) —
                 // 再读 view.dom 会触发 "editor view is not available"。
-                if (!view.isDestroyed) {
-                  view.dom.removeEventListener('compositionstart', handleCompositionStart);
-                  view.dom.removeEventListener('compositionend', handleCompositionEnd);
+                try {
+                  if (!view.isDestroyed) {
+                    view.dom.removeEventListener('compositionstart', handleCompositionStart);
+                    view.dom.removeEventListener('compositionend', handleCompositionEnd);
+                  }
+                } catch {
+                  // ignore
                 }
                 closeMenu();
               },
@@ -459,16 +476,35 @@ export function createSuggestionExtension<TItem>(config: SuggestionMenuConfig<TI
 
           props: {
             handleTextInput(view, from, _to, text) {
-              if (text !== trigger) return false;
+              const triggerLen = trigger.length;
+              // The just-typed `text` occupies [from, from + text.length) and is
+              // NOT yet in the document. The trigger sequence we look for ends
+              // right after this input, so the chars that precede `text` in the
+              // doc are [from - (triggerLen - 1), from). Concatenate those with
+              // the incoming `text` and compare to `trigger`.
+              //   - single-char triggers (e.g. `@`): preceding is empty, so
+              //     `` + text === trigger → fires on the typed char.
+              //   - multi-char triggers (e.g. `[[`): only the SECOND `[` makes
+              //     `preceding + text` equal `[[`, so the menu opens once the
+              //     whole sequence is typed (the first `[` alone never matches).
+              const triggerFrom = from - (triggerLen - 1);
+              if (triggerFrom < 0) return false;
               if (!editor.isEditable || !view.state.selection.empty) {
                 closeMenu();
                 return false;
               }
-              if (isValidTriggerPosition && !isValidTriggerPosition(view, from)) {
+              if (isValidTriggerPosition && !isValidTriggerPosition(view, triggerFrom)) {
                 return false;
               }
+              let preceding = '';
+              try {
+                preceding = view.state.doc.textBetween(triggerFrom, from, '\0', '\0');
+              } catch {
+                return false;
+              }
+              if (preceding + text !== trigger) return false;
 
-              openMenu(view, editor, from, typedConfig);
+              openMenu(view, editor, triggerFrom, typedConfig);
               return false;
             },
 

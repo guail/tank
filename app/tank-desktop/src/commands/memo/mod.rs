@@ -23,10 +23,12 @@
 //! submodule paths in `app::bootstrap`, because the command macro wrappers live
 //! beside the original function definitions.
 
+pub mod backlinks;
 pub mod creates;
 pub mod deletes;
 pub(crate) mod helpers;
 pub mod reads;
+pub mod trash;
 pub mod versions;
 
 // `helpers` is `pub(crate)`: memo commands access it via `super::helpers`,
@@ -73,6 +75,20 @@ pub struct MentionNoteSearchItem {
     pub notebook_name: String,
     pub notebook_path: String,
     pub original_path: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemoBacklinkItem {
+  pub id: String,
+  pub filename: String,
+  pub title: String,
+  pub updated_at: i64,
+  pub notebook_id: String,
+  pub notebook_name: String,
+  pub notebook_path: String,
+  pub original_path: Option<String>,
+  pub snippet: String,
 }
 
 #[derive(Serialize)]

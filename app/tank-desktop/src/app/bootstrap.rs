@@ -75,7 +75,8 @@ pub fn run() {
 
     // 笔�?�?��册表真源�?~/.flowix/index.db (SQLite); `MemoFile::open_index_db`
     // 首�?�??时建表�?这里不需要任何�?盘迁�?── �?`notebook.json` �?��已废�?
-    let memo_file = tank_core::memo_file::MemoFile::new(user_config_dir.clone());
+    let memo_file = tank_core::memo_file::MemoFile::new(user_config_dir.clone())
+        .with_trash_dir(user_config_dir.join("trash"));
 
     // System metadata goes under ~/.flowix/boot/system.json.
     let system_data_path = user_config_dir.join("boot").join("system.json");
@@ -238,6 +239,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(memo_watcher.clone())
         .manage(commands::tab_window::TabWindowCoordinator::default())
         .setup(move |app| {
@@ -471,6 +474,29 @@ pub fn run() {
             register_deep_links(app);
             handle_cold_start_open_targets(app.handle());
 
+            // ── 提醒引擎: 后台轮询已到期任务并弹系统通知 ──
+            // 纯调度 + 去重在本进程内 (fire-and-forget tokio 任务),
+            // 解析核心在 tank_core::memo_file::reminder。
+            crate::app::reminder_scheduler::spawn_reminder_scheduler(
+                app.handle().clone(),
+                memo_file_arc.clone(),
+            );
+
+            // 启动时异步清理超过 30 天的回收站笔记。
+            let cleanup_mf = memo_file_arc.clone();
+            std::thread::spawn(move || {
+                match cleanup_mf
+                    .read()
+                    .unwrap_or_else(|poisoned| poisoned.into_inner())
+                    .cleanup_expired_trash()
+                {
+                    Ok(count) if count > 0 => {
+                        tracing::info!("[trash] cleaned up {} expired item(s)", count);
+                    }
+                    _ => {}
+                }
+            });
+
             // release 构建不包�??分支�?用户随时�?�� F12 / Ctrl+Shift+I 切换�?
             // 鈹€鈹€ spawn tank-cli sidecar 鈹€鈹€
             // 必须�?setup �?��, 此时 AppState 已经 manage, IPC 调用方可�?
@@ -521,6 +547,7 @@ pub fn run() {
             // 解析�? `commands::memo::xxx` 顶层�?��不传�?macro re-export.
             commands::memo::reads::get_memos,
             commands::memo::reads::search_mention_notes,
+            commands::memo::backlinks::list_memo_backlinks,
             commands::memo::reads::list_agent_role_memos,
             commands::memo::reads::get_used_memo_tag_ids,
             commands::memo::reads::get_memo_todo_metadata,
@@ -550,6 +577,10 @@ pub fn run() {
             commands::memo::versions::restore_memo_version,
             commands::memo::deletes::delete_memo,
             commands::memo::deletes::clear_memos,
+            commands::memo::trash::list_trashed_memos,
+            commands::memo::trash::restore_trashed_memo,
+            commands::memo::trash::permanently_delete_trashed_memo,
+            commands::memo::trash::empty_trash,
             commands::memo::versions::delete_memo_version,
             // tag
             commands::tag::get_all_tags,
@@ -580,6 +611,12 @@ pub fn run() {
             commands::font::remove_cached_font,
             // web page metadata
             commands::web::parse_web_page,
+            // habits (global streak / checkin tracking)
+            commands::habits::list_habits,
+            commands::habits::create_habit,
+            commands::habits::update_habit,
+            commands::habits::delete_habit,
+            commands::habits::toggle_habit_checkin,
             // dialog
             commands::dialog::select_directory,
             commands::dialog::select_files,

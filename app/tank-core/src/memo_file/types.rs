@@ -104,6 +104,12 @@ pub struct TodoItem {
     /// 子任务 (由缩进 checkbox 解析, 仅一级)。
     #[serde(default)]
     pub sub_tasks: Vec<TodoItem>,
+    /// 收件箱处置: `actionable` / `waiting` / `someday` (空串=未设, 视为 actionable)。
+    #[serde(default)]
+    pub disposition: String,
+    /// 等待对象 (disposition=`waiting` 时记录等谁, 如 `Alice`)。
+    #[serde(default)]
+    pub waiting_for: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -227,6 +233,11 @@ pub struct MemoTodoEntry {
     pub time_range: String,
     pub owner: String,
     pub assignee: String,
+    pub disposition: String,
+    pub waiting_for: String,
+    pub reminder: String,
+    #[serde(rename = "categoryId")]
+    pub category_id: String,
     #[serde(rename = "createdAt")]
     pub created_at: i64,
     #[serde(rename = "updatedAt")]

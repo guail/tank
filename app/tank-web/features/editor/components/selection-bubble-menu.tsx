@@ -3,6 +3,7 @@
 import type { Editor } from '@tiptap/core';
 import { BubbleMenu } from '@tiptap/react/menus';
 import {
+  CheckSquareIcon,
   CodeIcon,
   EraserIcon,
   HighlighterIcon,
@@ -288,6 +289,13 @@ export function SelectionBubbleMenu({ editor }: SelectionBubbleMenuProps) {
         icon={<CodeIcon size={17} weight="bold" aria-hidden="true" />}
         label={t('editor.bubble.inlineCode')}
         onRun={() => editor.chain().focus().toggleCode().run()}
+      />
+      <FormatButton
+        active={editor.isActive('taskItem')}
+        disabled={!editor.can().chain().focus().toggleTaskList().run()}
+        icon={<CheckSquareIcon size={17} weight="bold" aria-hidden="true" />}
+        label={t('editor.bubble.taskList')}
+        onRun={() => editor.chain().focus().toggleTaskList().run()}
       />
       <PaletteButton
         active={editor.isActive('highlight')}

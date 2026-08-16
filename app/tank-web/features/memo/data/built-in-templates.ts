@@ -205,12 +205,27 @@ export const BUILT_IN_TEMPLATES: BuiltInTemplate[] = [
 - 经验：
 `,
   },
+  {
+    slug: 'quick-todo',
+    name: '待办',
+    emoji: '☑️',
+    description: '一条待办速记：打开即可输入任务，自动进入待办视图',
+    content: '- [ ] ',
+  },
 ];
 
 /** slug -> 模板，方便按内置模板反查正文做预览。 */
 export const BUILT_IN_BY_NAME: Map<string, BuiltInTemplate> = new Map(
   BUILT_IN_TEMPLATES.map((t) => [t.name, t]),
 );
+
+/** slug -> 模板，用于「新增待办」等按 slug 直接定位内置模板。 */
+export const BUILT_IN_BY_SLUG: Map<string, BuiltInTemplate> = new Map(
+  BUILT_IN_TEMPLATES.map((t) => [t.slug, t]),
+);
+
+/** 内置「待办」速记模板的 slug，供「新增待办」按钮定位。 */
+export const QUICK_TODO_SLUG = 'quick-todo';
 
 /** 记录「已初始化过」的内置模板 slug，避免用户删除后被反复复活。 */
 const SEED_KEY = 'tank.seededBuiltInTemplates';

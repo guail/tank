@@ -37,6 +37,7 @@ pub mod external_document;
 pub mod external_document_watch;
 pub mod file;
 pub mod font;
+pub mod habits;
 pub mod helpers;
 pub mod kv;
 pub mod memo;

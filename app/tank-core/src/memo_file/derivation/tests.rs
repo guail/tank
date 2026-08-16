@@ -74,7 +74,7 @@ fn agent_thread_card_refs_are_extracted_from_body() {
     assert_eq!(agents.len(), 1);
     assert_eq!(agents[0].thread_id, "abc");
     assert_eq!(agents[0].title, "AI & Helper");
-    assert_eq!(agents[0].agent_type, "tank-cli");
+    assert_eq!(agents[0].agent_type, "tank");
 }
 
 /// 围栏形态 `:::agent-thread-card ... :::` 同样要在 title / preview 之前

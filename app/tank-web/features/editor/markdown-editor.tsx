@@ -2,7 +2,7 @@ import { Editor, Extension, renderNestedMarkdownContent } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import { TaskList } from '@tiptap/extension-task-list';
-import { TaskItem } from '@tiptap/extension-task-item';
+import { RichTaskItem } from '@features/editor/extensions/rich-task-item/rich-task-item';
 import { ListItem } from '@tiptap/extension-list';
 import { Paragraph } from '@tiptap/extension-paragraph';
 import { Markdown } from '@tiptap/markdown';
@@ -36,7 +36,6 @@ import { BlockDragExtension } from '@features/editor/extensions/block-drag';
 import { SlashMenu } from '@features/editor/extensions/slash-menu';
 import { AgentThreadCard } from '@features/agent/thread-card';
 import { SKIP_AGENT_THREAD_CARD_CLEANUP_META } from '@features/agent/thread-card/agent-thread-card-extension';
-import { TabAgentRun } from '@features/editor/extensions/tab-agent-run';
 import { TabCharacter } from '@features/editor/extensions/tab-character';
 import { TablePlugin } from '@features/editor/extensions/table/table-plugin';
 import { useI18n } from '@/lib/i18n';
@@ -242,35 +241,6 @@ const PreservedListItem = ListItem.extend({
       },
       ctx,
     );
-  },
-});
-
-const PreservedTaskItem = TaskItem.extend({
-  renderMarkdown(node, h) {
-    const checkedChar = node.attrs?.checked ? 'x' : ' ';
-    const prefix = `- [${checkedChar}] `;
-    const content = Array.isArray(node.content) ? node.content : [];
-
-    if (!isEmptyParagraphNode(content[0])) {
-      return renderNestedMarkdownContent(node, h, prefix);
-    }
-
-    const nestedContent = content.slice(1);
-    let output = nestedContent.length === 0 ? `${prefix}${EMPTY_PARAGRAPH_MARKDOWN}` : prefix;
-
-    nestedContent.forEach((child, index) => {
-      const childContent = h.renderChild?.(child, index + 1) ?? h.renderChildren([child]);
-      if (childContent === undefined || childContent === null) return;
-
-      const indentedChild = childContent
-        .split('\n')
-        .map(line => h.indent(line || ''))
-        .join('\n');
-
-      output += child.type === 'paragraph' ? `\n\n${indentedChild}` : `\n${indentedChild}`;
-    });
-
-    return output;
   },
 });
 
@@ -520,7 +490,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
         Highlight.configure({ multicolor: true }),
         TablePlugin,
         TaskList,
-        PreservedTaskItem.configure({
+        RichTaskItem.configure({
           nested: true,
         }),
         Markdown.configure({
@@ -544,7 +514,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
         AgentThreadCard,
         SlashMenu,
         TabCharacter,
-        TabAgentRun,
         SearchAndReplace,
         MenuPinExtension,
         BlockDragExtension,

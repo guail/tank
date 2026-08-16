@@ -494,6 +494,8 @@ fn write_index_persists_to_memos_table() {
                 reminder: String::new(),
                 category_id: String::new(),
                 sub_tasks: vec![],
+                disposition: String::new(),
+                waiting_for: String::new(),
             }],
             agents: vec![],
             created_at: 1,

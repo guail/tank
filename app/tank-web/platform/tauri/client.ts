@@ -7,8 +7,10 @@ export * from './client/agent';
 export * from './client/cloud';
 export * from './client/desktop';
 export * from './client/general';
+export * from './client/habits';
 export * from './client/memos';
 export * from './client/mobile';
+export * from './client/trash';
 
 type RpcRequest = <T = unknown>(method: string, params?: unknown) => Promise<T>;
 
