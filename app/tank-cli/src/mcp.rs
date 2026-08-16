@@ -168,7 +168,7 @@ fn execute_command(command: &str, stdin: Option<&str>) -> Result<Value, CliError
             "tank_memo.command cannot be empty".into(),
         ));
     }
-    if args[0] == "tank-cli" || args[0] == "tank-cli" {
+    if args[0] == "tank-cli" || args[0] == "tank" {
         return Err(CliError::Usage(
             "omit the leading `tank-cli`; pass only the subcommand".into(),
         ));
