@@ -37,6 +37,7 @@ import { SlashMenu } from '@features/editor/extensions/slash-menu';
 import { AgentThreadCard } from '@features/agent/thread-card';
 import { SKIP_AGENT_THREAD_CARD_CLEANUP_META } from '@features/agent/thread-card/agent-thread-card-extension';
 import { TabCharacter } from '@features/editor/extensions/tab-character';
+import { TabAgentRun } from '@features/editor/extensions/tab-agent-run';
 import { TablePlugin } from '@features/editor/extensions/table/table-plugin';
 import { useI18n } from '@/lib/i18n';
 
@@ -514,6 +515,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorHandle, MarkdownEditorPro
         AgentThreadCard,
         SlashMenu,
         TabCharacter,
+        TabAgentRun,
         SearchAndReplace,
         MenuPinExtension,
         BlockDragExtension,
