@@ -77,6 +77,15 @@ jobs:
         with:
           workspaces: app/target -> ci
 
+      # Tauri's tank-desktop build.rs requires the `tank-cli` sidecar binary
+      # (externalBin) to exist at app/tank-desktop/binaries/tank-cli-<host-triple>.
+      # It is NOT committed (large build artifact), so build it here before any
+      # cargo invocation that touches the desktop crate.
+      - name: Build tank-cli sidecar
+        run: bash scripts/build-cli.sh
+        env:
+          CARGO_TARGET_DIR: app/target
+
       - name: Clippy
         working-directory: app
         run: cargo clippy --workspace --all-targets
