@@ -901,7 +901,7 @@ describe("AgentThreadCard NodeView streaming", () => {
       threadId,
       expect.objectContaining({
         content: "write a short answer",
-        agentType: "tank",
+        agentType: "tank-cli",
         runtimeConfig: expect.objectContaining({
           tank: expect.any(Object),
         }),

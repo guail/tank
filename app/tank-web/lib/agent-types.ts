@@ -115,8 +115,19 @@ export const AGENT_TYPES: AgentType[] = [
 ];
 
 export function getAgentType(typeKey: string | null | undefined): AgentType {
+  const known = AGENT_TYPES.find((t) => t.key === typeKey);
+  if (known) return known;
+  // `tank-cli` 是后端 wire 值, 与 UI key `tank` 指向同一个 agent
+  // (见 features/agent/runtime/agent-runtime-spec.ts 的 AGENT_RUNTIME_SPECS)。
+  // 它不进 AGENT_TYPES (UI 选择列表, 避免和 `tank` 重复出现), 但仍是合法的
+  // AgentTypeKey, 必须能被识别 —— 否则 normalizeAgentTypeKey("tank-cli") 会错误
+  // fallback 成 default, 导致所有传 tank-cli 的地方被偷偷改成默认类型。
+  if (typeKey === "tank-cli") {
+    const tank =
+      AGENT_TYPES.find((t) => t.key === DEFAULT_AGENT_TYPE_KEY) ?? AGENT_TYPES[0];
+    return { ...tank, key: "tank-cli" };
+  }
   return (
-    AGENT_TYPES.find((t) => t.key === typeKey) ??
     AGENT_TYPES.find((t) => t.key === DEFAULT_AGENT_TYPE_KEY) ??
     AGENT_TYPES[0]
   );

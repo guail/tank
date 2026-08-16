@@ -6,6 +6,7 @@ import type {
 } from "@/types/agent";
 import type { ThreadListItem } from "@/types";
 import type { AgentConversationInstance } from "@features/agent/store/agent-conversation-types";
+import { DEFAULT_AGENT_TYPE_KEY } from "@/lib/agent-types";
 
 export interface AgentSessionMeta {
   activeThreadIds: Partial<Record<AgentTypeKey, string | undefined>>;
@@ -24,7 +25,7 @@ export interface AgentSessionMeta {
 
 export const DEFAULT_AGENT_SESSION_META: AgentSessionMeta = {
   activeThreadIds: {},
-  activeAgentTypeKey: "tank-cli",
+  activeAgentTypeKey: DEFAULT_AGENT_TYPE_KEY,
   threadTypes: {},
   threadLists: {},
   currentThreadTitles: {},
