@@ -13,9 +13,10 @@
 import type { AgentTypeKey, RuntimeConfig } from "@/types/agent";
 import { useAgentAccessStore } from "@features/agent/store/agent-access-store";
 import { useMemoStore } from "@features/memo/store/memo-store";
+import { DEFAULT_AGENT_TYPE_KEY } from "@/lib/agent-types";
 
 export function buildInitialInstanceRuntimeConfig(
-  agentType: AgentTypeKey = "tank-cli",
+  agentType: AgentTypeKey = DEFAULT_AGENT_TYPE_KEY,
 ): RuntimeConfig {
   const accessState = useAgentAccessStore.getState();
   const notebookId = useMemoStore.getState().selectedNotebook?.id ?? undefined;

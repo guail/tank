@@ -2174,7 +2174,7 @@ describe("chat-store Agent Thread Card streaming flow", () => {
     await store.stopThreadRun("thread-stop-empty");
     expect(agent.stopChatStream).toHaveBeenCalledWith(
       "thread-stop-empty",
-      "tank-cli",
+      "tank",
       undefined,
     );
 

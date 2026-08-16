@@ -52,7 +52,7 @@ describe("useAgentSessionStore", () => {
   it("starts with empty projections and default meta", () => {
     const s = useAgentSessionStore.getState();
     expect(s.threadProjections).toEqual({});
-    expect(s.sessionMeta.activeAgentTypeKey).toBe("tank-cli");
+    expect(s.sessionMeta.activeAgentTypeKey).toBe("tank");
     expect(s.conversationRegistry.instances).toEqual({});
   });
 
