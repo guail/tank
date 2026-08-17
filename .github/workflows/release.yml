@@ -77,7 +77,12 @@ jobs:
         run: npm ci
 
       - name: Build + sign + publish
-        uses: tauri-apps/tauri-action@dev
+        # Pinned to a known-good SHA (used successfully for v1.1.20). Only
+        # responsible for building, signing and uploading the installer exe.
+        # The updater manifest (latest.json) is generated + uploaded by the
+        # next step, because tauri-action's built-in uploadVersionJSON depends
+        # on fragile internal signature-upload ordering and silently skips.
+        uses: tauri-apps/tauri-action@abbd19ad15b37f89667db9cc46ec1cb5419f22be
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -105,5 +110,68 @@ jobs:
             [CHANGELOG]: ../../CHANGELOG.md
           releaseDraft: false
           prerelease: false
-          uploadUpdaterJson: true
+          # We generate + upload latest.json ourselves in the next step, so
+          # disable tauri-action's (unreliable) built-in updater manifest upload.
+          uploadUpdaterJson: false
           args: --target ${{ matrix.target }}
+
+      # ------------------------------------------------------------------
+      # Generate the updater manifest (latest.json) and upload it to the
+      # release. This is done manually because tauri-action@abbd19a's
+      # uploadVersionJSON silently skips when it can't find the .sig among
+      # already-uploaded assets. We read the .sig produced by the build and
+      # embed it directly, so no separate .sig asset is needed.
+      # ------------------------------------------------------------------
+      - name: Generate + upload updater manifest (latest.json)
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ github.ref_name }}"            # e.g. v1.1.21
+          VER="${VERSION#v}"                           # 1.1.21
+
+          # 1) locate the minisign .sig produced by the build (content-identical
+          #    to the uploaded exe, just a different filename)
+          SIG_FILE=$(find . -name '*.exe.sig' -not -path '*/node_modules/*' 2>/dev/null | head -1)
+          if [ -z "${SIG_FILE}" ]; then
+            echo "::error::could not find a *.exe.sig artifact from the build"
+            exit 1
+          fi
+          SIGNATURE=$(cat "${SIG_FILE}")
+
+          # 2) pubkey from tauri.conf.json (JSON5-safe, line-based grep)
+          PUBKEY=$(grep -o '"pubkey": *"[^"]*"' app/tank-desktop/tauri.conf.json | sed 's/"pubkey": *"//;s/"$//')
+          if [ -z "${PUBKEY}" ]; then
+            echo "::error::could not extract pubkey from tauri.conf.json"
+            exit 1
+          fi
+
+          # 3) the actual uploaded asset name (tauri-action may rename it)
+          ASSET_NAME=$(gh release view "${VERSION}" --json assets --jq '.assets[].name' | grep -E '_x64-setup\.exe$' | head -1)
+          if [ -z "${ASSET_NAME}" ]; then
+            echo "::error::could not find the uploaded *_x64-setup.exe asset for ${VERSION}"
+            exit 1
+          fi
+
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          ENCODED=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "${ASSET_NAME}")
+          URL="https://github.com/guail/tank/releases/download/${VERSION}/${ENCODED}"
+
+          cat > latest.json <<EOF
+          {
+            "version": "${VER}",
+            "notes": "See the CHANGELOG for the full set of changes.",
+            "pub_date": "${PUB_DATE}",
+            "platforms": {
+              "windows-x86_64": {
+                "signature": "${SIGNATURE}",
+                "url": "${URL}"
+              }
+            }
+          }
+          EOF
+
+          echo "--- latest.json ---"
+          cat latest.json
+          gh release upload "${VERSION}" latest.json --clobber
