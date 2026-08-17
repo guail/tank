@@ -742,15 +742,15 @@ mod tests {
                 ("tool", "result 2"),
             ]
         );
-        assert_eq!(page.messages[1].id, "run-1::assistant::assistant-item_0");
-        assert_eq!(page.messages[4].id, "run-2::assistant::assistant-item_0");
+        assert_eq!(page.messages[1].id, "msg:codex:run-1:assistant:assistant-item_0");
+        assert_eq!(page.messages[4].id, "msg:codex:run-2:assistant:assistant-item_0");
         assert_eq!(
             page.messages[2].tool_call_id.as_deref(),
-            Some("run-1::tool-call::tool-item_1")
+            Some("msg:codex:run-1:tool-call:tool-item_1")
         );
         assert_eq!(
             page.messages[5].tool_call_id.as_deref(),
-            Some("run-2::tool-call::tool-item_1")
+            Some("msg:codex:run-2:tool-call:tool-item_1")
         );
     }
 
@@ -1024,7 +1024,7 @@ mod tests {
         let version: i64 = conn
             .pragma_query_value(None, "user_version", |row| row.get(0))
             .expect("read user_version");
-        assert_eq!(version, 2);
+        assert_eq!(version, 3);
     }
 
     #[test]
@@ -1078,6 +1078,18 @@ mod tests {
             let conn = rusqlite::Connection::open(&db_path).expect("open legacy db");
             conn.execute_batch(
                 r#"
+                CREATE TABLE threads (
+                    thread_id TEXT PRIMARY KEY,
+                    agent_id TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL
+                );
+                INSERT INTO threads (thread_id, agent_id, title, created_at, updated_at)
+                VALUES
+                    ('thread-legacy-frozen', 'claude', 'legacy', 1, 1),
+                    ('thread-snapshot-fallback', 'claude', 'snapshot', 1, 1);
+
                 CREATE TABLE agent_conversation_instances (
                     instance_id TEXT PRIMARY KEY,
                     agent_type TEXT NOT NULL,

@@ -320,7 +320,7 @@ mod tests {
     #[test]
     fn case_insensitive_scheme() {
         // macOS / Windows 投递过来的 scheme 大小写不一�? 都�?能解�?
-        let t = parse_open_target("FLOWIX://memo/abc12345").unwrap();
+        let t = parse_open_target("TANK://memo/abc12345").unwrap();
         assert!(matches!(t, OpenTarget::DeepLink { .. }));
     }
 
