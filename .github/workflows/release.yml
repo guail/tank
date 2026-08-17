@@ -132,14 +132,40 @@ jobs:
           $version = $env:VERSION
           $ver = $version -replace '^v',''
 
-          # 1) locate the minisign .sig produced by the build. Use PowerShell
-          #    recursive search because bash on Windows runners has repeatedly
-          #    failed to locate files under .build/cargo-target (find.exe
-          #    collision, globstar not recursing, etc.).
-          $sigFile = Get-ChildItem -Path ".build" -Recurse -Filter "*.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          # 1) locate the minisign .sig produced by the build. Build the path
+          #    deterministically from tauri.conf.json productName + version, then
+          #    fall back to recursive search with -FollowSymlink (cargo target dirs
+          #    can contain junctions that plain -Recurse skips).
+          $conf = node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('app/tank-desktop/tauri.conf.json','utf8')); console.log(JSON.stringify({productName:c.productName, version:c.version}))" | ConvertFrom-Json
+          $productName = $conf.productName
+          if (-not $productName) {
+            Write-Host "::error::could not extract productName from tauri.conf.json"
+            exit 1
+          }
+          $sigName = "${productName}_${ver}_x64-setup.exe.sig"
+          Write-Host "looking for signature file: $sigName"
+
+          $target = "${{ matrix.target }}"
+          $candidatePaths = @(
+            ".build/cargo-target/$target/release/bundle/nsis/$sigName",
+            ".build/cargo-target/release/bundle/nsis/$sigName"
+          )
+          $sigFile = $null
+          foreach ($p in $candidatePaths) {
+            Write-Host "  checking: $p"
+            if (Test-Path -LiteralPath $p -PathType Leaf) {
+              $sigFile = Get-Item -LiteralPath $p
+              Write-Host "  -> found"
+              break
+            }
+          }
+          if (-not $sigFile) {
+            Write-Host "deterministic paths missed; falling back to recursive search with -FollowSymlink"
+            $sigFile = Get-ChildItem -Path ".build" -File -Recurse -FollowSymlink -ErrorAction SilentlyContinue | Where-Object { $_.Name -like '*.exe.sig' } | Select-Object -First 1
+          }
           if (-not $sigFile) {
             Write-Host "::error::could not find any *.exe.sig artifact from the build"
-            Get-ChildItem -Path ".build" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 50 | ForEach-Object { Write-Host $_.FullName }
+            Get-ChildItem -Path ".build" -File -Recurse -FollowSymlink -ErrorAction SilentlyContinue | Where-Object { $_.Name -like '*.sig' } | Select-Object -First 20 | ForEach-Object { Write-Host $_.FullName }
             exit 1
           }
           Write-Host "using signature file: $($sigFile.FullName)"
