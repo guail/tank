@@ -10,9 +10,50 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@shared/ui/dia
 import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
 
-const EMOJI_CHOICES = ['🔥', '💧', '📚', '🏃', '🧘', '💪', '🌱', '🍎', '😴', '✍️', '🎯', '🎸'];
+const ICON_CHOICES = [
+  '/habit-icons/1.png',
+  '/habit-icons/2.png',
+  '/habit-icons/3.png',
+  '/habit-icons/4.png',
+  '/habit-icons/5.png',
+  '/habit-icons/6.png',
+  '/habit-icons/7.png',
+  '/habit-icons/8.png',
+  '/habit-icons/9.png',
+  '/habit-icons/10.png',
+  '/habit-icons/11.png',
+  '/habit-icons/12.png',
+  '/habit-icons/13.png',
+  '/habit-icons/14.png',
+  '/habit-icons/15.png',
+];
+const DEFAULT_ICON = ICON_CHOICES[0];
 const COLOR_CHOICES = ['#f97316', '#ef4444', '#ec4899', '#8b5cf6', '#6366f1', '#0ea5e9', '#10b981', '#eab308'];
 const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六'];
+
+function isIconPath(value?: string): boolean {
+  return !!value && value.startsWith('/habit-icons/');
+}
+
+function HabitIcon({ value, className }: { value?: string; className?: string }) {
+  let src: string | undefined;
+  if (value && isIconPath(value)) {
+    // 新数据：直接存的是英雄 PNG 路径
+    src = value;
+  } else if (value) {
+    // 旧数据存的是 emoji：确定性映射到 15 个英雄 PNG 之一（同一习惯永远同一个图标）
+    let h = 0;
+    for (let i = 0; i < value.length; i++) {
+      h = (h * 31 + value.charCodeAt(i)) >>> 0;
+    }
+    src = ICON_CHOICES[h % ICON_CHOICES.length];
+  }
+  if (src) {
+    return <img src={src} alt="" className={cn('object-contain', className)} />;
+  }
+  // 完全没有任何图标时的兜底
+  return <span className={cn('leading-none', className)}>🔥</span>;
+}
 
 export function HabitView() {
   const [list, setList] = useState<HabitWithStats[]>([]);
@@ -122,7 +163,7 @@ function HabitCard({
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 flex flex-col gap-2">
       <div className="flex items-start gap-2">
-        <span className="text-2xl leading-none">{habit.emoji || '🔥'}</span>
+        <HabitIcon value={habit.emoji} className="w-7 h-7" />
         <div className="min-w-0 flex-1">
           <div className="font-medium truncate" style={{ color: habit.color }}>
             {habit.name}
@@ -213,7 +254,9 @@ function HabitDialog({
   const isEdit = !!initial;
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
-  const [emoji, setEmoji] = useState(initial?.emoji ?? '🔥');
+  const [selectedIcon, setSelectedIcon] = useState(
+    isIconPath(initial?.emoji) ? initial!.emoji : DEFAULT_ICON,
+  );
   const [color, setColor] = useState(initial?.color ?? '#f97316');
   const [frequency, setFrequency] = useState<HabitFrequency>(initial?.frequency ?? 'daily');
   const [targetPerWeek, setTargetPerWeek] = useState(initial?.targetPerWeek ?? 7);
@@ -229,14 +272,14 @@ function HabitDialog({
           ...initial,
           name: name.trim(),
           description,
-          emoji,
+          emoji: selectedIcon,
           color,
           frequency,
           targetPerWeek,
           reminderTime,
         });
       } else {
-        await habitApi.create({ name: name.trim(), description, emoji, color, frequency, targetPerWeek, reminderTime });
+        await habitApi.create({ name: name.trim(), description, emoji: selectedIcon, color, frequency, targetPerWeek, reminderTime });
       }
       onSaved();
     } catch (err) {
@@ -266,17 +309,17 @@ function HabitDialog({
           <div>
             <div className={labelCls + ' mb-1'}>图标</div>
             <div className="flex flex-wrap gap-1">
-              {EMOJI_CHOICES.map((e) => (
+              {ICON_CHOICES.map((path) => (
                 <button
-                  key={e}
+                  key={path}
                   type="button"
-                  onClick={() => setEmoji(e)}
+                  onClick={() => setSelectedIcon(path)}
                   className={cn(
-                    'w-8 h-8 rounded-md text-lg flex items-center justify-center border',
-                    emoji === e ? 'border-[var(--primary)] bg-[var(--muted)]' : 'border-[var(--border)]',
+                    'w-8 h-8 rounded-md flex items-center justify-center border p-1',
+                    selectedIcon === path ? 'border-[var(--primary)] bg-[var(--muted)]' : 'border-[var(--border)]',
                   )}
                 >
-                  {e}
+                  <img src={path} alt="" className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
