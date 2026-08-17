@@ -132,18 +132,35 @@ jobs:
           VER="${VERSION#v}"                           # 1.1.21
 
           # 1) locate the minisign .sig produced by the build (content-identical
-          #    to the uploaded exe, just a different filename). Use bash glob
-          #    instead of `find` because GitHub Actions' Windows bash can resolve
-          #    `find` to the Windows find.exe (string-search) rather than GNU find.
-          shopt -s globstar nullglob
-          SIG_FILES=(.build/**/*.exe.sig)
-          if [ ${#SIG_FILES[@]} -eq 0 ]; then
-            echo "::error::could not find any *.exe.sig artifact from the build"
-            pwd
-            ls -la .build/ 2>/dev/null || true
+          #    to the uploaded exe, just a different filename). Avoid `find` and
+          #    bash globstar because GitHub Actions' Windows bash resolves `find`
+          #    to Windows find.exe and globstar does not recurse as expected.
+          #    Build a deterministic path from tauri.conf.json values first, then
+          #    fall back to a simple recursive glob.
+          TARGET="${{ matrix.target }}"
+          PRODUCT_NAME=$(grep -o '"productName": *"[^"]*"' app/tank-desktop/tauri.conf.json | head -1 | sed 's/"productName": *"//;s/"$//')
+          if [ -z "${PRODUCT_NAME}" ]; then
+            echo "::error::could not extract productName from tauri.conf.json"
             exit 1
           fi
-          SIG_FILE="${SIG_FILES[0]}"
+
+          SIG_FILE=".build/cargo-target/${TARGET}/release/bundle/nsis/${PRODUCT_NAME}_${VER}_x64-setup.exe.sig"
+          if [ ! -f "${SIG_FILE}" ]; then
+            echo "deterministic path did not exist: ${SIG_FILE}"
+            SIG_FILE=""
+            for f in .build/cargo-target/*/release/bundle/*/*.exe.sig; do
+              [ -f "$f" ] || continue
+              SIG_FILE="$f"
+              break
+            done
+            if [ -z "${SIG_FILE}" ]; then
+              echo "::error::could not find any *.exe.sig artifact from the build"
+              pwd
+              ls -la .build/cargo-target 2>/dev/null || true
+              exit 1
+            fi
+          fi
+          echo "using signature file: ${SIG_FILE}"
           SIGNATURE=$(cat "${SIG_FILE}")
 
           # 2) pubkey from tauri.conf.json (JSON5-safe, line-based grep)
