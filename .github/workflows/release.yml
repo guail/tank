@@ -123,78 +123,62 @@ jobs:
       # embed it directly, so no separate .sig asset is needed.
       # ------------------------------------------------------------------
       - name: Generate + upload updater manifest (latest.json)
-        shell: bash
+        shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
         run: |
-          set -euo pipefail
-          VERSION="${{ github.ref_name }}"            # e.g. v1.1.21
-          VER="${VERSION#v}"                           # 1.1.21
+          $ErrorActionPreference = "Stop"
+          $version = $env:VERSION
+          $ver = $version -replace '^v',''
 
-          # 1) locate the minisign .sig produced by the build (content-identical
-          #    to the uploaded exe, just a different filename). Avoid `find` and
-          #    bash globstar because GitHub Actions' Windows bash resolves `find`
-          #    to Windows find.exe and globstar does not recurse as expected.
-          #    Build a deterministic path from tauri.conf.json values first, then
-          #    fall back to a simple recursive glob.
-          TARGET="${{ matrix.target }}"
-          PRODUCT_NAME=$(grep -o '"productName": *"[^"]*"' app/tank-desktop/tauri.conf.json | head -1 | sed 's/"productName": *"//;s/"$//')
-          if [ -z "${PRODUCT_NAME}" ]; then
-            echo "::error::could not extract productName from tauri.conf.json"
+          # 1) locate the minisign .sig produced by the build. Use PowerShell
+          #    recursive search because bash on Windows runners has repeatedly
+          #    failed to locate files under .build/cargo-target (find.exe
+          #    collision, globstar not recursing, etc.).
+          $sigFile = Get-ChildItem -Path ".build" -Recurse -Filter "*.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $sigFile) {
+            Write-Host "::error::could not find any *.exe.sig artifact from the build"
+            Get-ChildItem -Path ".build" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 50 | ForEach-Object { Write-Host $_.FullName }
             exit 1
-          fi
+          }
+          Write-Host "using signature file: $($sigFile.FullName)"
+          $signature = Get-Content -Raw $sigFile.FullName
+          $signature = $signature.Trim()
 
-          SIG_FILE=".build/cargo-target/${TARGET}/release/bundle/nsis/${PRODUCT_NAME}_${VER}_x64-setup.exe.sig"
-          if [ ! -f "${SIG_FILE}" ]; then
-            echo "deterministic path did not exist: ${SIG_FILE}"
-            SIG_FILE=""
-            for f in .build/cargo-target/*/release/bundle/*/*.exe.sig; do
-              [ -f "$f" ] || continue
-              SIG_FILE="$f"
-              break
-            done
-            if [ -z "${SIG_FILE}" ]; then
-              echo "::error::could not find any *.exe.sig artifact from the build"
-              pwd
-              ls -la .build/cargo-target 2>/dev/null || true
-              exit 1
-            fi
-          fi
-          echo "using signature file: ${SIG_FILE}"
-          SIGNATURE=$(cat "${SIG_FILE}")
-
-          # 2) pubkey from tauri.conf.json (JSON5-safe, line-based grep)
-          PUBKEY=$(grep -o '"pubkey": *"[^"]*"' app/tank-desktop/tauri.conf.json | sed 's/"pubkey": *"//;s/"$//')
-          if [ -z "${PUBKEY}" ]; then
-            echo "::error::could not extract pubkey from tauri.conf.json"
+          # 2) pubkey from tauri.conf.json (JSON5-safe via node, since Tauri
+          #    configs may contain comments and PowerShell's ConvertFrom-Json
+          #    does not handle JSON5).
+          $pubkey = (node -e "const fs=require('fs'); const conf=JSON.parse(fs.readFileSync('app/tank-desktop/tauri.conf.json','utf8')); console.log(conf.plugins.updater.pubkey)")
+          if (-not $pubkey) {
+            Write-Host "::error::could not extract pubkey from tauri.conf.json"
             exit 1
-          fi
+          }
 
           # 3) the actual uploaded asset name (tauri-action may rename it)
-          ASSET_NAME=$(gh release view "${VERSION}" --json assets --jq '.assets[].name' | grep -E '_x64-setup\.exe$' | head -1)
-          if [ -z "${ASSET_NAME}" ]; then
-            echo "::error::could not find the uploaded *_x64-setup.exe asset for ${VERSION}"
+          $assetName = (gh release view $version --json assets --jq '.assets[].name') | Where-Object { $_ -match '_x64-setup\.exe$' } | Select-Object -First 1
+          if (-not $assetName) {
+            Write-Host "::error::could not find the uploaded *_x64-setup.exe asset for $version"
             exit 1
-          fi
+          }
 
-          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          ENCODED=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "${ASSET_NAME}")
-          URL="https://github.com/guail/tank/releases/download/${VERSION}/${ENCODED}"
+          $pubDate = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ").ToString()
+          $encoded = [Uri]::EscapeDataString($assetName)
+          $url = "https://github.com/guail/tank/releases/download/$version/$encoded"
 
-          cat > latest.json <<EOF
-          {
-            "version": "${VER}",
-            "notes": "See the CHANGELOG for the full set of changes.",
-            "pub_date": "${PUB_DATE}",
-            "platforms": {
-              "windows-x86_64": {
-                "signature": "${SIGNATURE}",
-                "url": "${URL}"
+          $manifest = @{
+            version = $ver
+            notes = "See the CHANGELOG for the full set of changes."
+            pub_date = $pubDate
+            platforms = @{
+              "windows-x86_64" = @{
+                signature = $signature
+                url = $url
               }
             }
-          }
-          EOF
+          } | ConvertTo-Json -Depth 4
 
-          echo "--- latest.json ---"
-          cat latest.json
-          gh release upload "${VERSION}" latest.json --clobber
+          $manifest | Out-File -Encoding utf8 "latest.json"
+          Write-Host "--- latest.json ---"
+          Get-Content "latest.json" | ForEach-Object { Write-Host $_ }
+          gh release upload $version "latest.json" --clobber
