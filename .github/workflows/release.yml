@@ -76,13 +76,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build + sign + publish
-        # Pinned to a known-good SHA (used successfully for v1.1.20). Only
-        # responsible for building, signing and uploading the installer exe.
-        # The updater manifest (latest.json) is generated + uploaded by the
-        # next step, because tauri-action's built-in uploadVersionJSON depends
-        # on fragile internal signature-upload ordering and silently skips.
-        uses: tauri-apps/tauri-action@abbd19ad15b37f89667db9cc46ec1cb5419f22be
+      - name: Build + sign + publish + updater manifest
+        # Upgraded from a pinned dev SHA to the official v1 release. v1.0.0
+        # fixed the signature-upload ordering bug: it uploads .sig files as
+        # release assets and then reads them from the local artifacts list to
+        # generate latest.json, all before the build output is cleaned up.
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -110,101 +109,8 @@ jobs:
             [CHANGELOG]: ../../CHANGELOG.md
           releaseDraft: false
           prerelease: false
-          # We generate + upload latest.json ourselves in the next step, so
-          # disable tauri-action's (unreliable) built-in updater manifest upload.
-          uploadUpdaterJson: false
+          # Let tauri-action generate and upload the updater manifest.
+          uploadUpdaterJson: true
+          uploadUpdaterSignatures: true
+          updaterJsonPreferNsis: true
           args: --target ${{ matrix.target }}
-
-      # ------------------------------------------------------------------
-      # Generate the updater manifest (latest.json) and upload it to the
-      # release. This is done manually because tauri-action@abbd19a's
-      # uploadVersionJSON silently skips when it can't find the .sig among
-      # already-uploaded assets. We read the .sig produced by the build and
-      # embed it directly, so no separate .sig asset is needed.
-      # ------------------------------------------------------------------
-      - name: Generate + upload updater manifest (latest.json)
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ github.ref_name }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $version = $env:VERSION
-          $ver = $version -replace '^v',''
-
-          # 1) locate the minisign .sig produced by the build. Build the path
-          #    deterministically from tauri.conf.json productName + version, then
-          #    fall back to recursive search with -FollowSymlink (cargo target dirs
-          #    can contain junctions that plain -Recurse skips).
-          $conf = node -e "const fs=require('fs'); const c=JSON.parse(fs.readFileSync('app/tank-desktop/tauri.conf.json','utf8')); console.log(JSON.stringify({productName:c.productName, version:c.version}))" | ConvertFrom-Json
-          $productName = $conf.productName
-          if (-not $productName) {
-            Write-Host "::error::could not extract productName from tauri.conf.json"
-            exit 1
-          }
-          $sigName = "${productName}_${ver}_x64-setup.exe.sig"
-          Write-Host "looking for signature file: $sigName"
-
-          $target = "${{ matrix.target }}"
-          $candidatePaths = @(
-            ".build/cargo-target/$target/release/bundle/nsis/$sigName",
-            ".build/cargo-target/release/bundle/nsis/$sigName"
-          )
-          $sigFile = $null
-          foreach ($p in $candidatePaths) {
-            Write-Host "  checking: $p"
-            if (Test-Path -LiteralPath $p -PathType Leaf) {
-              $sigFile = Get-Item -LiteralPath $p
-              Write-Host "  -> found"
-              break
-            }
-          }
-          if (-not $sigFile) {
-            Write-Host "deterministic paths missed; falling back to recursive search with -FollowSymlink"
-            $sigFile = Get-ChildItem -Path ".build" -File -Recurse -FollowSymlink -ErrorAction SilentlyContinue | Where-Object { $_.Name -like '*.exe.sig' } | Select-Object -First 1
-          }
-          if (-not $sigFile) {
-            Write-Host "::error::could not find any *.exe.sig artifact from the build"
-            Get-ChildItem -Path ".build" -File -Recurse -FollowSymlink -ErrorAction SilentlyContinue | Where-Object { $_.Name -like '*.sig' } | Select-Object -First 20 | ForEach-Object { Write-Host $_.FullName }
-            exit 1
-          }
-          Write-Host "using signature file: $($sigFile.FullName)"
-          $signature = Get-Content -Raw $sigFile.FullName
-          $signature = $signature.Trim()
-
-          # 2) pubkey from tauri.conf.json (JSON5-safe via node, since Tauri
-          #    configs may contain comments and PowerShell's ConvertFrom-Json
-          #    does not handle JSON5).
-          $pubkey = (node -e "const fs=require('fs'); const conf=JSON.parse(fs.readFileSync('app/tank-desktop/tauri.conf.json','utf8')); console.log(conf.plugins.updater.pubkey)")
-          if (-not $pubkey) {
-            Write-Host "::error::could not extract pubkey from tauri.conf.json"
-            exit 1
-          }
-
-          # 3) the actual uploaded asset name (tauri-action may rename it)
-          $assetName = (gh release view $version --json assets --jq '.assets[].name') | Where-Object { $_ -match '_x64-setup\.exe$' } | Select-Object -First 1
-          if (-not $assetName) {
-            Write-Host "::error::could not find the uploaded *_x64-setup.exe asset for $version"
-            exit 1
-          }
-
-          $pubDate = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ").ToString()
-          $encoded = [Uri]::EscapeDataString($assetName)
-          $url = "https://github.com/guail/tank/releases/download/$version/$encoded"
-
-          $manifest = @{
-            version = $ver
-            notes = "See the CHANGELOG for the full set of changes."
-            pub_date = $pubDate
-            platforms = @{
-              "windows-x86_64" = @{
-                signature = $signature
-                url = $url
-              }
-            }
-          } | ConvertTo-Json -Depth 4
-
-          $manifest | Out-File -Encoding utf8 "latest.json"
-          Write-Host "--- latest.json ---"
-          Get-Content "latest.json" | ForEach-Object { Write-Host $_ }
-          gh release upload $version "latest.json" --clobber
