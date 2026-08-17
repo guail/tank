@@ -132,12 +132,18 @@ jobs:
           VER="${VERSION#v}"                           # 1.1.21
 
           # 1) locate the minisign .sig produced by the build (content-identical
-          #    to the uploaded exe, just a different filename)
-          SIG_FILE=$(find . -name '*.exe.sig' -not -path '*/node_modules/*' 2>/dev/null | head -1)
-          if [ -z "${SIG_FILE}" ]; then
-            echo "::error::could not find a *.exe.sig artifact from the build"
+          #    to the uploaded exe, just a different filename). Use bash glob
+          #    instead of `find` because GitHub Actions' Windows bash can resolve
+          #    `find` to the Windows find.exe (string-search) rather than GNU find.
+          shopt -s globstar nullglob
+          SIG_FILES=(.build/**/*.exe.sig)
+          if [ ${#SIG_FILES[@]} -eq 0 ]; then
+            echo "::error::could not find any *.exe.sig artifact from the build"
+            pwd
+            ls -la .build/ 2>/dev/null || true
             exit 1
           fi
+          SIG_FILE="${SIG_FILES[0]}"
           SIGNATURE=$(cat "${SIG_FILE}")
 
           # 2) pubkey from tauri.conf.json (JSON5-safe, line-based grep)
