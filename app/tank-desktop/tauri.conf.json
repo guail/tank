@@ -86,7 +86,7 @@
       "endpoints": [
         "https://github.com/guail/tank/releases/latest/download/latest.json"
       ],
-      "pubkey": "RWRkjtIDhhOErXKOnG0qcSgBLNqP6BBIg2IlQTzkQnDgT7gpl28x+DN9",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFEODQxMzg2MDNEMjhFNjQKUldSa2p0SURoaE9FclhLT25HMHFjU2dCTE5xUDZCQklnMklsUVR6a1FuRGdUN2dwbDI4eCtETjkK",
       "windows": {
         "installMode": "passive"
       }
