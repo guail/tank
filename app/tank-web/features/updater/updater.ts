@@ -14,8 +14,7 @@ export interface UpdateDownloadProgress {
  * 调用 Tauri 原生更新器检查更新。返回 `null` 表示已是最新（或无可用更新）。
  *
  * 注意：在 dev 环境 / `tauri.conf.json` 未配置有效 `plugins.updater.endpoints`
- * 时此调用会 reject —— 调用方应 catch 后退回旧的公告检查机制
- * （`product.checkUpdateNotice`），保证「检查更新」按钮在开发期仍有反馈。
+ * 时此调用会 reject —— 调用方应自行处理（开发期可忽略）。
  */
 export async function checkForAppUpdate(): Promise<Update | null> {
   return check();

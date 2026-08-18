@@ -139,19 +139,8 @@ export interface ProductInfo {
   arch: string;
 }
 
-export interface ProductUpdateNotice {
-  id: string;
-  title: string;
-  body: string;
-  version?: string | null;
-  ctaUrl?: string | null;
-  publishedAt?: string | null;
-}
-
 export const product = {
   getInfo: () => invoke<ProductInfo>('get_product_info'),
-  checkUpdateNotice: (language?: string, region?: string) =>
-    invoke<ProductUpdateNotice | null>('check_product_update_notice', { language, region }),
   openLogDir: () => invoke<void>('open_log_dir'),
 };
 

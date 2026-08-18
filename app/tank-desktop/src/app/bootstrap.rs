@@ -253,7 +253,6 @@ pub fn run() {
                 &user_config_dir_for_device,
                 app_version,
             ));
-            device_registry.clone().spawn_startup_registration();
             app.manage(device_registry);
 
             // 鈹€鈹€ 1) 鍚姩鎺㈡祴 external CLI 璺緞 鈹€鈹€
@@ -507,7 +506,6 @@ pub fn run() {
             // 偏好 (JSON, �?user_config)
             commands::product::get_product_info,
             commands::product::get_diagnostics,
-            commands::product::check_product_update_notice,
             commands::product::open_log_dir,
             commands::settings::get_preference,
             commands::settings::set_preference,

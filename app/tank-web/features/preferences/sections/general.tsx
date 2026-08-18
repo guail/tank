@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, ExternalLink } from 'lucide-react';
-import { openUrl } from '@platform/tauri/opener';
+import { Check } from 'lucide-react';
 import { CheckSquareIcon, PushPin, StarFourIcon } from '@phosphor-icons/react';
 import {
   Select,
@@ -14,7 +13,7 @@ import { Textarea } from '@shared/ui/textarea';
 import { Button } from '@shared/ui/button';
 import { Tooltip } from '@shared/ui/tooltip';
 import { useComposingValue } from '@shared/hooks/use-composing-value';
-import { product, type ProductInfo, type ProductUpdateNotice } from '@platform/tauri/client';
+import { product, type ProductInfo } from '@platform/tauri/client';
 import { checkForAppUpdate, downloadAndInstallUpdate, relaunchApp } from '@features/updater/updater';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -178,7 +177,7 @@ function MemoCardVariantOption({
   );
 }
 
-export function GeneralSection({ settings, language, region, memoCardVariant, updateSettings }: GeneralSectionProps) {
+export function GeneralSection({ settings, language, memoCardVariant, updateSettings }: GeneralSectionProps) {
   const { t } = useI18n();
   const customInstruction = useComposingValue(
     settings.customInstruction,
@@ -186,7 +185,6 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
   );
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
-  const [manualNotice, setManualNotice] = useState<ProductUpdateNotice | null>(null);
   const currentLanguageLabel =
     LANGUAGE_OPTIONS.find((option) => option.value === language)?.label ?? language;
   const responseLengthLabelByValue: Record<string, string> = {
@@ -220,7 +218,6 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
   const handleCheckProductUpdates = async () => {
     setCheckingUpdates(true);
     try {
-      // 1) 优先走 Tauri 原生更新器：下载 + 安装 + 重启（真正的在线更新）。
       const update = await checkForAppUpdate();
       if (update) {
         toast.info(
@@ -228,29 +225,14 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
         );
         await downloadAndInstallUpdate(update);
         await relaunchApp();
-        return; // 已触发重启，后续不再执行
+        return;
       }
-      // 2) 无内嵌更新 → 退回旧公告机制（what's-new 横幅）。
-      const notice = await product.checkUpdateNotice(language, region);
-      setManualNotice(notice);
-      await updateSettings({ productUpdates: { lastCheckedAt: Date.now() } });
-      toast.info(
-        notice
-          ? t('preferences.general.productUpdates.found')
-          : t('preferences.general.productUpdates.none'),
-      );
+      toast.info(t('preferences.general.productUpdates.none'));
     } catch {
-      // 插件未配置（dev / 无端点）→ 再退回公告检查，保证按钮在开发期也有反馈。
-      try {
-        const notice = await product.checkUpdateNotice(language, region);
-        setManualNotice(notice);
-        await updateSettings({ productUpdates: { lastCheckedAt: Date.now() } });
-        toast.info(
-          notice
-            ? t('preferences.general.productUpdates.found')
-            : t('preferences.general.productUpdates.none'),
-        );
-      } catch {
+      // dev 环境无更新端点，视为已是最新；正式包才报错。
+      if (import.meta.env.DEV) {
+        toast.info(t('preferences.general.productUpdates.none'));
+      } else {
         toast.error(t('preferences.general.productUpdates.failed'));
       }
     } finally {
@@ -258,14 +240,6 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
     }
   };
 
-  const handleOpenNoticeLink = async () => {
-    if (!manualNotice?.ctaUrl) return;
-    try {
-      await openUrl(manualNotice.ctaUrl);
-    } catch {
-      toast.error(t('productUpdates.openFailed'));
-    }
-  };
 
   return (
     <div className="space-y-6 pb-16">
@@ -395,30 +369,6 @@ export function GeneralSection({ settings, language, region, memoCardVariant, up
             : t('preferences.general.productUpdates.check')}
         </Button>
       </FieldRow>
-
-      {manualNotice && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className={FIELD_TITLE_CLASS}>{manualNotice.title}</div>
-              <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm leading-5 text-[var(--muted-foreground)]">
-                {manualNotice.body}
-              </p>
-              {manualNotice.version && (
-                <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                  {t('productUpdates.version', { version: manualNotice.version })}
-                </p>
-              )}
-            </div>
-            {manualNotice.ctaUrl && (
-              <Button variant="outline" size="sm" onClick={handleOpenNoticeLink}>
-                <ExternalLink className="w-3.5 h-3.5" />
-                {t('status.upgrade')}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
 
       {import.meta.env.DEV && (
         <FieldRow
