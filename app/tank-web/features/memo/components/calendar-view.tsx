@@ -6,14 +6,9 @@ import { memos as memosClient } from '@platform/tauri/client';
 import { useMemoStore } from '@features/memo';
 import type { MemoTodoEntry } from '@/types/memo-item';
 import { cn, displayTitleFromFilename } from '@/lib/utils';
+import { PRIORITY_COLORS } from '@features/editor/extensions/rich-task-item/task-fields';
 
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
-
-const PRIORITY_COLOR: Record<string, string> = {
-  high: '#ef4444',
-  medium: '#f59e0b',
-  low: '#9ca3af',
-};
 
 function prioRank(p: string): number {
   return p === 'high' ? 3 : p === 'medium' ? 2 : p === 'low' ? 1 : 0;
@@ -113,12 +108,9 @@ export function CalendarView({
   const topPriorityColor = (ev?: DayEvents): string | undefined => {
     if (!ev) return undefined;
     const open = ev.tasks.filter((t) => t.status !== 'completed');
-    if (open.length > 0) {
-      const top = [...open].sort((a, b) => prioRank(b.priority) - prioRank(a.priority))[0];
-      return PRIORITY_COLOR[top.priority] ?? '#9ca3af';
-    }
-    if (ev.memoIds.length > 0) return '#3b82f6';
-    return undefined;
+    if (open.length === 0) return undefined; // 没任务就不画点；点只表达"最高优先级"
+    const top = [...open].sort((a, b) => prioRank(b.priority) - prioRank(a.priority))[0];
+    return (PRIORITY_COLORS as Record<string, string>)[top.priority] ?? '#9ca3af';
   };
 
   const goMonth = (delta: number) => setCursor(new Date(year, monthIdx + delta, 1));
@@ -212,7 +204,7 @@ export function CalendarView({
           <div className="space-y-0.5">
             {selectedEvents.tasks.map((t, idx) => {
               const done = t.status === 'completed';
-              const color = done ? undefined : PRIORITY_COLOR[t.priority] ?? '#9ca3af';
+              const color = done ? undefined : (PRIORITY_COLORS as Record<string, string>)[t.priority] ?? '#9ca3af';
               return (
                 <button
                   key={`t-${idx}`}
