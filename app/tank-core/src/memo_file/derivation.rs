@@ -369,6 +369,7 @@ pub fn extract_thumbnail(content: &str) -> Option<String> {
 /// 提取 — 块内是代码示例, 不是用户的标签; 行内反引号包裹的内容是"代码"
 /// 语义。两种区域在抽取前先从源文本里"挖空"成 NUL 占位, NUL 不在
 /// `\s` 内且不会被 `#` 误连, 保证原 TAG_RE 不需要任何修改。
+#[allow(dead_code)]
 pub(crate) fn extract_tags_from_body(content: &str) -> Vec<String> {
     // 结构: 前缀 (^|空白) + # + (level/)*level
     //   - level: 1+ 个非空白 / 非 `/` / 非 Unicode 标点字符
@@ -393,16 +394,6 @@ pub(crate) fn extract_tags_from_body(content: &str) -> Vec<String> {
         }
     }
 
-    tags
-}
-
-fn merge_document_tag_sources(mut tags: Vec<String>, content: &str) -> Vec<String> {
-    let mut seen: HashSet<String> = tags.iter().cloned().collect();
-    for tag in extract_tags_from_body(content) {
-        if seen.insert(tag.clone()) {
-            tags.push(tag);
-        }
-    }
     tags
 }
 
@@ -820,8 +811,8 @@ fn decode_markdown_attr(value: &str) -> String {
 }
 
 /// 应用派生字段到 memo。`filename` 仅在为空时从 body 第一行覆盖 (用户显式设的
-/// title 优先), `preview` / `todos` / `agents` 从 body 重算; `tags` 是
-/// YAML tags 与正文标签的稳定去重并集, `properties` 仍只来自 YAML。
+/// title 优先), `preview` / `todos` / `agents` 从 body 重算; `tags` 仅来自
+/// YAML frontmatter, 不再自动从正文 `#tag` 提取, `properties` 仍只来自 YAML。
 pub fn apply_derived_memo_fields(memo: &mut Memo, full_content: &str) {
     let (derived_title, preview) = extract_title_and_preview(full_content);
     if memo.filename.trim().is_empty() && !derived_title.is_empty() {
@@ -849,7 +840,7 @@ pub fn apply_derived_memo_fields(memo: &mut Memo, full_content: &str) {
                 }
             })
             .collect();
-        memo.tags = merge_document_tag_sources(yaml_tags, full_content);
+        memo.tags = yaml_tags;
         memo.properties = metadata.properties;
     }
 }
