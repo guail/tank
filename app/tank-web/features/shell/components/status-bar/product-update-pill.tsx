@@ -26,11 +26,9 @@ export function ProductUpdatePill() {
       toast.info(t('preferences.general.productUpdates.downloading', { version: update.version }));
       await downloadAndInstallUpdate(update, (p) => setProgress(p));
       await relaunchApp();
-    } catch (error) {
+    } catch {
       setDownloading(false);
       toast.error(t('preferences.general.productUpdates.failed'));
-      // eslint-disable-next-line no-console
-      console.error('[ProductUpdatePill] update failed', error);
     }
   }, [update, downloading, setDownloading, setProgress, t]);
 

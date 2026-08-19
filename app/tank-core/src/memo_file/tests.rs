@@ -2363,13 +2363,13 @@ fn move_tag_leaves_unrelated_tags_intact() {
 }
 
 #[test]
-fn move_tag_rewrites_body_only_membership_but_not_code() {
+fn move_tag_rewrites_frontmatter_membership_and_body_references_but_not_code() {
     let (mf, _base) = fresh_memo_file();
     let memo = mf
         .create_memo(
-            "Body only",
+            "Frontmatter tag with body reference",
             "Body #old/path\n`#old/path`\n```md\n#old/path\n```",
-            None,
+            Some("old/path"),
         )
         .unwrap();
 
@@ -2382,18 +2382,21 @@ fn move_tag_rewrites_body_only_membership_but_not_code() {
     assert!(content.contains("Body #new/path"));
     assert!(content.contains("`#old/path`"));
     assert!(content.contains("```md\n#old/path\n```"));
-    assert!(extract_document_metadata(&content).unwrap().tags.is_empty());
+    assert_eq!(
+        extract_document_metadata(&content).unwrap().tags,
+        vec!["new/path"]
+    );
     assert_eq!(read_memo_tags(&mf, &memo.id), vec!["new/path"]);
 }
 
 #[test]
-fn delete_tag_removes_body_only_membership_but_not_code() {
+fn delete_tag_removes_frontmatter_membership_and_body_references_but_not_code() {
     let (mf, _base) = fresh_memo_file();
     let memo = mf
         .create_memo(
-            "Delete body tag",
+            "Delete frontmatter tag",
             "Body #remove/path remains\n`#remove/path`",
-            None,
+            Some("remove/path"),
         )
         .unwrap();
 
@@ -2406,6 +2409,7 @@ fn delete_tag_removes_body_only_membership_but_not_code() {
     assert!(content.contains("Body  remains"));
     assert!(content.contains("`#remove/path`"));
     assert!(read_memo_tags(&mf, &memo.id).is_empty());
+    assert!(extract_document_metadata(&content).unwrap().tags.is_empty());
 }
 
 #[test]
@@ -2421,13 +2425,17 @@ fn delete_tag_ignores_unrelated_invalid_legacy_frontmatter_path() {
     );
     std::fs::write(&path, content).unwrap();
 
-    let report = mf.delete_memo_tag_locked(Some("nb_test"), "1").unwrap();
-    assert_eq!(report.affected_memos, 1);
+    // Body-only #1 is no longer treated as a tag membership, so deleting "1"
+    // must report "tag not found" without touching the memo.
+    let err = mf
+        .delete_memo_tag_locked(Some("nb_test"), "1")
+        .unwrap_err();
+    assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
 
     let content = std::fs::read_to_string(path).unwrap();
     assert!(content.contains("legacy tag"));
-    assert!(!content.contains("#1"));
-    assert!(read_memo_tags(&mf, &memo.id).is_empty());
+    assert!(content.contains("#1"));
+    assert_eq!(read_memo_tags(&mf, &memo.id), vec!["legacy tag"]);
 }
 
 #[test]
@@ -2960,13 +2968,14 @@ fn reorder_then_read_preserves_client_supplied_order() {
 }
 
 #[test]
-fn yaml_and_body_tags_form_a_stable_union_without_rewriting_yaml() {
+fn yaml_tags_only_are_derived_body_tags_are_not_indexed() {
     let (mf, tmp) = fresh_memo_file();
     let memo = mf
-        .create_memo("Union", "Body #alpha and #beta", Some("yaml"))
+        .create_memo("No union", "Body #alpha and #beta", Some("yaml"))
         .unwrap();
 
-    assert_eq!(memo.tags, vec!["yaml", "alpha", "beta"]);
+    // Tags only come from frontmatter YAML; body #tokens are display-only.
+    assert_eq!(memo.tags, vec!["yaml"]);
 
     let content = fs::read_to_string(tmp.join(&memo.filename)).unwrap();
     let metadata = extract_document_metadata(&content).unwrap();
@@ -2975,7 +2984,7 @@ fn yaml_and_body_tags_form_a_stable_union_without_rewriting_yaml() {
 }
 
 #[test]
-fn removing_yaml_tag_keeps_membership_when_body_still_contains_it() {
+fn removing_yaml_tag_drops_membership_even_when_body_still_contains_it() {
     let (mf, _tmp) = fresh_memo_file();
     let memo = mf
         .create_memo("Shared", "Body #shared", Some("shared"))
@@ -2984,7 +2993,8 @@ fn removing_yaml_tag_keeps_membership_when_body_still_contains_it() {
     let updated = mf
         .write_memo(&memo.id, "---\ntags: []\n---\nBody #shared")
         .unwrap();
-    assert_eq!(updated.tags, vec!["shared"]);
+    // Body #shared is no longer treated as a tag membership.
+    assert_eq!(updated.tags, Vec::<String>::new());
 
     let content = read_body(&mf, &updated.filename);
     assert!(extract_document_metadata(&content).unwrap().tags.is_empty());
@@ -2992,7 +3002,7 @@ fn removing_yaml_tag_keeps_membership_when_body_still_contains_it() {
 }
 
 #[test]
-fn tag_union_index_upgrade_rebuilds_index_without_touching_markdown() {
+fn tag_index_rebuild_does_not_re_add_body_tags_after_migration_to_yaml_only() {
     let (mf, tmp) = fresh_memo_file();
     let mut memo = mf
         .create_memo("Upgrade", "Body #bodytag", Some("yamltag"))
@@ -3002,14 +3012,15 @@ fn tag_union_index_upgrade_rebuilds_index_without_touching_markdown() {
 
     memo.tags = vec!["yamltag".to_string()];
     mf.sync_metadata_only(&memo).unwrap();
+    // Index rebuild should not pull body #tokens back into memo.tags.
     let updated = mf
         .ensure_tag_union_index_for_notebook_id("nb_test")
         .unwrap();
 
-    assert_eq!(updated, 1);
+    assert_eq!(updated, 0);
     assert_eq!(
         read_memo_tags(&mf, &memo.id),
-        vec!["yamltag".to_string(), "bodytag".to_string()]
+        vec!["yamltag".to_string()]
     );
     assert_eq!(fs::read_to_string(&path).unwrap(), original);
     assert_eq!(
