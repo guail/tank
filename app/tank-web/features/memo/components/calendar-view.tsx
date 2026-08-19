@@ -115,9 +115,10 @@ export function CalendarView({
   const topPriorityColor = (ev?: DayEvents): string | undefined => {
     if (!ev) return undefined;
     const open = ev.tasks.filter((t) => t.status !== 'completed');
-    if (open.length === 0) return undefined; // 没任务就不画点；点只表达"最高优先级"
+    // 有笔记的日子默认蓝点；若还有未完成的优先级任务，则按最高优先级上色。
+    if (open.length === 0) return ev.memoIds.length > 0 ? '#3b82f6' : undefined;
     const top = [...open].sort((a, b) => prioRank(b.priority) - prioRank(a.priority))[0];
-    return (PRIORITY_COLORS as Record<string, string>)[top.priority] ?? '#9ca3af';
+    return (PRIORITY_COLORS as Record<string, string>)[top.priority] ?? '#3b82f6';
   };
 
 
