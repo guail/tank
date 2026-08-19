@@ -22,11 +22,12 @@ function toDateStr(ts: number): string {
   return `${y}-${m}-${day}`;
 }
 
-/// timeRange 形如 `2026-08-20` / `2026-08-20 14:00` / `2026-08-20T14:00`,
-/// 取其日期部分作为日历落点。
-function dueDateOf(t: MemoTodoEntry): string | null {
+/// 任务落点: 优先用到期日 (timeRange), 没填则回退到所属笔记的日期
+/// (文件名 `YYYY-MM-DD` 优先, 否则 updatedAt)。否则任务永远挂不上日历。
+function dueDateOf(t: MemoTodoEntry, memoDateById: Map<string, string>): string | null {
   const m = t.timeRange?.match(/(\d{4}-\d{2}-\d{2})/);
-  return m ? m[1] : null;
+  if (m) return m[1];
+  return memoDateById.get(t.memoId) ?? null;
 }
 
 interface DayEvents {
@@ -68,17 +69,23 @@ export function CalendarView({
       fn(e);
       map.set(d, e);
     };
+    // 笔记日期: 文件名里的 `YYYY-MM-DD` 优先, 否则用最后更新日。
+    const memoDateById = new Map<string, string>();
+    memos.forEach((m) => {
+      const fm = m.filename.match(/(\d{4}-\d{2}-\d{2})/);
+      memoDateById.set(m.id, fm ? fm[1] : toDateStr(m.updatedAt));
+    });
     todos.forEach((t) => {
-      const d = dueDateOf(t);
+      const d = dueDateOf(t, memoDateById);
       if (!d) return;
       push(d, (e) => {
         e.tasks.push(t);
         if (!e.memoIds.includes(t.memoId)) e.memoIds.push(t.memoId);
       });
     });
-    // 笔记按"最后更新日期"落点, 让日历也能反映笔记活动。
+    // 笔记按日期落点, 让日历也能反映笔记活动。
     memos.forEach((m) => {
-      const d = toDateStr(m.updatedAt);
+      const d = memoDateById.get(m.id)!;
       push(d, (e) => {
         if (!e.memoIds.includes(m.id)) e.memoIds.push(m.id);
       });
@@ -112,6 +119,7 @@ export function CalendarView({
     const top = [...open].sort((a, b) => prioRank(b.priority) - prioRank(a.priority))[0];
     return (PRIORITY_COLORS as Record<string, string>)[top.priority] ?? '#9ca3af';
   };
+
 
   const goMonth = (delta: number) => setCursor(new Date(year, monthIdx + delta, 1));
 
@@ -196,50 +204,37 @@ export function CalendarView({
         })}
       </div>
 
-      {/* 选中当天的事项列表 */}
+      {/* 选中当天的事项列表：按笔记聚合，颜色取该笔记下最高优先级未完成任务 */}
       <div className="mt-px flex-1 overflow-y-auto border-t border-[var(--border)] px-2 py-2">
-        {!selectedEvents || (selectedEvents.tasks.length === 0 && selectedEvents.memoIds.length === 0) ? (
+        {!selectedEvents || selectedEvents.memoIds.length === 0 ? (
           <p className="px-2 py-3 text-xs text-[var(--muted-foreground)]">这天没有安排</p>
         ) : (
           <div className="space-y-0.5">
-            {selectedEvents.tasks.map((t, idx) => {
-              const done = t.status === 'completed';
-              const color = done ? undefined : (PRIORITY_COLORS as Record<string, string>)[t.priority] ?? '#9ca3af';
+            {selectedMemos.map((m) => {
+              const tasks = selectedEvents.tasks.filter(
+                (t) => t.memoId === m.id && t.status !== 'completed',
+              );
+              const top =
+                tasks.length > 0
+                  ? [...tasks].sort((a, b) => prioRank(b.priority) - prioRank(a.priority))[0]
+                  : undefined;
+              const color = top
+                ? (PRIORITY_COLORS as Record<string, string>)[top.priority] ?? '#9ca3af'
+                : '#3b82f6';
               return (
                 <button
-                  key={`t-${idx}`}
+                  key={`m-${m.id}`}
                   type="button"
-                  onClick={() => onOpenMemo(t.memoId)}
-                  className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--muted)]"
+                  onClick={() => onOpenMemo(m.id)}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--muted)]"
                 >
-                  <span
-                    className={cn('mt-1 h-2 w-2 shrink-0 rounded-full', done && 'opacity-40')}
-                    style={color ? { backgroundColor: color } : { backgroundColor: 'var(--muted-foreground)' }}
-                  />
-                  <span
-                    className={cn(
-                      'min-w-0 flex-1 text-[12px]',
-                      done ? 'text-[var(--muted-foreground)] line-through' : 'text-[var(--foreground)]',
-                    )}
-                  >
-                    {t.content}
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+                  <span className="min-w-0 flex-1 truncate text-[12px] text-[var(--muted-foreground)]">
+                    📝 {displayTitleFromFilename(m.filename)}
                   </span>
                 </button>
               );
             })}
-            {selectedMemos.map((m) => (
-              <button
-                key={`m-${m.id}`}
-                type="button"
-                onClick={() => onOpenMemo(m.id)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--muted)]"
-              >
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#3b82f6]" />
-                <span className="min-w-0 flex-1 truncate text-[12px] text-[var(--muted-foreground)]">
-                  📝 {displayTitleFromFilename(m.filename)}
-                </span>
-              </button>
-            ))}
           </div>
         )}
       </div>
