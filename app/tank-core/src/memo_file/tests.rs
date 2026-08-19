@@ -2415,13 +2415,13 @@ fn delete_tag_removes_frontmatter_membership_and_body_references_but_not_code() 
 #[test]
 fn delete_tag_ignores_unrelated_invalid_legacy_frontmatter_path() {
     let (mf, base) = fresh_memo_file();
-    // The "legacy tag" lives in frontmatter and is indexed through the normal
+    // The "legacy-tag" lives in frontmatter and is indexed through the normal
     // create flow; the body `#1` is NOT a tag membership under the yaml-only
     // tag rules, so it never enters the index.
     let memo = mf
         .create_memo(
             "Legacy",
-            "---\ntags:\n  - \"legacy tag\"\n---\nBody #1",
+            "---\ntags:\n  - \"legacy-tag\"\n---\nBody #1",
             None,
         )
         .unwrap();
@@ -2435,9 +2435,9 @@ fn delete_tag_ignores_unrelated_invalid_legacy_frontmatter_path() {
     assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
 
     let content = std::fs::read_to_string(path).unwrap();
-    assert!(content.contains("legacy tag"));
+    assert!(content.contains("legacy-tag"));
     assert!(content.contains("#1"));
-    assert_eq!(read_memo_tags(&mf, &memo.id), vec!["legacy tag"]);
+    assert_eq!(read_memo_tags(&mf, &memo.id), vec!["legacy-tag"]);
 }
 
 #[test]
