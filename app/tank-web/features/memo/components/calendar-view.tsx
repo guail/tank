@@ -107,10 +107,23 @@ export function CalendarView({
   const todayStr = toDateStr(Date.now());
 
   const selectedEvents = selected ? eventsByDay.get(selected) : undefined;
-  const selectedMemos = useMemo(
-    () => (selectedEvents ? memos.filter((m) => selectedEvents.memoIds.includes(m.id)) : []),
-    [selectedEvents, memos],
-  );
+  // 待办任务: 未完成、按优先级降序, 一行一个 (待办与笔记是两套逻辑, 不按笔记聚合)。
+  const selectedTasks = useMemo(() => {
+    if (!selectedEvents) return [];
+    return [...selectedEvents.tasks]
+      .filter((t) => t.status !== 'completed')
+      .sort((a, b) => prioRank(b.priority) - prioRank(a.priority));
+  }, [selectedEvents]);
+  // 纯笔记活动: 当天有笔记落点、但没有未完成任务对应的笔记, 单独显示一行 📝。
+  const selectedMemoItems = useMemo(() => {
+    if (!selectedEvents) return [];
+    const taskMemoIds = new Set(
+      selectedEvents.tasks.filter((t) => t.status !== 'completed').map((t) => t.memoId),
+    );
+    return memos.filter(
+      (m) => selectedEvents.memoIds.includes(m.id) && !taskMemoIds.has(m.id),
+    );
+  }, [selectedEvents, memos]);
 
   const topPriorityColor = (ev?: DayEvents): string | undefined => {
     if (!ev) return undefined;
@@ -205,37 +218,49 @@ export function CalendarView({
         })}
       </div>
 
-      {/* 选中当天的事项列表：按笔记聚合，颜色取该笔记下最高优先级未完成任务 */}
+      {/* 选中当天的事项列表：待办按任务展开 (一行一个)，纯笔记活动另起一行 📝 */}
       <div className="mt-px flex-1 overflow-y-auto border-t border-[var(--border)] px-2 py-2">
-        {!selectedEvents || selectedEvents.memoIds.length === 0 ? (
+        {!selectedEvents || (selectedTasks.length === 0 && selectedMemoItems.length === 0) ? (
           <p className="px-2 py-3 text-xs text-[var(--muted-foreground)]">这天没有安排</p>
         ) : (
           <div className="space-y-0.5">
-            {selectedMemos.map((m) => {
-              const tasks = selectedEvents.tasks.filter(
-                (t) => t.memoId === m.id && t.status !== 'completed',
-              );
-              const top =
-                tasks.length > 0
-                  ? [...tasks].sort((a, b) => prioRank(b.priority) - prioRank(a.priority))[0]
-                  : undefined;
-              const color = top
-                ? (PRIORITY_COLORS as Record<string, string>)[top.priority] ?? '#9ca3af'
-                : '#3b82f6';
+            {/* 待办任务：一行一个，颜色取该任务优先级 */}
+            {selectedTasks.map((t, i) => {
+              const color = (PRIORITY_COLORS as Record<string, string>)[t.priority] ?? '#9ca3af';
               return (
                 <button
-                  key={`m-${m.id}`}
+                  key={`t-${t.memoId}-${i}`}
                   type="button"
-                  onClick={() => onOpenMemo(m.id)}
+                  onClick={() => onOpenMemo(t.memoId)}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--muted)]"
                 >
-                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="min-w-0 flex-1 truncate text-[12px] text-[var(--muted-foreground)]">
-                    📝 {displayTitleFromFilename(m.filename)}
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-[12px] text-[var(--foreground)]">
+                    {t.content}
                   </span>
                 </button>
               );
             })}
+            {/* 纯笔记活动：当天无未完成任务但有过笔记，显示笔记标题 */}
+            {selectedMemoItems.map((m) => (
+              <button
+                key={`m-${m.id}`}
+                type="button"
+                onClick={() => onOpenMemo(m.id)}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-[var(--muted)]"
+              >
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: '#3b82f6' }}
+                />
+                <span className="min-w-0 flex-1 truncate text-[12px] text-[var(--muted-foreground)]">
+                  📝 {displayTitleFromFilename(m.filename)}
+                </span>
+              </button>
+            ))}
           </div>
         )}
       </div>
