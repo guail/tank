@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { memos as memosClient } from '@platform/tauri/client';
 import { useMemoStore } from '@features/memo';
 import type { MemoTodoEntry } from '@/types/memo-item';
 import { cn, displayTitleFromFilename } from '@/lib/utils';
@@ -36,31 +35,39 @@ interface DayEvents {
 }
 
 export function CalendarView({
-  notebookId,
+  notebookId: _notebookId,
   onOpenMemo,
 }: {
   notebookId?: string | null;
   onOpenMemo: (memoId: string) => void;
 }) {
   const memos = useMemoStore((s) => s.memos);
-  const [todos, setTodos] = useState<MemoTodoEntry[]>([]);
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState<string | null>(() => toDateStr(Date.now()));
 
-  useEffect(() => {
-    let alive = true;
-    memosClient
-      .getTodoMetadata(notebookId, 'updatedAt')
-      .then((t) => {
-        if (alive) setTodos(t);
-      })
-      .catch(() => {
-        /* 日历是辅助视图, 取数失败静默降级 */
-      });
-    return () => {
-      alive = false;
-    };
-  }, [notebookId]);
+  // 待办直接派生自 memos store, 与右侧待办列表同源 → 删/改待办实时同步到日历。
+  // 旧逻辑单独调 getTodoMetadata 拉一次性快照, 只在切换笔记本时刷新, 导致
+  // 右侧删了待办、日历还挂着。现在 memos 一变 (handleMemoUpdated / 删除) 日历
+  // 立刻重算, 不再有快照滞后。
+  const todos = useMemo<MemoTodoEntry[]>(() => {
+    return memos.flatMap((m) =>
+      m.todos.map((t) => ({
+        content: t.content,
+        status: t.status,
+        memoId: m.id,
+        priority: t.priority ?? 'none',
+        timeRange: t.timeRange ?? '',
+        owner: t.owner ?? '',
+        assignee: t.assignee ?? '',
+        disposition: '',
+        waitingFor: '',
+        reminder: t.reminder ?? '',
+        categoryId: t.categoryId ?? '',
+        createdAt: m.createdAt,
+        updatedAt: m.updatedAt,
+      })),
+    );
+  }, [memos]);
 
   const eventsByDay = useMemo(() => {
     const map = new Map<string, DayEvents>();
