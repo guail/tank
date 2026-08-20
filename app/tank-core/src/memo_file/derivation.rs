@@ -645,7 +645,7 @@ fn strip_code_regions(body: &str) -> String {
 ///
 /// 增强 checkbox 语法 (标记均可选, 顺序任意, 可省):
 /// - 优先级: `[!high]` `[!medium]`(或 `[!med]`) `[!low]` `[!none]`
-/// - 截止:   `[📅2026-08-20]` 或 `[due:2026-08-20]` (可带时间 `[📅2026-08-20 14:00]`)
+/// - 截止:   `[📅2026-08-20]` / `[🗓2026-08-20]` / `[due:2026-08-20]` (可带时间 `[📅2026-08-20 14:00]`)
 /// - 提醒:   `[⏰09:00]` 或 `[remind:09:00]`
 /// - 分类:   `[🏷work]` 或 `[cat:work]`
 /// - 子任务: 缩进 (≥2 空格) 的 checkbox 归入上一级 todo 的 `sub_tasks`
@@ -658,7 +658,7 @@ pub fn extract_todos_from_body(content: &str) -> Vec<TodoItem> {
     static PRIORITY_RE: Lazy<Regex> =
         Lazy::new(|| Regex::new(r"\[!(high|medium|med|low|none)\]").unwrap());
     static DUE_RE: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"\[📅([^\]]+)\]|\[due:([^\]]+)\]").unwrap());
+        Lazy::new(|| Regex::new(r"\[(?:📅|🗓)\u{fe0f}?([^\]]+)\]|\[due:([^\]]+)\]").unwrap());
     static REMIND_RE: Lazy<Regex> =
         Lazy::new(|| Regex::new(r"\[⏰([^\]]+)\]|\[remind:([^\]]+)\]").unwrap());
     static CAT_RE: Lazy<Regex> =

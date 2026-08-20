@@ -26,6 +26,11 @@ describe('parseTaskFields', () => {
     expect(b.reminder).toBe('18:00');
   });
 
+  it('解析截止支持 🗓 / 🗓️ 变体', () => {
+    expect(parseTaskFields('[🗓2026-08-21] 物业费').due).toBe('2026-08-21');
+    expect(parseTaskFields('[🗓️2026-08-22] 电费').due).toBe('2026-08-22');
+  });
+
   it('解析分类', () => {
     expect(parseTaskFields('[🏷work] 写报告').category).toBe('work');
     expect(parseTaskFields('[cat:home] 洗碗').category).toBe('home');

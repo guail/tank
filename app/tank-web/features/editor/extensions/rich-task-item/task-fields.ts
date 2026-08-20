@@ -19,7 +19,7 @@ export interface TaskFields {
 
 // 与 derivation.rs 的正则保持同步
 const PRIORITY_RE = /\[!(high|medium|med|low|none)\]/i;
-const DUE_RE = /\[📅([^\]]+)\]|\[due:([^\]]+)\]/i;
+const DUE_RE = /\[(?:📅|🗓)\uFE0F?([^\]]+)\]|\[due:([^\]]+)\]/i;
 const REMIND_RE = /\[⏰([^\]]+)\]|\[remind:([^\]]+)\]/i;
 const CAT_RE = /\[🏷([^\]]+)\]|\[cat:([^\]]+)\]/i;
 const WAIT_RE = /\[(?:wait|waiting):([^\]]+)\]/i;

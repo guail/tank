@@ -556,6 +556,20 @@ fn todos_parse_marker_aliases() {
     assert_eq!(t.content, "备货");
 }
 
+/// 截止日期也接受 `🗓` 及其文本变体 `🗓️`（与 `📅` 等价）。
+#[test]
+fn todos_parse_due_with_spiral_calendar_emoji() {
+    let v = extract_todos_from_body("- [ ] [🗓2026-08-21] 物业费\n");
+    assert_eq!(v.len(), 1);
+    assert_eq!(v[0].time_range, "2026-08-21");
+    assert_eq!(v[0].content, "物业费");
+
+    let v2 = extract_todos_from_body("- [ ] [🗓️2026-08-22] 电费\n");
+    assert_eq!(v2.len(), 1);
+    assert_eq!(v2[0].time_range, "2026-08-22");
+    assert_eq!(v2[0].content, "电费");
+}
+
 /// 缩进 (≥2 空格) 的 checkbox 归入上一级 todo 的 sub_tasks。
 #[test]
 fn todos_parse_nested_subtasks() {
