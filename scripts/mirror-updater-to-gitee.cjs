@@ -53,10 +53,20 @@ const ghHeaders = () => ({
 
 async function giteeApi(method, p, opts = {}) {
   const sep = p.includes('?') ? '&' : '?';
-  const res = await fetch(`${p}${sep}access_token=${encodeURIComponent(TOKEN)}`, {
-    method,
-    ...opts,
-  });
+  // 大文件上传 (NSIS .exe ~19MB) 在 CI 上偶发连接抖动，给每次请求一个
+  // 上限超时，避免 fetch 无限挂起；配合调用方的重试逻辑覆盖瞬时失败。
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 180000);
+  let res;
+  try {
+    res = await fetch(`${p}${sep}access_token=${encodeURIComponent(TOKEN)}`, {
+      method,
+      ...opts,
+      signal: ctrl.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
   const text = await res.text();
   let data = null;
   try {
@@ -131,7 +141,7 @@ async function main() {
     throw new Error('no platform binaries resolved from latest.json');
   }
 
-  const localJson = path.resolve('gitee-latest.json');
+  const localJson = path.resolve('latest.json');
   fs.writeFileSync(localJson, JSON.stringify(manifest, null, 2));
   console.log(`[gitee-mirror] rewrote manifest package urls -> gitee tag '${MIRROR_TAG}'`);
 
@@ -198,22 +208,32 @@ async function main() {
     fs.writeFileSync(path.resolve(b.filename), b.buf);
   }
 
-  // 6) Upload the new manifest + binaries (best-effort each).
+  // 6) Upload the new manifest + binaries (retry each; Gitee upload of the
+  //    ~19MB NSIS exe is occasionally flaky on CI, so retry before giving up).
   for (const f of [localJson, ...binaries.map((b) => b.filename)]) {
-    try {
-      const filePath = path.resolve(f);
-      const form = new FormData();
-      form.append(
-        'file',
-        new Blob([fs.readFileSync(filePath)], { type: 'application/octet-stream' }),
-        path.basename(f)
-      );
-      await giteeApi('POST', `${GITEE_API}/releases/${release.id}/attach_files`, {
-        body: form,
-      });
-      console.log(`[gitee-mirror] uploaded ${path.basename(f)}`);
-    } catch (e) {
-      console.warn(`[gitee-mirror] upload failed for ${path.basename(f)}:`, e.message);
+    const name = path.basename(f);
+    let ok = false;
+    for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
+      try {
+        const filePath = path.resolve(f);
+        const form = new FormData();
+        form.append(
+          'file',
+          new Blob([fs.readFileSync(filePath)], { type: 'application/octet-stream' }),
+          name
+        );
+        await giteeApi('POST', `${GITEE_API}/releases/${release.id}/attach_files`, {
+          body: form,
+        });
+        console.log(`[gitee-mirror] uploaded ${name}`);
+        ok = true;
+      } catch (e) {
+        console.warn(`[gitee-mirror] upload attempt ${attempt} failed for ${name}:`, e.message);
+        if (attempt < 3) await new Promise((r) => setTimeout(r, 5000));
+      }
+    }
+    if (!ok) {
+      throw new Error(`upload failed after 3 attempts: ${name}`);
     }
   }
 
