@@ -152,7 +152,17 @@ async function main() {
     console.log(`[gitee-mirror] created mirror release id=${release.id}`);
   } catch (e) {
     const msg = String(e.message);
-    if (msg.includes('already exist') || msg.includes('409') || msg.includes('exist')) {
+    // Gitee returns 400/409 with either English ("already exist") or Chinese
+    // ("该标签已经存在发行版") when the mirror tag already has a release.
+    // Also treat a plain 400 during creation as "exists" here, since the
+    // only creation we do is the fixed 'updater' tag that we pre-create once.
+    const existsLike =
+      msg.includes('already exist') ||
+      msg.includes('exist') ||
+      msg.includes('409') ||
+      msg.includes('400') ||
+      msg.includes('已经存在');
+    if (existsLike) {
       console.log('[gitee-mirror] mirror release exists, fetching by tag');
       release = await giteeApi('GET', `${GITEE_API}/releases/tags/${MIRROR_TAG}`);
     } else {
