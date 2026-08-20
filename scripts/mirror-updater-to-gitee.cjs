@@ -1,13 +1,21 @@
 #!/usr/bin/env node
 'use strict';
 
-// Mirror Tauri updater artifacts (latest.json + signed .zip) from the GitHub
-// release to a *fixed* Gitee release tag ("updater"). Gitee has no mutable
-// "latest" alias, so we overwrite the same tag every run. This lets clients
-// with no GitHub access (e.g. behind GFW) fetch updates from Gitee.
+// Mirror Tauri updater artifacts (latest.json + the per-platform update
+// bundle, e.g. the NSIS .exe) from the GitHub release to a *fixed* Gitee
+// release tag ("updater"). Gitee has no mutable "latest" alias, so we
+// overwrite the same tag every run. This lets clients with no GitHub access
+// (e.g. behind GFW) fetch updates from Gitee.
 //
-// Driven by CI (release.yml). Best-effort: if GITEE_TOKEN is absent the script
-// exits 0 so the GitHub release stays authoritative.
+// Tauri v2 NSIS updater: latest.json's platform `url` points at
+//   https://api.github.com/repos/<o>/<r>/releases/assets/<assetId>
+// (a redirect URL, not a clean /releases/download/... path) and the asset
+// is the NSIS setup .exe itself (no separate .zip). We resolve each asset's
+// real filename via the GitHub API, download the binary, rewrite the url to
+// the Gitee mirror, then upload both latest.json and the binary to Gitee.
+//
+// Driven by CI (release.yml). Best-effort: if GITEE_TOKEN is absent the
+// script exits 0 so the GitHub release stays authoritative.
 //
 // Env:
 //   GITEE_TOKEN          Gitee private token (repo write). Required.
@@ -15,6 +23,7 @@
 //   GITEE_REPO           Gitee repo  (e.g. tank)
 //   GITHUB_REF_NAME      The pushed tag, e.g. v1.1.40
 //   GITEE_DEFAULT_BRANCH Default branch on Gitee (used to create the mirror tag)
+//   GITHUB_TOKEN         Optional; used for GitHub API auth (public repos work without)
 
 const fs = require('fs');
 const path = require('path');
@@ -22,10 +31,12 @@ const path = require('path');
 const OWNER = process.env.GITEE_OWNER;
 const REPO = process.env.GITEE_REPO;
 const TOKEN = process.env.GITEE_TOKEN;
+const GH_TOKEN = process.env.GITHUB_TOKEN;
 const VERSION_TAG = process.env.GITHUB_REF_NAME; // v1.1.40
 const DEFAULT_BRANCH = process.env.GITEE_DEFAULT_BRANCH || 'master';
 const MIRROR_TAG = 'updater';
-const API = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}`;
+const GITEE_API = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}`;
+const GH_API = `https://api.github.com/repos/${OWNER}/${REPO}`;
 
 if (!TOKEN) {
   console.log('[gitee-mirror] GITEE_TOKEN missing, skipping Gitee mirror.');
@@ -36,11 +47,16 @@ if (!OWNER || !REPO || !VERSION_TAG) {
   process.exit(1);
 }
 
-const withToken = (p) =>
-  `${p}${p.includes('?') ? '&' : '?'}access_token=${encodeURIComponent(TOKEN)}`;
+const ghHeaders = () => ({
+  ...(GH_TOKEN ? { Authorization: `Bearer ${GH_TOKEN}` } : {}),
+});
 
-async function api(method, p, opts = {}) {
-  const res = await fetch(withToken(p), { method, ...opts });
+async function giteeApi(method, p, opts = {}) {
+  const sep = p.includes('?') ? '&' : '?';
+  const res = await fetch(`${p}${sep}access_token=${encodeURIComponent(TOKEN)}`, {
+    method,
+    ...opts,
+  });
   const text = await res.text();
   let data = null;
   try {
@@ -55,64 +71,74 @@ async function api(method, p, opts = {}) {
   return data;
 }
 
-function findUpdaterZip() {
-  const root = path.resolve('app/target');
-  const hits = [];
-  (function walk(dir) {
-    let ents;
-    try {
-      ents = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of ents) {
-      const full = path.join(dir, e.name);
-      if (e.isDirectory()) walk(full);
-      else if (e.isFile() && e.name.endsWith('.zip') &&
-               full.replace(/\\/g, '/').includes('/bundle/')) {
-        hits.push(full);
-      }
-    }
-  })(root);
-  // newest first; the updater zip is what we want
-  return hits.sort((a, b) => b.localeCompare(a))[0];
+// Resolve a GitHub asset url (api.github.com/.../assets/<id>) to its binary
+// buffer + filename, and compute the rewritten Gitee url.
+async function resolveGithubAsset(url) {
+  const m = String(url).match(
+    /api\.github\.com\/repos\/[^/]+\/[^/]+\/releases\/assets\/(\d+)/
+  );
+  let filename;
+  if (m) {
+    const assetId = m[1];
+    const meta = await fetch(`${GH_API}/releases/assets/${assetId}`, {
+      headers: { Accept: 'application/vnd.github+json', ...ghHeaders() },
+    }).then((r) => r.json());
+    filename = meta.name;
+    if (!filename) throw new Error(`cannot resolve asset ${assetId} name`);
+  } else {
+    // fallback: clean /releases/download/<tag>/<file> path
+    const base = `https://github.com/${OWNER}/${REPO}/releases/download/${VERSION_TAG}`;
+    if (!String(url).startsWith(base)) return null;
+    filename = String(url).split('/').pop();
+  }
+  const binRes = await fetch(
+    m
+      ? `${GH_API}/releases/assets/${m[1]}`
+      : String(url),
+    { headers: { Accept: 'application/octet-stream', ...ghHeaders() } }
+  );
+  if (!binRes.ok) throw new Error(`download ${filename} -> ${binRes.status}`);
+  const buf = Buffer.from(await binRes.arrayBuffer());
+  const giteeUrl = `https://gitee.com/${OWNER}/${REPO}/releases/download/${MIRROR_TAG}/${encodeURIComponent(
+    filename
+  )}`;
+  return { filename, buf, giteeUrl };
 }
 
 async function main() {
-  const zipPath = findUpdaterZip();
-  if (!zipPath) {
-    throw new Error('updater .zip not found under app/target/**/bundle/');
-  }
-  const zipName = path.basename(zipPath);
-  console.log(`[gitee-mirror] updater zip: ${zipPath}`);
-
   // 1) Fetch the GitHub-generated latest.json for this version.
-  const ghJsonUrl =
-    `https://github.com/${OWNER}/${REPO}/releases/download/${VERSION_TAG}/latest.json`;
+  const ghJsonUrl = `https://github.com/${OWNER}/${REPO}/releases/download/${VERSION_TAG}/latest.json`;
   console.log(`[gitee-mirror] fetching ${ghJsonUrl}`);
   const ghRes = await fetch(ghJsonUrl);
   if (!ghRes.ok) throw new Error(`fetch github latest.json -> ${ghRes.status}`);
   const manifest = await ghRes.json();
 
-  // 2) Rewrite package URLs to the fixed Gitee mirror tag.
-  const oldBase =
-    `https://github.com/${OWNER}/${REPO}/releases/download/${VERSION_TAG}`;
-  const newBase =
-    `https://gitee.com/${OWNER}/${REPO}/releases/download/${MIRROR_TAG}`;
+  // 2) Resolve + rewrite each platform's package url, collect binaries.
+  const binaries = []; // { filename, buf }
   for (const k of Object.keys(manifest.platforms || {})) {
     const p = manifest.platforms[k];
-    if (p && typeof p.url === 'string' && p.url.startsWith(oldBase)) {
-      p.url = newBase + p.url.slice(oldBase.length);
+    if (!p || typeof p.url !== 'string') continue;
+    const resolved = await resolveGithubAsset(p.url);
+    if (!resolved) {
+      console.log(`[gitee-mirror] skipping platform ${k} (unrecognized url ${p.url})`);
+      continue;
     }
+    p.url = resolved.giteeUrl;
+    binaries.push(resolved);
+    console.log(`[gitee-mirror] platform ${k} -> ${resolved.filename} (${(resolved.buf.length / 1024 / 1024).toFixed(1)}MB)`);
   }
+  if (binaries.length === 0) {
+    throw new Error('no platform binaries resolved from latest.json');
+  }
+
   const localJson = path.resolve('gitee-latest.json');
   fs.writeFileSync(localJson, JSON.stringify(manifest, null, 2));
-  console.log(`[gitee-mirror] rewrote manifest package urls -> ${newBase}`);
+  console.log(`[gitee-mirror] rewrote manifest package urls -> gitee tag '${MIRROR_TAG}'`);
 
   // 3) Create-or-get the fixed mirror release.
   let release;
   try {
-    release = await api('POST', `${API}/releases`, {
+    release = await giteeApi('POST', `${GITEE_API}/releases`, {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tag_name: MIRROR_TAG,
@@ -125,26 +151,30 @@ async function main() {
     });
     console.log(`[gitee-mirror] created mirror release id=${release.id}`);
   } catch (e) {
-    const m = String(e.message);
-    if (m.includes('already exist') || m.includes('409') || m.includes('exist')) {
+    const msg = String(e.message);
+    if (msg.includes('already exist') || msg.includes('409') || msg.includes('exist')) {
       console.log('[gitee-mirror] mirror release exists, fetching by tag');
-      release = await api('GET', `${API}/releases/tags/${MIRROR_TAG}`);
+      release = await giteeApi('GET', `${GITEE_API}/releases/tags/${MIRROR_TAG}`);
     } else {
       throw e;
     }
   }
 
-  // 4) Remove old assets so re-runs don't accumulate duplicates.
+  // 4) Remove old assets so re-runs don't accumulate stale versions.
   try {
-    const assets = await api(
+    const assets = await giteeApi(
       'GET',
-      `${API}/releases/${release.id}/attach_files?per_page=100`
+      `${GITEE_API}/releases/${release.id}/attach_files?per_page=100`
     );
     for (const a of assets || []) {
-      if (a.name === 'latest.json' || a.name.endsWith('.zip')) {
-        await api(
+      if (
+        a.name === 'latest.json' ||
+        /TANK\./.test(a.name) ||
+        /\.(exe|zip|sig|tar\.gz)$/.test(a.name)
+      ) {
+        await giteeApi(
           'DELETE',
-          `${API}/releases/${release.id}/attach_files/${a.id}`
+          `${GITEE_API}/releases/${release.id}/attach_files/${a.id}`
         );
         console.log(`[gitee-mirror] deleted old asset ${a.name}`);
       }
@@ -153,16 +183,22 @@ async function main() {
     console.warn('[gitee-mirror] asset cleanup skipped:', e.message);
   }
 
-  // 5) Upload the new manifest + zip (best-effort each).
-  for (const f of [localJson, zipPath]) {
+  // 5) Write binaries to disk so the upload loop can read them.
+  for (const b of binaries) {
+    fs.writeFileSync(path.resolve(b.filename), b.buf);
+  }
+
+  // 6) Upload the new manifest + binaries (best-effort each).
+  for (const f of [localJson, ...binaries.map((b) => b.filename)]) {
     try {
+      const filePath = path.resolve(f);
       const form = new FormData();
       form.append(
         'file',
-        new Blob([fs.readFileSync(f)], { type: 'application/octet-stream' }),
+        new Blob([fs.readFileSync(filePath)], { type: 'application/octet-stream' }),
         path.basename(f)
       );
-      await api('POST', `${API}/releases/${release.id}/attach_files`, {
+      await giteeApi('POST', `${GITEE_API}/releases/${release.id}/attach_files`, {
         body: form,
       });
       console.log(`[gitee-mirror] uploaded ${path.basename(f)}`);
