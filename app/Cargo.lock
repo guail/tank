@@ -6335,7 +6335,7 @@ dependencies = [
 
 [[package]]
 name = "tank-cli"
-version = "1.1.45"
+version = "1.1.46"
 dependencies = [
  "chrono",
  "clap",
@@ -6354,7 +6354,7 @@ dependencies = [
 
 [[package]]
 name = "tank-core"
-version = "1.1.45"
+version = "1.1.46"
 dependencies = [
  "chrono",
  "dirs 5.0.1",
@@ -6377,7 +6377,7 @@ dependencies = [
 
 [[package]]
 name = "tank-desktop"
-version = "1.1.45"
+version = "1.1.46"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6428,7 +6428,7 @@ dependencies = [
 
 [[package]]
 name = "tank-mobile"
-version = "1.1.45"
+version = "1.1.46"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -6446,7 +6446,7 @@ dependencies = [
 
 [[package]]
 name = "tank-sync"
-version = "1.1.45"
+version = "1.1.46"
 dependencies = [
  "chrono",
  "reqwest 0.12.28",
