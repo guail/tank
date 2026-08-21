@@ -24,10 +24,9 @@ type CommandKey =
   | 'document.command.exportMarkdown.failed'
   | 'document.command.saveAsTemplate'
   | 'document.command.saveTemplateFailed'
-  | 'document.command.wordDocName'
+  | 'document.command.pdfDocName'
   | 'document.command.exportFailed'
-  | 'document.command.exportWord.success'
-  | 'document.command.exportWord.failed';
+  | 'document.command.exportPdf.success';
 
 function tCmd(key: CommandKey, params?: Record<string, string | number>): string {
   const language = useUserSettingsStore.getState().settings.language;
@@ -217,15 +216,15 @@ export function useDocumentCommands({
     }
   }, [requireExportableDocument]);
 
-  const handleExportWord = useCallback(async () => {
+  const handleExportPdf = useCallback(async () => {
     const doc = await requireExportableDocument();
     if (!doc) return;
 
-    const wordDocName = tCmd('document.command.wordDocName');
-    const target = await promptExportTarget(doc, 'docx', { name: wordDocName, extensions: ['docx'] });
+    const pdfDocName = tCmd('document.command.pdfDocName');
+    const target = await promptExportTarget(doc, 'pdf', { name: pdfDocName, extensions: ['pdf'] });
     if (!target) return;
 
-    let docxBase64 = '';
+    let pdfBase64 = '';
     try {
       const exportModule = await import('@/lib/export');
       const readImage = async (absPath: string): Promise<string | null> => {
@@ -238,15 +237,15 @@ export function useDocumentCommands({
       const inlinedMd = await exportModule.embedImagesInMarkdown(doc.markdown, readImage);
       let bodyHtml = exportModule.markdownToHtml(inlinedMd);
       bodyHtml = await exportModule.embedImagesInHtml(bodyHtml, readImage);
-      const wordExport = await import('@/lib/word-export');
-      docxBase64 = await wordExport.htmlToDocxBase64(bodyHtml);
+      const pdfExport = await import('@/lib/pdf-export');
+      pdfBase64 = await pdfExport.htmlToPdfBase64(bodyHtml, doc.title);
     } catch {
       toast.error(tCmd('document.command.exportFailed'));
       return;
     }
 
-    const ok = await dialogs.writeExportFileBytes(target, docxBase64);
-    toast[ok ? 'success' : 'error'](tCmd(ok ? 'document.command.exportWord.success' : 'document.command.exportWord.failed'));
+    const ok = await dialogs.writeExportFileBytes(target, pdfBase64);
+    toast[ok ? 'success' : 'error'](tCmd(ok ? 'document.command.exportPdf.success' : 'document.command.exportFailed'));
   }, [promptExportTarget, requireExportableDocument]);
 
   return {
@@ -256,6 +255,6 @@ export function useDocumentCommands({
     handleColorsChange,
     handleExportMarkdown,
     handleSaveAsTemplate,
-    handleExportWord,
+    handleExportPdf,
   };
 }

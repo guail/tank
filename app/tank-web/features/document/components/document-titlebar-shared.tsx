@@ -85,7 +85,7 @@ export interface DocumentTitlebarProps {
     onTogglePin: () => void;
     onExportMarkdown: () => void;
     onSaveAsTemplate: () => void;
-    onExportWord: () => void;
+    onExportPdf: () => void;
     onRequestDeleteMemo: () => void;
     onColorsChange?: (next: MemoColor[]) => void;
   };
@@ -768,7 +768,7 @@ export function MemoActions({
   onTogglePin,
   onExportMarkdown,
   onSaveAsTemplate,
-  onExportWord,
+  onExportPdf,
   onRequestDeleteMemo,
   onColorsChange,
 }: {
@@ -781,7 +781,7 @@ export function MemoActions({
   onTogglePin: () => void;
   onExportMarkdown: () => void;
   onSaveAsTemplate: () => void;
-  onExportWord: () => void;
+  onExportPdf: () => void;
   onRequestDeleteMemo: () => void;
   onColorsChange: (next: MemoColor[]) => void;
 }) {
@@ -927,10 +927,10 @@ export function MemoActions({
             <FileMdIcon className="w-4 h-4 mr-2" /> {t("document.action.exportMarkdown")}
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={onExportWord}
+            onClick={onExportPdf}
             className="flex items-center cursor-pointer rounded-md px-2 hover:bg-[var(--muted)]"
           >
-            <FileDocIcon className="w-4 h-4 mr-2" /> {t("document.action.exportWord")}
+            <FileDocIcon className="w-4 h-4 mr-2" /> {t("document.action.exportPdf")}
           </DropdownMenuItem>
           <hr className="mx-2 border-t border-[var(--border)] opacity-50" />
           <VersionHistorySubmenu

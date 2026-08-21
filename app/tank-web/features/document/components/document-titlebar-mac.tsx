@@ -39,7 +39,7 @@ export function DocumentTitlebarMac({
     onTogglePin,
     onExportMarkdown,
     onSaveAsTemplate,
-    onExportWord,
+    onExportPdf,
     onRequestDeleteMemo,
     onColorsChange,
   },
@@ -126,7 +126,7 @@ export function DocumentTitlebarMac({
             onTogglePin={onTogglePin}
             onExportMarkdown={onExportMarkdown}
             onSaveAsTemplate={onSaveAsTemplate}
-            onExportWord={onExportWord}
+            onExportPdf={onExportPdf}
             onRequestDeleteMemo={onRequestDeleteMemo}
             onColorsChange={onColorsChange ?? (() => {})}
           />

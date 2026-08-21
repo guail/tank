@@ -335,7 +335,7 @@ export function MainLayout() {
     handleColorsChange,
     handleExportMarkdown,
     handleSaveAsTemplate,
-    handleExportWord,
+    handleExportPdf,
   } = useDocumentCommands({
     currentDocumentPath,
     getCurrentDocumentContent,
@@ -500,7 +500,7 @@ export function MainLayout() {
       onTogglePin: handleTogglePin,
       onExportMarkdown: handleExportMarkdown,
       onSaveAsTemplate: handleSaveAsTemplate,
-      onExportWord: handleExportWord,
+      onExportPdf: handleExportPdf,
       onRequestDeleteMemo: handleRequestDeleteMemo,
       onColorsChange: handleColorsChange,
     },

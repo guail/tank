@@ -560,7 +560,7 @@ export function TabWindow() {
       onTogglePin: commands.handleTogglePin,
       onExportMarkdown: commands.handleExportMarkdown,
       onSaveAsTemplate: commands.handleSaveAsTemplate,
-      onExportWord: commands.handleExportWord,
+      onExportPdf: commands.handleExportPdf,
       onRequestDeleteMemo: () => currentMemo && setDeleteDialogOpen(true),
       onColorsChange: commands.handleColorsChange,
     },

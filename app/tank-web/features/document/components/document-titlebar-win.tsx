@@ -37,7 +37,7 @@ export function DocumentTitlebarWin({
     onTogglePin,
     onExportMarkdown,
     onSaveAsTemplate,
-    onExportWord,
+    onExportPdf,
     onRequestDeleteMemo,
     onColorsChange,
   },
@@ -124,7 +124,7 @@ export function DocumentTitlebarWin({
             onTogglePin={onTogglePin}
             onExportMarkdown={onExportMarkdown}
             onSaveAsTemplate={onSaveAsTemplate}
-            onExportWord={onExportWord}
+            onExportPdf={onExportPdf}
             onRequestDeleteMemo={onRequestDeleteMemo}
             onColorsChange={onColorsChange ?? (() => {})}
           />
