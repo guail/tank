@@ -39,6 +39,8 @@ export const dialogs = {
     }),
   writeExportFile: (filePath: string, content: string) =>
     invoke<boolean>('write_export_file', { filePath, content }),
+  writeExportFileBytes: (filePath: string, contentBase64: string) =>
+    invoke<boolean>('write_export_file_bytes', { filePath, contentBase64 }),
   copyAttachmentFile: (sourcePath: string, targetPath: string) =>
     invoke<boolean>('copy_attachment_file', { sourcePath, targetPath }),
 };

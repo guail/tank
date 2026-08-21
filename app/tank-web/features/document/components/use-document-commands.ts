@@ -222,13 +222,12 @@ export function useDocumentCommands({
     if (!doc) return;
 
     const wordDocName = tCmd('document.command.wordDocName');
-    const target = await promptExportTarget(doc, 'doc', { name: wordDocName, extensions: ['doc'] });
+    const target = await promptExportTarget(doc, 'docx', { name: wordDocName, extensions: ['docx'] });
     if (!target) return;
 
-    let exportModule: typeof import('@/lib/export');
-    let bodyHtml: string;
+    let docxBase64 = '';
     try {
-      exportModule = await import('@/lib/export');
+      const exportModule = await import('@/lib/export');
       const readImage = async (absPath: string): Promise<string | null> => {
         try {
           return await memosClient.readFileBase64(absPath);
@@ -237,15 +236,16 @@ export function useDocumentCommands({
         }
       };
       const inlinedMd = await exportModule.embedImagesInMarkdown(doc.markdown, readImage);
-      bodyHtml = exportModule.markdownToHtml(inlinedMd);
+      let bodyHtml = exportModule.markdownToHtml(inlinedMd);
       bodyHtml = await exportModule.embedImagesInHtml(bodyHtml, readImage);
+      const wordExport = await import('@/lib/word-export');
+      docxBase64 = await wordExport.htmlToDocxBase64(bodyHtml);
     } catch {
       toast.error(tCmd('document.command.exportFailed'));
       return;
     }
 
-    const language = useUserSettingsStore.getState().settings.language;
-    const ok = await dialogs.writeExportFile(target, exportModule.buildWordHtml(doc.title, bodyHtml, language));
+    const ok = await dialogs.writeExportFileBytes(target, docxBase64);
     toast[ok ? 'success' : 'error'](tCmd(ok ? 'document.command.exportWord.success' : 'document.command.exportWord.failed'));
   }, [promptExportTarget, requireExportableDocument]);
 

@@ -621,6 +621,7 @@ pub fn run() {
             commands::dialog::select_files,
             commands::dialog::save_file_dialog,
             commands::dialog::write_export_file,
+            commands::dialog::write_export_file_bytes,
             commands::dialog::save_attachment,
             commands::dialog::save_attachment_content,
             commands::dialog::copy_attachment_file,

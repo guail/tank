@@ -360,3 +360,16 @@ pub async fn open_attachment_file(
 pub fn write_export_file(file_path: String, content: String) -> bool {
     write_bytes_to_path(&file_path, content.as_bytes())
 }
+
+/// 写任意路径（scope guard, 同 `write_export_file`）, 但接收 base64 编码的字节,
+/// 用于导出二进制格式（如真实 .docx / OOXML zip）。前端先把内容 base64 后传过来。
+#[tauri::command]
+pub fn write_export_file_bytes(file_path: String, content_base64: String) -> bool {
+    match base64_decode(&content_base64) {
+        Ok(bytes) => write_bytes_to_path(&file_path, &bytes),
+        Err(e) => {
+            eprintln!("[write_export_file_bytes] base64 decode failed: {e}");
+            false
+        }
+    }
+}
