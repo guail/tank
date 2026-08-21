@@ -186,7 +186,21 @@ export function useDocumentCommands({
     const target = await promptExportTarget(doc, 'md', { name: 'Markdown', extensions: ['md', 'markdown'] });
     if (!target) return;
 
-    const ok = await dialogs.writeExportFile(target, doc.markdown);
+    let content = doc.markdown;
+    try {
+      const exportModule = await import('@/lib/export');
+      const readImage = async (absPath: string): Promise<string | null> => {
+        try {
+          return await memosClient.readFileBase64(absPath);
+        } catch {
+          return null;
+        }
+      };
+      content = await exportModule.embedImagesInMarkdown(doc.markdown, readImage);
+    } catch (error) {
+      console.warn('[useDocumentCommands] Failed to embed images for Markdown export:', error);
+    }
+    const ok = await dialogs.writeExportFile(target, content);
     toast[ok ? 'success' : 'error'](tCmd(ok ? 'document.command.exportMarkdown.success' : 'document.command.exportMarkdown.failed'));
   }, [promptExportTarget, requireExportableDocument]);
 
@@ -215,7 +229,16 @@ export function useDocumentCommands({
     let bodyHtml: string;
     try {
       exportModule = await import('@/lib/export');
-      bodyHtml = exportModule.markdownToHtml(doc.markdown);
+      const readImage = async (absPath: string): Promise<string | null> => {
+        try {
+          return await memosClient.readFileBase64(absPath);
+        } catch {
+          return null;
+        }
+      };
+      const inlinedMd = await exportModule.embedImagesInMarkdown(doc.markdown, readImage);
+      bodyHtml = exportModule.markdownToHtml(inlinedMd);
+      bodyHtml = await exportModule.embedImagesInHtml(bodyHtml, readImage);
     } catch (error) {
       console.warn('[useDocumentCommands] Failed to convert markdown for Word export:', error);
       toast.error(tCmd('document.command.exportFailed'));

@@ -553,6 +553,7 @@ pub fn run() {
             commands::memo::reads::read_memo,
             commands::memo::reads::open_memo_session,
             commands::memo::reads::read_document,
+            commands::memo::reads::read_file_base64,
             commands::memo::reads::write_document,
             commands::external_document::read_external_document,
             commands::external_document::write_external_document,

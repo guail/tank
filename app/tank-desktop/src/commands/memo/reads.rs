@@ -278,6 +278,26 @@ pub fn read_document(file_path: String, state: State<AppState>) -> Option<String
     fs::read_to_string(&io_path).ok()
 }
 
+/// 读取任意文件（如附件图片）的二进制内容，返回 base64 编码字符串。
+/// 供导出功能把图片内联进 Markdown / Word。范围检查与 `read_document` 一致
+/// （仅允许位于注册 notebook 目录内）；附件图片位于 notebook 的 `attachments/`
+/// 子目录下，可通过 `is_registered_notebook_path` 的 `path_is_inside` 检查。
+pub fn read_file_base64(file_path: String, state: State<AppState>) -> Option<String> {
+    if !crate::commands::helpers::can_access_document_path(Path::new(&file_path), &state) {
+        eprintln!("[read_file_base64] refused out-of-scope path: {}", file_path);
+        return None;
+    }
+    let io_path = resolve_document_path_for_io(&file_path, state.inner());
+    start_security_bookmark_access(&state, &io_path);
+    match fs::read(&io_path) {
+        Ok(bytes) => Some(base64::engine::general_purpose::STANDARD.encode(&bytes)),
+        Err(e) => {
+            eprintln!("[read_file_base64] read failed: {}", e);
+            None
+        }
+    }
+}
+
 /// Resolve a document path for disk I/O, with a constrained stale-path fallback.
 fn resolve_document_path_for_io(file_path: &str, state: &AppState) -> std::path::PathBuf {
     let requested_path = std::path::PathBuf::from(file_path);

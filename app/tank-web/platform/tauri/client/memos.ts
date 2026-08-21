@@ -107,6 +107,8 @@ export const memos = {
   openMemoSession: (id: string) =>
     invoke<OpenMemoSession | null>('open_memo_session', { id }),
   readDocument: (filePath: string) => invoke<string | null>('read_document', { filePath }),
+  /// 读取任意文件二进制 (如附件图片), 返回 base64 编码字符串。供导出内联图片。
+  readFileBase64: (filePath: string) => invoke<string | null>('read_file_base64', { filePath }),
   // 鍐欑洏 IPC銆傝繑鍥炲€间负 null = 鍐欑洏澶辫触 (璺緞闈炴硶 / CAS refuse / fs error),
   // 鍚﹀垯杩斿洖 { path, content } 鈹€鈹€ `path` 鏄鐩樹笂鏈€缁堢墿鐞嗚矾寰?  // (rename 鍚庡彲鑳借窡 caller 浼犵殑 filePath 涓嶅悓, 鍓嶇闇€瑕佹嵁姝ゅ垏 buf),
   // `content` 鏄鐩樻渶缁堝唴瀹?(鍚?frontmatter), 鐢ㄤ簬 `lastSavedContent` 瀵归綈銆?  //

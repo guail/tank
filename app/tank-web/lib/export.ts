@@ -162,3 +162,117 @@ export function sanitizeFileName(name: string, language: AppLanguage): string {
   const lang = language;
   return translate(lang, 'common.untitled');
 }
+
+/**
+ * 把 Tauri 的 `asset://localhost/<encoded>` 或 `http(s)://asset.localhost/<encoded>`
+ * 还原成真实本地绝对路径。与 `features/editor/extensions/attachment-link/utils` 的
+ * `decodeStorageKey` 同源, 这里内联一份避免 lib -> features 循环依赖。
+ */
+export function decodeAssetUrl(src: string): string | null {
+  if (
+    !src.startsWith('asset://') &&
+    !src.startsWith('http://asset.localhost/') &&
+    !src.startsWith('https://asset.localhost/')
+  ) {
+    return null;
+  }
+  try {
+    const encoded = src
+      .replace('asset://localhost/', '')
+      .replace('http://asset.localhost/', '')
+      .replace('https://asset.localhost/', '');
+    return decodeURIComponent(encoded);
+  } catch {
+    return null;
+  }
+}
+
+const IMAGE_MIME_BY_EXT: Record<string, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  bmp: 'image/bmp',
+  pdf: 'application/pdf',
+};
+
+function mimeForPath(absPath: string): string {
+  const ext = absPath.split('.').pop()?.toLowerCase() ?? '';
+  return IMAGE_MIME_BY_EXT[ext] ?? 'application/octet-stream';
+}
+
+/**
+ * 把 markdown 里的附件图片 (`![alt](asset://localhost/...)`) 内联为 base64 data URI,
+ * 这样导出的 .md 自包含、图片随文件走。同时去掉 pandoc 风格的 `{width=...}` 残留
+ * 属性 (marked 不识别, 会作为纯文本残留在导出结果里)。
+ *
+ * `readImage(absPath)` 由调用方注入 (经 IPC 读二进制), 返回 base64 或 null。
+ * 读取失败则保留原 asset 链接, 不阻断导出。
+ */
+export async function embedImagesInMarkdown(
+  markdown: string,
+  readImage: (absPath: string) => Promise<string | null>,
+): Promise<string> {
+  const re =
+    /!\[([^\]]*)\]\((asset:\/\/localhost\/[^)\s]+|https?:\/\/asset\.localhost\/[^)\s]+)\)(\{[^{}]*\})?/g;
+  let out = '';
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(markdown)) !== null) {
+    const full = m[0];
+    const alt = m[1];
+    const assetUrl = m[2];
+    const abs = decodeAssetUrl(assetUrl);
+    out += markdown.slice(last, m.index);
+    if (abs) {
+      const b64 = await readImage(abs);
+      if (b64) {
+        out += `![${alt}](data:${mimeForPath(abs)};base64,${b64})`;
+      } else {
+        out += full;
+      }
+    } else {
+      out += full;
+    }
+    last = m.index + full.length;
+  }
+  out += markdown.slice(last);
+  return out;
+}
+
+/**
+ * 兜底: 扫描已渲染 HTML 里的 `<img src="asset://...">` 并替换为 base64 data URI。
+ * 用于 markdown 里直接用 HTML `<img>` 标签写图片的场景 (标准 `![...]()` 已在 markdown
+ * 阶段内联, 这里通常不再命中, 仅作安全兜底)。
+ */
+export async function embedImagesInHtml(
+  html: string,
+  readImage: (absPath: string) => Promise<string | null>,
+): Promise<string> {
+  const re =
+    /<img\b[^>]*\ssrc=["'](asset:\/\/localhost\/[^"']+|https?:\/\/asset\.localhost\/[^"']+)["'][^>]*>/g;
+  let out = '';
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) {
+    const full = m[0];
+    const assetUrl = m[1];
+    const abs = decodeAssetUrl(assetUrl);
+    out += html.slice(last, m.index);
+    if (abs) {
+      const b64 = await readImage(abs);
+      if (b64) {
+        out += full.replace(assetUrl, `data:${mimeForPath(abs)};base64,${b64}`);
+      } else {
+        out += full;
+      }
+    } else {
+      out += full;
+    }
+    last = m.index + full.length;
+  }
+  out += html.slice(last);
+  return out;
+}
