@@ -197,8 +197,8 @@ export function useDocumentCommands({
         }
       };
       content = await exportModule.embedImagesInMarkdown(doc.markdown, readImage);
-    } catch (error) {
-      console.warn('[useDocumentCommands] Failed to embed images for Markdown export:', error);
+    } catch {
+      // 内联图片失败时回退到原始 markdown，已由最终 toast 提示结果
     }
     const ok = await dialogs.writeExportFile(target, content);
     toast[ok ? 'success' : 'error'](tCmd(ok ? 'document.command.exportMarkdown.success' : 'document.command.exportMarkdown.failed'));
@@ -239,8 +239,7 @@ export function useDocumentCommands({
       const inlinedMd = await exportModule.embedImagesInMarkdown(doc.markdown, readImage);
       bodyHtml = exportModule.markdownToHtml(inlinedMd);
       bodyHtml = await exportModule.embedImagesInHtml(bodyHtml, readImage);
-    } catch (error) {
-      console.warn('[useDocumentCommands] Failed to convert markdown for Word export:', error);
+    } catch {
       toast.error(tCmd('document.command.exportFailed'));
       return;
     }

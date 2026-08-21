@@ -3,6 +3,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use base64::Engine;
 use tauri::{AppHandle, State};
 
 use crate::lock_utils::read_lock;
@@ -282,6 +283,7 @@ pub fn read_document(file_path: String, state: State<AppState>) -> Option<String
 /// 供导出功能把图片内联进 Markdown / Word。范围检查与 `read_document` 一致
 /// （仅允许位于注册 notebook 目录内）；附件图片位于 notebook 的 `attachments/`
 /// 子目录下，可通过 `is_registered_notebook_path` 的 `path_is_inside` 检查。
+#[tauri::command]
 pub fn read_file_base64(file_path: String, state: State<AppState>) -> Option<String> {
     if !crate::commands::helpers::can_access_document_path(Path::new(&file_path), &state) {
         eprintln!("[read_file_base64] refused out-of-scope path: {}", file_path);
