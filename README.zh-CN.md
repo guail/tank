@@ -3,84 +3,76 @@
 </p>
 
 <p align="center">
-  <img src="./docs/images/app-icon.png" width="120" alt="Flowix" />
+  <img src="./docs/images/app-icon.png" width="120" alt="TANK" />
 </p>
 
-<h1 align="center">你的笔记，<br />AI 的记忆。</h1>
+<h1 align="center">TANK 英雄笔记<br />本地 Markdown 笔记，自动互链</h1>
 
-<p align="center"><strong>本地 Markdown 笔记本，让你的写作无缝成为 Agent 可以持续使用的上下文。</strong></p>
+<p align="center"><strong>本地优先的 Markdown 笔记本，支持 @ 提及双向链接与干净的 PDF 导出。</strong></p>
 
 <p align="center">
-  Markdown · 开源 · 多 Agent · MCP 与 CLI
+  Markdown · 本地优先 · 双向链接 · PDF 导出
 </p>
 
 <p align="center">
-  <a href="https://flowix-memo.com/"><b>立即下载</b></a> ·
-  <a href="https://flowix-memo.com/"><b>官网</b></a> ·
-  <a href="https://flowix-memo.com/docs/"><b>文档</b></a>
+  <a href="https://github.com/guail/tank/releases"><b>下载</b></a> ·
+  <a href="https://github.com/guail/tank/releases"><b>发布页</b></a>
 </p>
 
 ---
 
-<img src="./docs/images/readme-introduce.gif" width="100%" alt="Flowix" />
+<img src="./docs/images/readme-introduce.gif" width="100%" alt="TANK" />
 
-## Flowix 让笔记成为持续工作的记忆
+## 笔记自己连起自己
 
-用 Markdown 记录内容，把需要的上下文交给 Agent，再将结果写回同一篇笔记，方便检查、修改和下次继续使用。
+用 Markdown 记录，输入 `@` 提及另一篇笔记，TANK 会自动建立反向链接——打开任意一篇，就能看到所有指向它的笔记。你的内容始终是磁盘上普通的 `.md` 文件。
 
-<img src="./docs/images/home-write.png" width="100%" alt="Flowix 笔记在浅色与深色主题中的界面" />
+<img src="./docs/images/home-write.png" width="100%" alt="TANK 笔记在浅色与深色主题中的界面" />
 
 ---
 
-## 让工作持续推进
+## 适合用来做什么
 
-把产品、开发、研究和个人知识放在一起，让 Agent 不必每次从头开始。
+把产品笔记、开发记录、研究资料和个人知识放在一处，全部是本地 Markdown，可用任意编辑器打开。
 
 | 场景 | 说明 |
 | --- | --- |
-| **产品工作** | 集中管理需求、反馈和决策，让产品文档保持最新。 |
-| **软件开发** | 保存项目背景和约束，让编码 Agent 接着推进。 |
-| **课题研究** | 将资料、分析和结论放在一起，方便追溯和复用。 |
-| **个人知识** | 让笔记、计划和个人偏好成为 Agent 可用的上下文。 |
+| **个人知识** | 一个安静、不锁死你的本地笔记本。 |
+| **双向链接** | 用 `@` 提及一篇笔记即可建立链接，反向链接自动出现。 |
+| **开发记录** | 把背景、约束和决策放在代码旁边。 |
+| **发到微信** | 任意笔记导出为 PDF，在微信预览里稳定打开。 |
 
-<p align="center"><img src="./docs/images/home-nav.png" width="60%" alt="Flowix 中的笔记、对话、任务与标签导航" /></p>
-
----
-
-## 让不同 Agent 使用同一份记忆
-
-你可以在 Flowix 内使用 Agent，也可以连接 **Codex**、**Claude Code**、**OpenCode**、**Hermes** 及其他 MCP 或 CLI 工具，让它们基于同一套笔记和上下文工作。
-
-<p align="center"><img src="./docs/images/home-agent.png" width="60%" alt="Flowix 将 Codex、Claude Code、OpenCode、Hermes 和 Flowix Agent 连接到同一篇笔记" /></p>
+<p align="center"><img src="./docs/images/home-nav.png" width="60%" alt="TANK 中的笔记、链接与标签导航" /></p>
 
 ---
 
 ## 笔记留在本地，由你掌控
 
-Flowix 将笔记保存为本地 Markdown 文件。你决定 Agent 能看到什么，也可以自由选择同步和备份方式。
+TANK 把你的内容保存为本地 Markdown 文件。
 
-- **保存在本地** — 笔记是普通 Markdown 文件，可以用其他应用打开和编辑。
-- **按需连接 Agent** — 使用 Codex、Claude Code、OpenCode 等 Agent 时，只提供你主动选择的内容。
-- **自由同步和备份** — 继续使用你熟悉的同步、备份或版本管理工具。
+- **保存在本地** — 笔记是标准 Markdown，能用其他应用打开和编辑。
+- **无需账号** — 一切都在你的磁盘上。同步和备份用你信任的工具（网盘、git、U 盘）即可。
+- **链接在导出后依然有效** — `@` 提及在笔记本内成为真实的反向链接，不依赖任何服务器。
 
 ---
 
 ## 快速开始
 
-1. 从 [官网](https://flowix-memo.com/) 下载并安装 Flowix。
+1. 从 [GitHub Releases](https://github.com/guail/tank/releases) 下载最新安装包。
 2. 新建一个本地文件夹，或将已有文件夹注册为笔记本。
-3. 创建一篇文档，记录任务背景、参考资料、目标与约束。
-4. 在文档内调用 Agent，或继续用标签与属性组织内容。
+3. 创建一篇文档，开始用 Markdown 写作。
+4. 输入 `@` 链接另一篇笔记，目标笔记上会自动显示反向链接。
+5. 需要分享时，从文档菜单导出为 PDF。
 
 ## 本地开发
 
 ```bash
-git clone https://github.com/text2future/flowix.git
-cd flowix
+git clone https://github.com/guail/tank.git
+cd tank
 npm install
 
-npm run tauri dev
 npm run dev
+npm run tauri dev
 npm run tauri build
 ```
 
@@ -88,4 +80,6 @@ npm run tauri build
 
 ## 许可协议
 
-Flowix 基于 MIT 协议开源。
+TANK 基于 MIT 协议分发。
+
+本项目是 [Flowix](https://github.com/text2future/flowix)（原作者 Copyright the Flowix authors）的 fork，改造为本地优先的 Markdown 笔记本。原项目的 MIT 许可与版权声明在源代码中按适用位置保留。
