@@ -180,6 +180,7 @@ export async function htmlToPdfBase64(bodyHtml: string, title: string): Promise<
     const canvas = await html2canvas(root, {
       scale: 2,
       useCORS: true,
+      allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
       windowWidth: OFFSCREEN_WIDTH,
@@ -190,7 +191,9 @@ export async function htmlToPdfBase64(bodyHtml: string, title: string): Promise<
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // 长图高度: 真实高度 = canvas 的物理像素 / scale, 否则图层被放大一倍导致切片错位。
+    const pxPerPt = canvas.width / OFFSCREEN_WIDTH;
+    const imgHeight = canvas.height / pxPerPt;
     const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
     let heightLeft = imgHeight;
@@ -198,7 +201,7 @@ export async function htmlToPdfBase64(bodyHtml: string, title: string): Promise<
     doc.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
     while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
+      position -= pageHeight;
       doc.addPage();
       doc.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;

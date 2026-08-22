@@ -239,8 +239,10 @@ export function useDocumentCommands({
       bodyHtml = await exportModule.embedImagesInHtml(bodyHtml, readImage);
       const pdfExport = await import('@/lib/pdf-export');
       pdfBase64 = await pdfExport.htmlToPdfBase64(bodyHtml, doc.title);
-    } catch {
-      toast.error(tCmd('document.command.exportFailed'));
+    } catch (err) {
+      // 临时诊断: 把真实报错打到控制台, 便于定位 (后续稳定后可改回通用提示)。
+      console.error('[PDF导出] 失败详情:', err);
+      toast.error(`${tCmd('document.command.exportFailed')}：${(err as Error)?.message ?? err}`);
       return;
     }
 
