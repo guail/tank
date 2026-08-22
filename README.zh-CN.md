@@ -21,13 +21,9 @@
 
 ---
 
-<img src="./docs/images/readme-introduce.gif" width="100%" alt="TANK" />
-
 ## 笔记自己连起自己
 
 用 Markdown 记录，输入 `@` 提及另一篇笔记，TANK 会自动建立反向链接——打开任意一篇，就能看到所有指向它的笔记。你的内容始终是磁盘上普通的 `.md` 文件。
-
-<img src="./docs/images/home-write.png" width="100%" alt="TANK 笔记在浅色与深色主题中的界面" />
 
 ---
 
@@ -41,8 +37,6 @@
 | **双向链接** | 用 `@` 提及一篇笔记即可建立链接，反向链接自动出现。 |
 | **开发记录** | 把背景、约束和决策放在代码旁边。 |
 | **发到微信** | 任意笔记导出为 PDF，在微信预览里稳定打开。 |
-
-<p align="center"><img src="./docs/images/home-nav.png" width="60%" alt="TANK 中的笔记、链接与标签导航" /></p>
 
 ---
 

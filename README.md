@@ -21,15 +21,11 @@
 
 ---
 
-<img src="./docs/images/readme-introduce.gif" width="100%" alt="TANK" />
-
 ## Notes that connect themselves
 
 Write in Markdown. Use `@` to mention another note and TANK builds the
 backlinks automatically — open any note and see everything that points to it.
 Your writing stays plain `.md` files on your own disk.
-
-<img src="./docs/images/home-write.png" width="100%" alt="TANK notes shown across light and dark themes" />
 
 ---
 
@@ -44,8 +40,6 @@ place, all as local Markdown you can open with any editor.
 | **Bidirectional links** | `@`-mention a note to link it; backlinks appear automatically. |
 | **Development logs** | Keep background, constraints, and decisions next to the code. |
 | **Sharing to WeChat** | Export any note as a PDF that opens reliably in WeChat preview. |
-
-<p align="center"><img src="./docs/images/home-nav.png" width="60%" alt="TANK navigation for notes, links, and tags" /></p>
 
 ---
 
