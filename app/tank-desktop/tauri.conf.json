@@ -84,7 +84,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://gitee.com/guail/tank/releases/download/updater/latest.json",
+        "https://gitee.com/无敌无挡/tank/releases/download/updater/latest.json",
         "https://github.com/guail/tank/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFEODQxMzg2MDNEMjhFNjQKUldSa2p0SURoaE9FclhLT25HMHFjU2dCTE5xUDZCQklnMklsUVR6a1FuRGdUN2dwbDI4eCtETjkK",

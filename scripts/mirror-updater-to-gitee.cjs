@@ -30,13 +30,15 @@ const path = require('path');
 
 const OWNER = process.env.GITEE_OWNER;
 const REPO = process.env.GITEE_REPO;
+const GH_OWNER = process.env.GITHUB_OWNER || OWNER;
+const GH_REPO = process.env.GITHUB_REPO || REPO;
 const TOKEN = process.env.GITEE_TOKEN;
 const GH_TOKEN = process.env.GITHUB_TOKEN;
 const VERSION_TAG = process.env.GITHUB_REF_NAME; // v1.1.40
 const DEFAULT_BRANCH = process.env.GITEE_DEFAULT_BRANCH || 'master';
 const MIRROR_TAG = 'updater';
 const GITEE_API = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}`;
-const GH_API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const GH_API = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`;
 
 if (!TOKEN) {
   console.log('[gitee-mirror] GITEE_TOKEN missing, skipping Gitee mirror.');
@@ -44,6 +46,10 @@ if (!TOKEN) {
 }
 if (!OWNER || !REPO || !VERSION_TAG) {
   console.error('[gitee-mirror] missing GITEE_OWNER / GITEE_REPO / GITHUB_REF_NAME');
+  process.exit(1);
+}
+if (!GH_OWNER || !GH_REPO) {
+  console.error('[gitee-mirror] missing GITHUB_OWNER / GITHUB_REPO');
   process.exit(1);
 }
 
@@ -101,7 +107,7 @@ async function resolveGithubAsset(url) {
     if (!filename) throw new Error(`cannot resolve asset ${assetId} name`);
   } else {
     // fallback: clean /releases/download/<tag>/<file> path
-    const base = `https://github.com/${OWNER}/${REPO}/releases/download/${VERSION_TAG}`;
+    const base = `https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${VERSION_TAG}`;
     if (!String(url).startsWith(base)) return null;
     filename = String(url).split('/').pop();
   }
@@ -121,7 +127,7 @@ async function resolveGithubAsset(url) {
 
 async function main() {
   // 1) Fetch the GitHub-generated latest.json for this version.
-  const ghJsonUrl = `https://github.com/${OWNER}/${REPO}/releases/download/${VERSION_TAG}/latest.json`;
+  const ghJsonUrl = `https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${VERSION_TAG}/latest.json`;
   console.log(`[gitee-mirror] fetching ${ghJsonUrl}`);
   const ghRes = await fetch(ghJsonUrl);
   if (!ghRes.ok) throw new Error(`fetch github latest.json -> ${ghRes.status}`);

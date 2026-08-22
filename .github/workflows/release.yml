@@ -127,8 +127,10 @@ jobs:
         continue-on-error: true
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-          GITEE_OWNER: guail
+          GITEE_OWNER: 无敌无挡
           GITEE_REPO: tank
+          GITHUB_OWNER: guail
+          GITHUB_REPO: tank
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITEE_DEFAULT_BRANCH: master
         run: node scripts/mirror-updater-to-gitee.cjs
