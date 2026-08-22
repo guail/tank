@@ -55,8 +55,12 @@ async function giteeApi(method, p, opts = {}) {
   const sep = p.includes('?') ? '&' : '?';
   // 大文件上传 (NSIS .exe ~19MB) 在 CI 上偶发连接抖动，给每次请求一个
   // 上限超时，避免 fetch 无限挂起；配合调用方的重试逻辑覆盖瞬时失败。
+  // 上传走 multipart 时超时给更宽松的预算（10 分钟），避免 18.7MB 的
+  // exe 在 Gitee 上还没传完就被掐断（原 180s 在慢速 CI 上会反复 aborted）。
+  const isUpload = Boolean(opts && opts.body && typeof opts.body.getBoundary === 'function');
+  const budget = isUpload ? 600000 : 180000;
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 180000);
+  const timer = setTimeout(() => ctrl.abort(), budget);
   let res;
   try {
     res = await fetch(`${p}${sep}access_token=${encodeURIComponent(TOKEN)}`, {
