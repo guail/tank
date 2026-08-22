@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="./docs/images/app-icon.png" width="120" alt="TANK" />
+  <img src="./docs/images/app-icon.png?v=2" width="120" alt="TANK" />
 </p>
 
 <h1 align="center">TANK 英雄笔记<br />Local Markdown notes that link themselves</h1>
