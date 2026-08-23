@@ -127,7 +127,7 @@ jobs:
         continue-on-error: true
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
-          GITEE_OWNER: 无敌无挡
+          GITEE_OWNER: guail
           GITEE_REPO: tank
           GITHUB_OWNER: guail
           GITHUB_REPO: tank

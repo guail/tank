@@ -30,6 +30,7 @@ const path = require('path');
 
 const OWNER = process.env.GITEE_OWNER;
 const REPO = process.env.GITEE_REPO;
+// Gitee URL path MUST use the account username (guail), not the display name.
 const GH_OWNER = process.env.GITHUB_OWNER || OWNER;
 const GH_REPO = process.env.GITHUB_REPO || REPO;
 const TOKEN = process.env.GITEE_TOKEN;
