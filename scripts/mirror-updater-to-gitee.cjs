@@ -65,7 +65,9 @@ async function giteeApi(method, p, opts = {}) {
   // 上传走 multipart 时超时给更宽松的预算（10 分钟），避免 18.7MB 的
   // exe 在 Gitee 上还没传完就被掐断（原 180s 在慢速 CI 上会反复 aborted）。
   const isUpload = Boolean(opts && opts.body && typeof opts.body.getBoundary === 'function');
-  const budget = isUpload ? 600000 : 180000;
+  // 大文件上传 (NSIS .exe ~19MB) 在 CI 上偶发连接抖动：给上传更宽松的预算
+  // (15 分钟)，避免 10 分钟仍不够时被掐断。普通请求保持 3 分钟上限。
+  const budget = isUpload ? 900000 : 180000;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), budget);
   let res;
@@ -191,46 +193,37 @@ async function main() {
     }
   }
 
-  // 4) Remove old assets so re-runs don't accumulate stale versions.
+  // 4) List current assets once (used for skip-if-exists + later cleanup).
+  let existing = [];
   try {
-    const assets = await giteeApi(
+    existing = (await giteeApi(
       'GET',
       `${GITEE_API}/releases/${release.id}/attach_files?per_page=100`
-    );
-    for (const a of assets || []) {
-      if (
-        a.name === 'latest.json' ||
-        /TANK\./.test(a.name) ||
-        /\.(exe|zip|sig|tar\.gz)$/.test(a.name)
-      ) {
-        await giteeApi(
-          'DELETE',
-          `${GITEE_API}/releases/${release.id}/attach_files/${a.id}`
-        );
-        console.log(`[gitee-mirror] deleted old asset ${a.name}`);
-      }
-    }
+    )) || [];
   } catch (e) {
-    console.warn('[gitee-mirror] asset cleanup skipped:', e.message);
+    console.warn('[gitee-mirror] list assets failed:', e.message);
   }
+  const existingByName = new Map(existing.map((a) => [a.name, a]));
 
-  // 5) Write binaries to disk so the upload loop can read them.
+  // 5) Upload the NEW binaries FIRST, WITHOUT deleting the previous ones.
+  //    A flaky upload can therefore never leave the mirror without a usable
+  //    exe — clients simply keep updating to the last good version instead of
+  //    hitting a 404. Gitee appends on same name, so we skip if it's already up.
+  let exeOk = true;
   for (const b of binaries) {
-    fs.writeFileSync(path.resolve(b.filename), b.buf);
-  }
-
-  // 6) Upload the new manifest + binaries (retry each; Gitee upload of the
-  //    ~19MB NSIS exe is occasionally flaky on CI, so retry before giving up).
-  for (const f of [localJson, ...binaries.map((b) => b.filename)]) {
-    const name = path.basename(f);
+    const name = b.filename;
+    if (existingByName.has(name)) {
+      console.log(`[gitee-mirror] ${name} already on Gitee, skip`);
+      continue;
+    }
+    fs.writeFileSync(path.resolve(name), b.buf);
     let ok = false;
     for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
       try {
-        const filePath = path.resolve(f);
         const form = new FormData();
         form.append(
           'file',
-          new Blob([fs.readFileSync(filePath)], { type: 'application/octet-stream' }),
+          new Blob([fs.readFileSync(path.resolve(name))], { type: 'application/octet-stream' }),
           name
         );
         await giteeApi('POST', `${GITEE_API}/releases/${release.id}/attach_files`, {
@@ -240,11 +233,60 @@ async function main() {
         ok = true;
       } catch (e) {
         console.warn(`[gitee-mirror] upload attempt ${attempt} failed for ${name}:`, e.message);
-        if (attempt < 3) await new Promise((r) => setTimeout(r, 5000));
+        if (attempt < 3) await new Promise((r) => setTimeout(r, 8000));
       }
     }
     if (!ok) {
-      throw new Error(`upload failed after 3 attempts: ${name}`);
+      console.error(`[gitee-mirror] could NOT upload ${name} after 3 attempts`);
+      exeOk = false;
+    }
+  }
+
+  // 6) Only swap latest.json + clean stale assets AFTER the exe is confirmed up.
+  //    If the upload failed we leave Gitee on the previous working version so
+  //    clients keep updating (never a 404). We retry on the next release run.
+  if (!exeOk) {
+    console.warn(
+      '[gitee-mirror] new binary not mirrored; leaving Gitee on the previous working version so clients keep updating. Retry next release.'
+    );
+    console.log(
+      `[gitee-mirror] done (degraded). manifest: https://gitee.com/${OWNER}/${REPO}/releases/download/${MIRROR_TAG}/latest.json`
+    );
+    return;
+  }
+
+  // 6a) Replace latest.json. Gitee appends on same name, so delete ALL existing
+  //     copies first, then upload the rewritten one.
+  for (const a of existing) {
+    if (a.name === 'latest.json') {
+      await giteeApi(
+        'DELETE',
+        `${GITEE_API}/releases/${release.id}/attach_files/${a.id}`
+      ).catch(() => {});
+      console.log('[gitee-mirror] deleted old latest.json');
+    }
+  }
+  fs.writeFileSync(path.resolve('latest.json'), JSON.stringify(manifest, null, 2));
+  {
+    const form = new FormData();
+    form.append(
+      'file',
+      new Blob([fs.readFileSync(path.resolve('latest.json'))], { type: 'application/json' }),
+      'latest.json'
+    );
+    await giteeApi('POST', `${GITEE_API}/releases/${release.id}/attach_files`, { body: form });
+  }
+  console.log('[gitee-mirror] uploaded latest.json');
+
+  // 6b) Remove stale exes (anything not the current version) to avoid bloat.
+  const currentExes = new Set(binaries.map((b) => b.filename));
+  for (const a of existing) {
+    if (/\.exe$/.test(a.name) && !currentExes.has(a.name)) {
+      await giteeApi(
+        'DELETE',
+        `${GITEE_API}/releases/${release.id}/attach_files/${a.id}`
+      ).catch((e) => console.warn('[gitee-mirror] cleanup skip', a.name, e.message));
+      console.log(`[gitee-mirror] removed stale ${a.name}`);
     }
   }
 
