@@ -44,7 +44,10 @@ const PRINT_CSS = `
   box-sizing: border-box;
   width: ${OFFSCREEN_WIDTH}px;
   padding: 36px 40px;
-  background: #ffffff;
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   color: #1f2329;
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Hiragino Sans GB", sans-serif;
   font-size: 14px;
