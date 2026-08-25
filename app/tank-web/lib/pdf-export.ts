@@ -44,10 +44,7 @@ const PRINT_CSS = `
   box-sizing: border-box;
   width: ${OFFSCREEN_WIDTH}px;
   padding: 36px 40px;
-  background: #f6f8fa;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
   color: #1f2329;
   font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Hiragino Sans GB", sans-serif;
   font-size: 14px;
@@ -292,9 +289,9 @@ export async function htmlToPdfBase64(bodyHtml: string, title: string): Promise<
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const imgWidth = pageWidth;
-      // 长图高度: 真实高度 = canvas 的物理像素 / scale, 否则图层被放大一倍导致切片错位。
-      const pxPerPt = canvas.width / OFFSCREEN_WIDTH;
-      const imgHeight = canvas.height / pxPerPt;
+      // 高度必须与宽度用同一缩放比例, 否则整张长图被纵向拉伸、文字变形。
+      // 正确比例: imgHeight / imgWidth === canvas.height / canvas.width
+      const imgHeight = (imgWidth * canvas.height) / canvas.width;
       const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
       let heightLeft = imgHeight;
