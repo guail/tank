@@ -149,6 +149,101 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
+// ---------------------------------------------------------------------------
+// html2canvas 1.4.1 不支持 CSS 的 oklch() 颜色函数（Tailwind v4 默认全用 oklch），
+// 解析样式表时会直接抛 "Attempting to parse an unsupported color function"。
+// 导出前把所有样式 / 内联样式里的 oklch() 就地转成 rgb()（视觉无差别），导出后还原。
+// ---------------------------------------------------------------------------
+
+function oklchToRgb(L: number, C: number, H: number, alpha = 1): string {
+  const hr = (H * Math.PI) / 180;
+  const a = C * Math.cos(hr);
+  const b = C * Math.sin(hr);
+  // OKLab -> 线性 sRGB (Björn Ottosson)
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+  const l = l_ ** 3;
+  const m = m_ ** 3;
+  const s = s_ ** 3;
+  let r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  let g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  let bb = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
+  const to255 = (x: number) => {
+    const v = x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+    return Math.max(0, Math.min(255, Math.round(v * 255)));
+  };
+  const R = to255(r);
+  const G = to255(g);
+  const B = to255(bb);
+  return alpha < 1 ? `rgba(${R}, ${G}, ${B}, ${alpha})` : `rgb(${R}, ${G}, ${B})`;
+}
+
+const OKLCH_RE =
+  /oklch\(\s*([\d.]+)(%)?\s+([\d.]+)\s+([\d.]+)(deg|rad|grad|turn)?\s*(?:\/\s*([\d.]+)(%)?)?\s*\)/gi;
+
+function convertOklch(css: string): string {
+  return css.replace(OKLCH_RE, (_m, lStr, lPct, cStr, hStr, hUnit, aStr, aPct) => {
+    const L = parseFloat(lStr) * (lPct ? 0.01 : 1);
+    const C = parseFloat(cStr);
+    let H = parseFloat(hStr);
+    if (hUnit === 'rad') H = (H * 180) / Math.PI;
+    else if (hUnit === 'turn') H = H * 360;
+    else if (hUnit === 'grad') H = H * 0.9;
+    const alpha = aStr === undefined ? 1 : parseFloat(aStr) * (aPct ? 0.01 : 1);
+    return oklchToRgb(L, C, H, alpha);
+  });
+}
+
+async function neutralizeOklchStylesheets(): Promise<() => void> {
+  const restorations: Array<() => void> = [];
+  const nodes = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'));
+  for (const node of nodes) {
+    if (node instanceof HTMLStyleElement) {
+      const original = node.textContent ?? '';
+      const fixed = convertOklch(original);
+      if (fixed !== original) {
+        node.textContent = fixed;
+        restorations.push(() => {
+          node.textContent = original;
+        });
+      }
+    } else if (node instanceof HTMLLinkElement) {
+      const href = node.getAttribute('href');
+      if (!href) continue;
+      try {
+        const text = await (await fetch(href)).text();
+        const fixed = convertOklch(text);
+        if (fixed === text) continue;
+        const style = document.createElement('style');
+        style.textContent = fixed;
+        node.parentNode?.insertBefore(style, node);
+        node.remove();
+        const savedHref = href;
+        restorations.push(() => {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = savedHref;
+          style.parentNode?.insertBefore(link, style);
+          style.remove();
+        });
+      } catch {
+        // 取不到（跨域等）就跳过，oklch 风险留给后续处理
+      }
+    }
+  }
+  return () => restorations.forEach((r) => r());
+}
+
+function convertInlineOklch(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>('*').forEach((el) => {
+    const style = el.getAttribute('style');
+    if (style && /oklch\(/i.test(style)) {
+      el.setAttribute('style', convertOklch(style));
+    }
+  });
+}
+
 /**
  * 将一段 HTML（body 片段即可）转换为 .pdf 的 base64 字符串。
  *
@@ -174,41 +269,47 @@ export async function htmlToPdfBase64(bodyHtml: string, title: string): Promise<
 
   try {
     const root = container.querySelector('.tank-pdf-root') as HTMLElement;
-    await waitForImages(root);
-    await nextFrame();
+    convertInlineOklch(root);
+    const restore = await neutralizeOklchStylesheets();
+    try {
+      await waitForImages(root);
+      await nextFrame();
 
-    const canvas = await html2canvas(root, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#ffffff',
-      logging: false,
-      windowWidth: OFFSCREEN_WIDTH,
-    });
+      const canvas = await html2canvas(root, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: OFFSCREEN_WIDTH,
+      });
 
-    const doc = new jspdf.jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
-    doc.setProperties({ title, creator: 'TANK 英雄笔记' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const imgWidth = pageWidth;
-    // 长图高度: 真实高度 = canvas 的物理像素 / scale, 否则图层被放大一倍导致切片错位。
-    const pxPerPt = canvas.width / OFFSCREEN_WIDTH;
-    const imgHeight = canvas.height / pxPerPt;
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      const doc = new jspdf.jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+      doc.setProperties({ title, creator: 'TANK 英雄笔记' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      // 长图高度: 真实高度 = canvas 的物理像素 / scale, 否则图层被放大一倍导致切片错位。
+      const pxPerPt = canvas.width / OFFSCREEN_WIDTH;
+      const imgHeight = canvas.height / pxPerPt;
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
-    let heightLeft = imgHeight;
-    let position = 0;
-    doc.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-    while (heightLeft > 0) {
-      position -= pageHeight;
-      doc.addPage();
+      let heightLeft = imgHeight;
+      let position = 0;
       doc.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
-    }
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        doc.addPage();
+        doc.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
 
-    const blob = doc.output('blob');
-    return await blobToBase64(blob);
+      const blob = doc.output('blob');
+      return await blobToBase64(blob);
+    } finally {
+      restore();
+    }
   } finally {
     if (container.parentNode) container.parentNode.removeChild(container);
   }
