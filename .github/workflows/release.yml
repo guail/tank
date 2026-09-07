@@ -105,7 +105,7 @@ jobs:
 
         with:
           tagName: v__VERSION__
-          releaseName: "Flowix v__VERSION__"
+          releaseName: "TANK v__VERSION__"
           releaseBody: |
             See the [CHANGELOG] for the full set of changes.
 

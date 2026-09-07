@@ -128,13 +128,40 @@ async function resolveGithubAsset(url) {
   return { filename, buf, giteeUrl };
 }
 
+async function fetchGitHubLatestJson() {
+  // Use the GitHub API instead of the /releases/download/ CDN URL.
+  // GitHub release assets are served through a CDN that can cache stale
+  // content for several minutes after a new release is published; the API
+  // returns the authoritative asset list immediately.
+  const releaseUrl = `${GH_API}/releases/tags/${VERSION_TAG}`;
+  console.log(`[gitee-mirror] fetching release metadata ${releaseUrl}`);
+  const releaseRes = await fetch(releaseUrl, {
+    headers: { Accept: 'application/vnd.github+json', ...ghHeaders() },
+  });
+  if (!releaseRes.ok) {
+    throw new Error(`fetch github release ${VERSION_TAG} -> ${releaseRes.status}`);
+  }
+  const release = await releaseRes.json();
+  const asset = (release.assets || []).find((a) => a.name === 'latest.json');
+  if (!asset) throw new Error(`no latest.json asset found in ${VERSION_TAG}`);
+
+  console.log(`[gitee-mirror] fetching latest.json asset id=${asset.id}`);
+  const jsonRes = await fetch(`${GH_API}/releases/assets/${asset.id}`, {
+    headers: { Accept: 'application/octet-stream', ...ghHeaders() },
+  });
+  if (!jsonRes.ok) throw new Error(`fetch github latest.json asset -> ${jsonRes.status}`);
+  return jsonRes.json();
+}
+
 async function main() {
   // 1) Fetch the GitHub-generated latest.json for this version.
-  const ghJsonUrl = `https://github.com/${GH_OWNER}/${GH_REPO}/releases/download/${VERSION_TAG}/latest.json`;
-  console.log(`[gitee-mirror] fetching ${ghJsonUrl}`);
-  const ghRes = await fetch(ghJsonUrl);
-  if (!ghRes.ok) throw new Error(`fetch github latest.json -> ${ghRes.status}`);
-  const manifest = await ghRes.json();
+  const manifest = await fetchGitHubLatestJson();
+  if (manifest.version !== VERSION_TAG.replace(/^v/, '')) {
+    throw new Error(
+      `latest.json version mismatch: expected ${VERSION_TAG.replace(/^v/, '')}, got ${manifest.version}`
+    );
+  }
+  console.log(`[gitee-mirror] github manifest version=${manifest.version}`);
 
   // 2) Resolve + rewrite each platform's package url, collect binaries.
   const binaries = []; // { filename, buf }
