@@ -64,7 +64,13 @@ async function giteeApi(method, p, opts = {}) {
   // 上限超时，避免 fetch 无限挂起；配合调用方的重试逻辑覆盖瞬时失败。
   // 上传走 multipart 时超时给更宽松的预算（10 分钟），避免 18.7MB 的
   // exe 在 Gitee 上还没传完就被掐断（原 180s 在慢速 CI 上会反复 aborted）。
-  const isUpload = Boolean(opts && opts.body && typeof opts.body.getBoundary === 'function');
+  // 上传走 Gitee 的 attach_files 端点（latest.json + 二进制都走它）。
+  // 注意：本脚本用 Node 全局 FormData 作为上传体，它**没有** npm
+  // form-data 包的 getBoundary() 方法，所以不能用 getBoundary 判断上传。
+  // 改用端点路径识别，否则上传会被错判成普通请求、只拿 3 分钟预算，
+  // 18.7MB 的 exe 在慢速 CI 上刚好 ~3 分钟就被 AbortController 掐断
+  // （"This operation was aborted"），导致镜像永远铺不上去。
+  const isUpload = /attach_files/.test(p) || (opts && opts.body && typeof opts.body.getBoundary === 'function');
   // 大文件上传 (NSIS .exe ~19MB) 在 CI 上偶发连接抖动：给上传更宽松的预算
   // (15 分钟)，避免 10 分钟仍不够时被掐断。普通请求保持 3 分钟上限。
   const budget = isUpload ? 900000 : 180000;
@@ -179,6 +185,20 @@ async function main() {
   }
   if (binaries.length === 0) {
     throw new Error('no platform binaries resolved from latest.json');
+  }
+  // Tauri 的 latest.json 里 windows-x86_64 与 windows-x86_64-nsis 两个平台
+  // 通常指向同一个 NSIS exe。去重，避免把同一个 18.7MB 文件重复上传两遍
+  // （既拖时间又增加超时/抖动概率）。
+  {
+    const seen = new Set();
+    const deduped = [];
+    for (const b of binaries) {
+      if (seen.has(b.filename)) continue;
+      seen.add(b.filename);
+      deduped.push(b);
+    }
+    binaries.length = 0;
+    binaries.push(...deduped);
   }
 
   const localJson = path.resolve('latest.json');
