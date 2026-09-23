@@ -21,6 +21,7 @@ import {
   PRIORITY_LABELS,
   type TaskFields,
 } from './task-fields';
+import { getDefaultPriority, setDefaultPriority } from './category-priority-store';
 
 // 任务拖拽排序: 同一编辑器内跨 taskItem 重排 (仅允许同层)。
 // 拖拽发生在多个 NodeView 实例之间, 用模块级变量共享当前拖拽源。
@@ -117,6 +118,13 @@ function buildPopover(
   pop.style.cssText = POPOVER_STYLE;
 
   let fields: TaskFields = { ...initial };
+  // 已带分类但没优先级时, 预填该分类记住的默认优先级
+  if (fields.category && !fields.priority) {
+    const remembered = getDefaultPriority(fields.category);
+    if (remembered) fields.priority = remembered as TaskFields['priority'];
+  }
+  // 用户是否手动改过优先级: 改过则不再被分类默认值覆盖
+  let priorityTouched = false;
 
   const rowStyle =
     'display:flex;align-items:center;justify-content:space-between;margin:8px 0;gap:8px;';
@@ -188,7 +196,10 @@ function buildPopover(
   };
   syncWaiting();
 
-  prioSel.onchange = () => (fields.priority = prioSel.value as TaskFields['priority']);
+  prioSel.onchange = () => {
+    fields.priority = prioSel.value as TaskFields['priority'];
+    priorityTouched = true;
+  };
   dispSel.onchange = () => {
     fields.disposition = dispSel.value as TaskFields['disposition'];
     syncWaiting();
@@ -196,7 +207,15 @@ function buildPopover(
   waitInput.oninput = () => (fields.waitingFor = waitInput.value);
   dueInput.onchange = () => (fields.due = dueInput.value);
   remindInput.onchange = () => (fields.reminder = remindInput.value);
-  catInput.oninput = () => (fields.category = catInput.value);
+  catInput.oninput = () => {
+    fields.category = catInput.value;
+    // 用户还没手动动过优先级时, 跟随分类自动带出默认优先级
+    if (!priorityTouched) {
+      const def = fields.category ? getDefaultPriority(fields.category) : '';
+      fields.priority = def as TaskFields['priority'];
+      prioSel.value = def;
+    }
+  };
 
   const addRow = (labelText: string, control: HTMLElement) => {
     const row = document.createElement('div');
@@ -226,6 +245,10 @@ function buildPopover(
   save.style.cssText =
     'border:none;border-radius:6px;padding:4px 12px;cursor:pointer;background:#2563eb;color:#fff;';
   save.onclick = () => {
+    // 记住该分类的默认优先级 (仅有效值: 高/中/低), 供同类任务预填
+    if (fields.category && fields.priority && fields.priority !== 'none') {
+      setDefaultPriority(fields.category, fields.priority);
+    }
     onSave(fields);
     onClose();
   };
